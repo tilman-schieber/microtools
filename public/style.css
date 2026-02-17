@@ -69,6 +69,16 @@ button:hover {
   background: #0055aa;
 }
 
+.copy-btn {
+  background: #6c757d;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+}
+
+.copy-btn:hover {
+  background: #5a6268;
+}
+
 #result, #note-container {
   margin-top: 1.5rem;
   padding: 1rem;
@@ -318,6 +328,11 @@ label {
   color: #666;
   font-size: 0.9rem;
   font-style: italic;
+}
+
+.error {
+  color: #dc3545;
+  font-weight: 500;
 }
 
 /* Vote grid for responses */
@@ -741,12 +756,36 @@ label {
 }
 
 .bring-claim-chip {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   background: #f3f4f6;
   color: #444;
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
   font-size: 0.8rem;
+}
+
+.claim-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.15);
+  color: inherit;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.claim-delete-btn:hover {
+  background: rgba(220,38,38,0.7);
+  color: #fff;
 }
 
 .bring-card--complete .bring-claim-chip {

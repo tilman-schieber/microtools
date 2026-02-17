@@ -11,6 +11,18 @@ import fastifyMultipart from '@fastify/multipart';
 import ejs from 'ejs';
 import { marked } from 'marked';
 import archiver from 'archiver';
+
+// Sanitize markdown: escape raw HTML instead of passing it through
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+marked.use({
+  renderer: {
+    html(token: { text: string }) {
+      return escapeHtml(token.text);
+    }
+  }
+});
 import './db';
 import * as objectStore from './objectStore';
 
@@ -94,7 +106,7 @@ async function start() {
     const title = (body.title || '').trim();
 
     if (!text.trim()) {
-      return reply.type('text/html').send('<p style="color: red;">Please enter some text.</p>');
+      return reply.type('text/html').send('<p class="error">Please enter some text.</p>');
     }
 
     const noteData: { text: string; title?: string } = { text: text.trim() };
@@ -110,6 +122,7 @@ async function start() {
     return reply.type('text/html').send(`
       <p>Note created! Share this link:</p>
       <p><a href="${noteUrl}">${noteUrl}</a></p>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('${noteUrl}');this.textContent='Copied!'">Copy link</button>
     `);
   });
 
@@ -119,9 +132,7 @@ async function start() {
     const note = objectStore.get(params.id);
 
     if (!note) {
-      return reply.status(404).view('index', {
-        title: 'Not Found'
-      });
+      return reply.status(404).view('404', { title: 'Not Found' });
     }
 
     return reply.view('notes/show', {
@@ -149,7 +160,7 @@ async function start() {
     const note = objectStore.get(params.id);
 
     if (!note) {
-      return reply.status(404).view('index', { title: 'Not Found' });
+      return reply.status(404).view('404', { title: 'Not Found' });
     }
 
     const data = note.data as { text: string; title?: string };
@@ -187,7 +198,7 @@ async function start() {
     const ciphertext = body.ciphertext || '';
 
     if (!ciphertext.trim()) {
-      return reply.type('text/html').send('<p style="color: red;">No ciphertext provided.</p>');
+      return reply.type('text/html').send('<p class="error">No ciphertext provided.</p>');
     }
 
     const secret = objectStore.create('secret', { ciphertext: ciphertext.trim() });
@@ -263,7 +274,7 @@ async function start() {
       if (uploadedFiles.length === 0) {
         // Clean up empty directory
         fs.rmdirSync(shareDir);
-        return reply.type('text/html').send('<p style="color: red;">No files uploaded.</p>');
+        return reply.type('text/html').send('<p class="error">No files uploaded.</p>');
       }
       
       // Store metadata in objectStore with expiration
@@ -278,6 +289,7 @@ async function start() {
       return reply.type('text/html').send(`
         <p>Files uploaded! Share this link:</p>
         <p><a href="${shareUrl}">${shareUrl}</a></p>
+        <button class="copy-btn" onclick="navigator.clipboard.writeText('${shareUrl}');this.textContent='Copied!'">Copy link</button>
         <p class="hint">Expires in ${expiryLabel}.</p>
       `);
     } catch (err) {
@@ -285,7 +297,7 @@ async function start() {
       if (fs.existsSync(shareDir)) {
         fs.rmSync(shareDir, { recursive: true, force: true });
       }
-      return reply.type('text/html').send(`<p style="color: red;">Upload failed: ${(err as Error).message}</p>`);
+      return reply.type('text/html').send(`<p class="error">Upload failed: ${(err as Error).message}</p>`);
     }
   });
 
@@ -405,11 +417,11 @@ async function start() {
     const times = Array.isArray(timesRaw) ? timesRaw : (timesRaw ? [timesRaw] : []);
 
     if (!title.trim()) {
-      return reply.type('text/html').send('<p style="color: red;">Please enter a title.</p>');
+      return reply.type('text/html').send('<p class="error">Please enter a title.</p>');
     }
 
     if (dates.length === 0 || dates.length !== times.length) {
-      return reply.type('text/html').send('<p style="color: red;">Please add at least one date/time.</p>');
+      return reply.type('text/html').send('<p class="error">Please add at least one date/time.</p>');
     }
 
     const slots = dates.map((date, i) => ({ date, time: times[i] }));
@@ -427,6 +439,7 @@ async function start() {
     return reply.type('text/html').send(`
       <p>Poll created! Share this link:</p>
       <p><a href="${pollUrl}">${pollUrl}</a></p>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('${pollUrl}');this.textContent='Copied!'">Copy link</button>
     `);
   });
 
@@ -436,9 +449,7 @@ async function start() {
     const poll = objectStore.get(params.id);
 
     if (!poll) {
-      return reply.status(404).view('index', {
-        title: 'Not Found'
-      });
+      return reply.status(404).view('404', { title: 'Not Found' });
     }
 
     const pollData = poll.data as { title: string };
@@ -463,7 +474,7 @@ async function start() {
     const votes = Array.isArray(votesRaw) ? votesRaw : (votesRaw ? [votesRaw] : []);
 
     if (!name) {
-      return reply.type('text/html').send('<p style="color: red;">Please enter your name.</p>');
+      return reply.type('text/html').send('<p class="error">Please enter your name.</p>');
     }
 
     const data = poll.data as { title: string; slots: Array<{date: string; time: string}>; responses: Array<{name: string; votes: string[]}> };
@@ -495,11 +506,11 @@ async function start() {
       : (participantsRaw ? [participantsRaw.trim()].filter(n => n) : []);
 
     if (!title) {
-      return reply.type('text/html').send('<p style="color: red;">Please enter a title.</p>');
+      return reply.type('text/html').send('<p class="error">Please enter a title.</p>');
     }
 
     if (participantNames.length < 2) {
-      return reply.type('text/html').send('<p style="color: red;">Please add at least 2 participants.</p>');
+      return reply.type('text/html').send('<p class="error">Please add at least 2 participants.</p>');
     }
 
     // Generate tokens for each participant
@@ -522,13 +533,15 @@ async function start() {
     let html = `
       <p>Expense share created!</p>
       <p><strong>Summary link:</strong> <a href="${summaryUrl}">${summaryUrl}</a></p>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('${summaryUrl}');this.textContent='Copied!'">Copy link</button>
       <h3>Participant Links</h3>
       <ul>
     `;
     
     for (const p of participants) {
       const pUrl = `${protocol}://${host}/e/${expense.id}/p/${p.token}`;
-      html += `<li><strong>${p.name}:</strong> <a href="${pUrl}">${pUrl}</a></li>`;
+      html += `<li><strong>${escapeHtml(p.name)}:</strong> <a href="${pUrl}">${pUrl}</a>
+        <button class="copy-btn" onclick="navigator.clipboard.writeText('${pUrl}');this.textContent='Copied!'">Copy</button></li>`;
     }
     
     html += '</ul>';
@@ -542,17 +555,12 @@ async function start() {
     const expense = objectStore.get(params.id);
 
     if (!expense || expense.type !== 'expense') {
-      return reply.status(404).view('index', { title: 'Not Found' });
+      return reply.status(404).view('404', { title: 'Not Found' });
     }
-
-    const protocol = request.headers['x-forwarded-proto'] || 'http';
-    const host = request.headers.host;
 
     return reply.view('expenses/show', {
       title: (expense.data as { title: string }).title,
-      expense,
-      requestProtocol: protocol,
-      requestHost: host
+      expense
     });
   });
 
@@ -562,7 +570,7 @@ async function start() {
     const expense = objectStore.get(params.id);
 
     if (!expense || expense.type !== 'expense') {
-      return reply.status(404).view('index', { title: 'Not Found' });
+      return reply.status(404).view('404', { title: 'Not Found' });
     }
 
     const data = expense.data as { title: string; participants: Array<{name: string; token: string}>; entries: unknown[] };
@@ -608,15 +616,15 @@ async function start() {
     const split_between = Array.isArray(splitRaw) ? splitRaw : (splitRaw ? [splitRaw] : []);
 
     if (!description) {
-      return reply.type('text/html').send('<p style="color: red;">Please enter a description.</p>');
+      return reply.type('text/html').send('<p class="error">Please enter a description.</p>');
     }
 
     if (amount <= 0) {
-      return reply.type('text/html').send('<p style="color: red;">Please enter a valid amount.</p>');
+      return reply.type('text/html').send('<p class="error">Please enter a valid amount.</p>');
     }
 
     if (split_between.length === 0) {
-      return reply.type('text/html').send('<p style="color: red;">Please select at least one person to split with.</p>');
+      return reply.type('text/html').send('<p class="error">Please select at least one person to split with.</p>');
     }
 
     data.entries.push({
@@ -690,7 +698,7 @@ async function start() {
     const amounts = Array.isArray(amountsRaw) ? amountsRaw : (amountsRaw ? [amountsRaw] : []);
 
     if (!title) {
-      return reply.type('text/html').send('<p style="color: red;">Please enter a title.</p>');
+      return reply.type('text/html').send('<p class="error">Please enter a title.</p>');
     }
 
     const needed = items
@@ -702,7 +710,7 @@ async function start() {
       .filter(n => n.item);
 
     if (needed.length === 0) {
-      return reply.type('text/html').send('<p style="color: red;">Please add at least one item.</p>');
+      return reply.type('text/html').send('<p class="error">Please add at least one item.</p>');
     }
 
     const bringlist = objectStore.create('bringlist', {
@@ -719,6 +727,7 @@ async function start() {
       <p>Potluck list created!</p>
       <p><strong>Share this link:</strong></p>
       <p><a href="${url}">${url}</a></p>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('${url}');this.textContent='Copied!'">Copy link</button>
     `);
   });
 
@@ -746,12 +755,12 @@ async function start() {
     const amount = parseInt(body.amount || '1', 10);
 
     if (!name || amount < 1) {
-      return reply.type('text/html').send('<p style="color: red;">Please enter your name and amount.</p>');
+      return reply.type('text/html').send('<p class="error">Please enter your name and amount.</p>');
     }
 
     const bringlist = objectStore.get(id);
     if (!bringlist || bringlist.type !== 'bringlist') {
-      return reply.status(404).type('text/html').send('<p style="color: red;">List not found.</p>');
+      return reply.status(404).type('text/html').send('<p class="error">List not found.</p>');
     }
 
     const data = bringlist.data as { title: string; needed: any[]; custom: any[] };
@@ -759,7 +768,7 @@ async function start() {
     const needed = data.needed || [];
     
     if (index < 0 || index >= needed.length) {
-      return reply.status(400).type('text/html').send('<p style="color: red;">Invalid item.</p>');
+      return reply.status(400).type('text/html').send('<p class="error">Invalid item.</p>');
     }
 
     const item = needed[index];
@@ -767,12 +776,50 @@ async function start() {
     const remaining = item.amount_needed - totalClaimed;
 
     if (amount > remaining) {
-      return reply.type('text/html').send(`<p style="color: red;">Only ${remaining} remaining.</p>`);
+      return reply.type('text/html').send(`<p class="error">Only ${remaining} remaining.</p>`);
     }
 
     if (!item.claims) item.claims = [];
-    item.claims.push({ name, amount });
+    const claimToken = crypto.randomBytes(8).toString('base64url');
+    item.claims.push({ name, amount, token: claimToken });
 
+    objectStore.update(id, data);
+
+    return reply.view('bring/_list', { bringlist, lastClaimToken: claimToken });
+  });
+
+  // Bring List: Delete a claim (only with matching token)
+  fastify.delete('/b/:id/claim/:idx/:claimIdx', async (request, reply) => {
+    const { id, idx, claimIdx } = request.params as { id: string; idx: string; claimIdx: string };
+    const query = request.query as { token?: string };
+    const token = query.token || '';
+
+    const bringlist = objectStore.get(id);
+    if (!bringlist || bringlist.type !== 'bringlist') {
+      return reply.status(404).type('text/html').send('<p class="error">List not found.</p>');
+    }
+
+    const data = bringlist.data as { title: string; needed: any[]; custom: any[] };
+    const itemIndex = parseInt(idx, 10);
+    const claimIndex = parseInt(claimIdx, 10);
+    const needed = data.needed || [];
+
+    if (itemIndex < 0 || itemIndex >= needed.length) {
+      return reply.status(400).type('text/html').send('<p class="error">Invalid item.</p>');
+    }
+
+    const item = needed[itemIndex];
+    const claims = item.claims || [];
+
+    if (claimIndex < 0 || claimIndex >= claims.length) {
+      return reply.status(400).type('text/html').send('<p class="error">Invalid claim.</p>');
+    }
+
+    if (!token || claims[claimIndex].token !== token) {
+      return reply.status(403).type('text/html').send('<p class="error">Cannot delete this claim.</p>');
+    }
+
+    claims.splice(claimIndex, 1);
     objectStore.update(id, data);
 
     return reply.view('bring/_list', { bringlist });
@@ -787,18 +834,48 @@ async function start() {
     const amount = parseInt(body.amount || '1', 10);
 
     if (!name || !item || amount < 1) {
-      return reply.type('text/html').send('<p style="color: red;">Please fill all fields.</p>');
+      return reply.type('text/html').send('<p class="error">Please fill all fields.</p>');
     }
 
     const bringlist = objectStore.get(id);
     if (!bringlist || bringlist.type !== 'bringlist') {
-      return reply.status(404).type('text/html').send('<p style="color: red;">List not found.</p>');
+      return reply.status(404).type('text/html').send('<p class="error">List not found.</p>');
     }
 
     const data = bringlist.data as { title: string; needed: any[]; custom: any[] };
     if (!data.custom) data.custom = [];
-    data.custom.push({ name, item, amount });
+    const claimToken = crypto.randomBytes(8).toString('base64url');
+    data.custom.push({ name, item, amount, token: claimToken });
 
+    objectStore.update(id, data);
+
+    return reply.view('bring/_list', { bringlist, lastClaimToken: claimToken });
+  });
+
+  // Bring List: Delete a custom item (only with matching token)
+  fastify.delete('/b/:id/custom/:customIdx', async (request, reply) => {
+    const { id, customIdx } = request.params as { id: string; customIdx: string };
+    const query = request.query as { token?: string };
+    const token = query.token || '';
+
+    const bringlist = objectStore.get(id);
+    if (!bringlist || bringlist.type !== 'bringlist') {
+      return reply.status(404).type('text/html').send('<p class="error">List not found.</p>');
+    }
+
+    const data = bringlist.data as { title: string; needed: any[]; custom: any[] };
+    const index = parseInt(customIdx, 10);
+    const custom = data.custom || [];
+
+    if (index < 0 || index >= custom.length) {
+      return reply.status(400).type('text/html').send('<p class="error">Invalid item.</p>');
+    }
+
+    if (!token || custom[index].token !== token) {
+      return reply.status(403).type('text/html').send('<p class="error">Cannot delete this item.</p>');
+    }
+
+    custom.splice(index, 1);
     objectStore.update(id, data);
 
     return reply.view('bring/_list', { bringlist });

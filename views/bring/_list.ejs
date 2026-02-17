@@ -3,58 +3,83 @@ const data = bringlist.data;
 const needed = data.needed || [];
 const custom = data.custom || [];
 const id = bringlist.id;
+const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : null;
 %>
 
-<h2>Needed Items</h2>
-<% if (needed.length === 0) { %>
-  <p>No items needed yet.</p>
-<% } else { %>
-  <div class="bring-items">
-    <% needed.forEach((item, idx) => {
-      const totalClaimed = (item.claims || []).reduce((sum, c) => sum + c.amount, 0);
-      const remaining = item.amount_needed - totalClaimed;
-      const pct = Math.round((totalClaimed / item.amount_needed) * 100);
-      const isComplete = remaining <= 0;
-    %>
-      <div class="bring-card <%= isComplete ? 'bring-card--complete' : '' %>">
-        <div class="bring-card-header">
-          <span class="bring-card-name"><%= item.item %></span>
-          <% if (isComplete) { %>
-            <span class="complete-badge">Complete</span>
-          <% } else { %>
-            <span class="bring-card-count"><%= totalClaimed %> of <%= item.amount_needed %></span>
-          <% } %>
-        </div>
-
-        <div class="bring-progress">
-          <div class="bring-progress-bar" style="width: <%= pct %>%"></div>
-        </div>
-
-        <% if (item.claims && item.claims.length > 0) { %>
-          <div class="bring-claims">
-            <% item.claims.forEach(c => { %>
-              <span class="bring-claim-chip"><%= c.name %>: <%= c.amount %></span>
-            <% }); %>
-          </div>
+<div class="bring-items">
+  <% needed.forEach((item, idx) => {
+    const totalClaimed = (item.claims || []).reduce((sum, c) => sum + c.amount, 0);
+    const remaining = item.amount_needed - totalClaimed;
+    const pct = Math.round((totalClaimed / item.amount_needed) * 100);
+    const isComplete = remaining <= 0;
+  %>
+    <div class="bring-card <%= isComplete ? 'bring-card--complete' : '' %>">
+      <div class="bring-card-header">
+        <span class="bring-card-name"><%= item.item %></span>
+        <% if (isComplete) { %>
+          <span class="complete-badge">Complete</span>
         <% } else { %>
-          <div class="bring-claims bring-claims--empty">No claims yet</div>
-        <% } %>
-
-        <% if (!isComplete) { %>
-          <form hx-post="/b/<%= id %>/claim/<%= idx %>" hx-target="#bringlist-content" hx-swap="innerHTML" class="bring-claim-form">
-            <input type="text" name="name" placeholder="Your name" required>
-            <input type="number" name="amount" min="1" max="<%= remaining %>" value="1" required>
-            <button type="submit">Claim</button>
-          </form>
+          <span class="bring-card-count"><%= totalClaimed %> of <%= item.amount_needed %></span>
         <% } %>
       </div>
-    <% }); %>
-  </div>
+
+      <div class="bring-progress">
+        <div class="bring-progress-bar" style="width: <%= pct %>%"></div>
+      </div>
+
+      <% if (item.claims && item.claims.length > 0) { %>
+        <div class="bring-claims">
+          <% item.claims.forEach((c, cIdx) => { %>
+            <span class="bring-claim-chip">
+              <%= c.name %>: <%= c.amount %>
+              <% if (_lastToken && c.token === _lastToken) { %>
+                <button class="claim-delete-btn" hx-delete="/b/<%= id %>/claim/<%= idx %>/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="Remove your claim?">&times;</button>
+              <% } %>
+            </span>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="bring-claims bring-claims--empty">No claims yet</div>
+      <% } %>
+
+      <% if (!isComplete) { %>
+        <form hx-post="/b/<%= id %>/claim/<%= idx %>" hx-target="#bringlist-content" hx-swap="innerHTML" class="bring-claim-form">
+          <input type="text" name="name" placeholder="Your name" required>
+          <input type="number" name="amount" min="1" max="<%= remaining %>" value="1" required>
+          <button type="submit">Claim</button>
+        </form>
+      <% } %>
+    </div>
+  <% }); %>
+
+  <% custom.forEach((c, cIdx) => { %>
+    <div class="bring-card bring-card--complete bring-card--custom">
+      <div class="bring-card-header">
+        <span class="bring-card-name"><%= c.item %></span>
+        <span class="complete-badge">Extra</span>
+      </div>
+
+      <div class="bring-progress">
+        <div class="bring-progress-bar" style="width: 100%"></div>
+      </div>
+
+      <div class="bring-claims">
+        <span class="bring-claim-chip">
+          <%= c.name %><% if (c.amount > 1) { %>: <%= c.amount %><% } %>
+          <% if (_lastToken && c.token === _lastToken) { %>
+            <button class="claim-delete-btn" hx-delete="/b/<%= id %>/custom/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="Remove this item?">&times;</button>
+          <% } %>
+        </span>
+      </div>
+    </div>
+  <% }); %>
+</div>
+
+<% if (needed.length === 0 && custom.length === 0) { %>
+  <p>No items yet.</p>
 <% } %>
 
-<h2>Extras</h2>
-<p class="hint">Bring something not on the list</p>
-
+<h3>Bring something extra</h3>
 <form hx-post="/b/<%= id %>/custom" hx-target="#bringlist-content" hx-swap="innerHTML" class="bring-custom-form">
   <input type="text" name="name" placeholder="Your name" required>
   <input type="text" name="item" placeholder="Item" required>
@@ -62,12 +87,19 @@ const id = bringlist.id;
   <button type="submit">Add</button>
 </form>
 
-<% if (custom.length > 0) { %>
-  <div class="bring-extras">
-    <% custom.forEach(c => { %>
-      <div class="bring-extra-chip">
-        <strong><%= c.name %></strong> brings <%= c.item %><% if (c.amount > 1) { %> &times; <%= c.amount %><% } %>
-      </div>
-    <% }); %>
-  </div>
-<% } %>
+<script>
+(function() {
+  var saved = localStorage.getItem('bringlist-name') || '';
+  document.querySelectorAll('#bringlist-content input[name="name"]').forEach(function(el) {
+    if (!el.value) el.value = saved;
+  });
+  document.querySelectorAll('#bringlist-content form').forEach(function(form) {
+    form.addEventListener('submit', function() {
+      var nameInput = form.querySelector('input[name="name"]');
+      if (nameInput && nameInput.value.trim()) {
+        localStorage.setItem('bringlist-name', nameInput.value.trim());
+      }
+    });
+  });
+})();
+</script>

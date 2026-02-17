@@ -1,60 +1,53 @@
 <%
 const fileList = share.data.files || [];
 const isSingle = fileList.length === 1;
-
-// Format expiration
-let expiryHtml = '';
-if (share.expires_at) {
-  const d = new Date(share.expires_at);
-  const formatted = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  expiryHtml = `<p class="hint">Expires on ${formatted}</p>`;
-}
-
-// Build file list HTML
-let fileListHtml = '';
-if (isSingle) {
-  const file = fileList[0];
-  fileListHtml = `
-    <div class="file-download">
-      <p>Download your file:</p>
-      <a href="/files/${share.id}/download/${encodeURIComponent(file.name)}" class="download-btn">
-        ${file.name} (${file.sizeFormatted})
-      </a>
-    </div>
-  `;
-} else {
-  const items = fileList.map(file => `
-    <li>
-      <a href="/files/${share.id}/download/${encodeURIComponent(file.name)}">${file.name}</a>
-      <span class="file-size">(${file.sizeFormatted})</span>
-    </li>
-  `).join('');
-  
-  fileListHtml = `
-    <div class="file-listing">
-      <p>${fileList.length} files shared:</p>
-      <ul class="file-list">
-        ${items}
-      </ul>
-      <a href="/files/${share.id}/zip" class="download-btn">Download All as ZIP</a>
-    </div>
-  `;
-}
-
-const content = `
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/public/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
   <main>
     <h1>Shared Files</h1>
-    
-    ${fileListHtml}
-    ${expiryHtml}
-    
+
+    <% if (isSingle) { %>
+      <div class="file-download">
+        <p>Download your file:</p>
+        <a href="/files/<%= share.id %>/download/<%= encodeURIComponent(fileList[0].name) %>" class="download-btn">
+          <%= fileList[0].name %> (<%= fileList[0].sizeFormatted %>)
+        </a>
+      </div>
+    <% } else { %>
+      <div class="file-listing">
+        <p><%= fileList.length %> files shared:</p>
+        <ul class="file-list">
+          <% fileList.forEach(file => { %>
+            <li>
+              <a href="/files/<%= share.id %>/download/<%= encodeURIComponent(file.name) %>"><%= file.name %></a>
+              <span class="file-size">(<%= file.sizeFormatted %>)</span>
+            </li>
+          <% }); %>
+        </ul>
+        <a href="/files/<%= share.id %>/zip" class="download-btn">Download All as ZIP</a>
+      </div>
+    <% } %>
+
+    <% if (share.expires_at) { %>
+      <p class="hint">Expires on <%= new Date(share.expires_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+    <% } %>
+
     <div class="file-actions">
-      <button hx-delete="/files/${share.id}" hx-target="#delete-result" hx-swap="innerHTML" hx-confirm="Delete all shared files?">Delete Share</button>
+      <button hx-delete="/files/<%= share.id %>" hx-target="#delete-result" hx-swap="innerHTML" hx-confirm="Delete all shared files?">Delete Share</button>
       <div id="delete-result"></div>
     </div>
-    
+
     <p><a href="/">Back to home</a></p>
   </main>
-`;
-%>
-<%- include('../layout', { content, title }) %>
+</body>
+</html>

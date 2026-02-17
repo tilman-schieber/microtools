@@ -1,87 +1,23 @@
-<%
-const data = bringlist.data;
-const titleText = data.title;
-const needed = data.needed || [];
-const custom = data.custom || [];
-const id = bringlist.id;
-
-function renderNeeded() {
-  if (needed.length === 0) return '<p>No items needed yet.</p>';
-  let html = '<div class="bring-items">';
-  needed.forEach((item, idx) => {
-    const totalClaimed = (item.claims || []).reduce((sum, c) => sum + c.amount, 0);
-    const remaining = item.amount_needed - totalClaimed;
-    const pct = Math.round((totalClaimed / item.amount_needed) * 100);
-    const isComplete = remaining <= 0;
-    html += '<div class="bring-card' + (isComplete ? ' bring-card--complete' : '') + '">';
-    html += '<div class="bring-card-header">';
-    html += '<span class="bring-card-name">' + item.item + '</span>';
-    if (isComplete) {
-      html += '<span class="complete-badge">Complete</span>';
-    } else {
-      html += '<span class="bring-card-count">' + totalClaimed + ' of ' + item.amount_needed + '</span>';
-    }
-    html += '</div>';
-    html += '<div class="bring-progress"><div class="bring-progress-bar" style="width: ' + pct + '%"></div></div>';
-    if (item.claims && item.claims.length > 0) {
-      html += '<div class="bring-claims">';
-      item.claims.forEach(c => {
-        html += '<span class="bring-claim-chip">' + c.name + ': ' + c.amount + '</span>';
-      });
-      html += '</div>';
-    } else {
-      html += '<div class="bring-claims bring-claims--empty">No claims yet</div>';
-    }
-    if (!isComplete) {
-      html += '<form hx-post="/b/' + id + '/claim/' + idx + '" hx-target="#bringlist-content" hx-swap="innerHTML" class="bring-claim-form">';
-      html += '<input type="text" name="name" placeholder="Your name" required>';
-      html += '<input type="number" name="amount" min="1" max="' + remaining + '" value="1" required>';
-      html += '<button type="submit">Claim</button>';
-      html += '</form>';
-    }
-    html += '</div>';
-  });
-  html += '</div>';
-  return html;
-}
-
-function renderCustom() {
-  let html = '';
-  if (custom.length > 0) {
-    html += '<div class="bring-extras">';
-    custom.forEach(c => {
-      html += '<div class="bring-extra-chip"><strong>' + c.name + '</strong> brings ' + c.item;
-      if (c.amount > 1) html += ' &times; ' + c.amount;
-      html += '</div>';
-    });
-    html += '</div>';
-  }
-  return html;
-}
-%>
-<% const content = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= bringlist.data.title %></title>
+  <link rel="stylesheet" href="/public/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
   <main>
-    <h1>${titleText}</h1>
+    <h1><%= bringlist.data.title %></h1>
     <p class="hint">Claim items you'll bring, or add something extra!</p>
-    
+
     <div id="bringlist-content">
-      <h2>Needed Items</h2>
-      ${renderNeeded()}
-      
-      <h2>Extras</h2>
-      <p class="hint">Bring something not on the list</p>
-      
-      <form hx-post="/b/${id}/custom" hx-target="#bringlist-content" hx-swap="innerHTML" class="bring-custom-form">
-        <input type="text" name="name" placeholder="Your name" required>
-        <input type="text" name="item" placeholder="Item" required>
-        <input type="number" name="amount" min="1" value="1" required>
-        <button type="submit">Add</button>
-      </form>
-      
-      ${renderCustom()}
+      <%- include('_list', { bringlist }) %>
     </div>
-    
+
     <p><a href="/">Back to home</a></p>
   </main>
-` %>
-<%- include('../layout', { content, title: titleText }) %>
+</body>
+</html>

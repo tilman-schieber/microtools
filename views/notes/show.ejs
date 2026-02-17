@@ -1,19 +1,25 @@
-<%
-const noteTitle = note.data.title || 'Note';
-const noteText = note.data.text || '';
-%>
-<% const content = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= note.data.title || 'Note' %></title>
+  <link rel="stylesheet" href="/public/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
   <main>
-    <h1>${noteTitle}</h1>
+    <h1><%= note.data.title || 'Note' %></h1>
     <div id="note-container">
-      <pre class="note-text">${noteText}</pre>
+      <pre class="note-text"><%= note.data.text || '' %></pre>
       <div class="note-links">
-        <a href="/notes/${note.id}/raw">View raw</a>
-        <a href="/notes/${note.id}/md">View as Markdown</a>
+        <a href="/notes/<%= note.id %>/raw">View raw</a>
+        <a href="/notes/<%= note.id %>/md">View as Markdown</a>
       </div>
-      <button hx-delete="/notes/${note.id}" hx-target="#note-container" hx-swap="innerHTML">Delete Note</button>
+      <button hx-delete="/notes/<%= note.id %>" hx-target="#note-container" hx-swap="innerHTML" hx-confirm="Delete this note?">Delete Note</button>
     </div>
     <p><a href="/">Back to home</a></p>
   </main>
-` %>
-<%- include('../layout', { content, title: noteTitle }) %>
+</body>
+</html>

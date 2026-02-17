@@ -92,6 +92,7 @@ const settlements = simplifyDebts(balances);
               hx-delete="/e/<%= expense.id %>/entries/<%= i %>?token=<%= token %>" 
               hx-target="#expense-container" 
               hx-swap="innerHTML"
+              hx-confirm="Delete this expense?"
               class="delete-btn"
             >Delete</button>
           </td>
