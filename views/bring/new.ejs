@@ -1,0 +1,36 @@
+<% const content = `
+  <main>
+    <h1>Create Potluck / Party List</h1>
+    <form hx-post="/bring" hx-target="#result" hx-swap="innerHTML">
+      <label for="title">Event Title</label>
+      <input type="text" name="title" id="title" placeholder="e.g., Office Holiday Party" required>
+      
+      <h3>Needed Items</h3>
+      <p class="hint">Add items that someone should bring</p>
+      <div id="items-container">
+        <div class="item-row">
+          <input type="text" name="items[]" placeholder="Item (e.g., Salad)" required>
+          <input type="number" name="amounts[]" placeholder="Amount" min="1" value="1" required>
+          <button type="button" onclick="this.parentElement.remove()">Remove</button>
+        </div>
+      </div>
+      <button type="button" id="add-item">+ Add Item</button>
+      
+      <br><br>
+      <button type="submit">Create List</button>
+    </form>
+    <div id="result"></div>
+    <p><a href="/">Back to home</a></p>
+  </main>
+  
+  <script>
+    document.getElementById('add-item').addEventListener('click', function() {
+      const container = document.getElementById('items-container');
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = '<input type="text" name="items[]" placeholder="Item" required> <input type="number" name="amounts[]" placeholder="Amount" min="1" value="1" required> <button type="button" onclick="this.parentElement.remove()">Remove</button>';
+      container.appendChild(row);
+    });
+  </script>
+` %>
+<%- include('../layout', { content, title }) %>

@@ -1,0 +1,102 @@
+<%
+const slots = poll.data.slots || [];
+const responses = poll.data.responses || [];
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatTime(timeStr) {
+  return timeStr;
+}
+
+function getVoteEmoji(vote) {
+  if (vote === 'yes') return '✅';
+  if (vote === 'tentative') return '🟡';
+  return '❌';
+}
+%>
+<div id="poll-container">
+  <h2>Responses</h2>
+  <table class="poll-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <% for (let i = 0; i < slots.length; i++) { %>
+          <th><%- formatDate(slots[i].date) %><br><%- formatTime(slots[i].time) %></th>
+        <% } %>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (responses.length === 0) { %>
+        <tr><td colspan="<%= slots.length + 1 %>">No responses yet</td></tr>
+      <% } else { %>
+        <% for (let r = 0; r < responses.length; r++) { %>
+          <tr>
+            <td><%= responses[r].name %></td>
+            <% for (let i = 0; i < slots.length; i++) { %>
+              <td class="vote-<%= responses[r].votes[i] || 'no' %>"><%- getVoteEmoji(responses[r].votes[i]) %></td>
+            <% } %>
+          </tr>
+        <% } %>
+      <% } %>
+    </tbody>
+  </table>
+  
+  <h3>Add Your Response</h3>
+  <form hx-post="/polls/<%= poll.id %>/responses" hx-target="#poll-container" hx-swap="outerHTML">
+    <label for="name">Your Name</label>
+    <input type="text" name="name" id="name" placeholder="Your name" required>
+    
+    <p class="hint">Click cells to toggle: ✅ Yes, 🟡 Maybe, ❌ No</p>
+    
+    <table class="poll-table vote-grid">
+      <thead>
+        <tr>
+          <% for (let i = 0; i < slots.length; i++) { %>
+            <th><%- formatDate(slots[i].date) %><br><%- formatTime(slots[i].time) %></th>
+          <% } %>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <% for (let i = 0; i < slots.length; i++) { %>
+            <td class="vote-cell" data-index="<%= i %>" onclick="cycleVote(this)">
+              <span class="vote-emoji">✅</span>
+              <input type="hidden" name="votes[]" value="yes">
+            </td>
+          <% } %>
+        </tr>
+      </tbody>
+    </table>
+    
+    <button type="submit">Submit Response</button>
+  </form>
+</div>
+
+<script>
+function cycleVote(cell) {
+  const input = cell.querySelector('input');
+  const emoji = cell.querySelector('.vote-emoji');
+  const current = input.value;
+  
+  if (current === 'yes') {
+    input.value = 'tentative';
+    emoji.textContent = '🟡';
+    cell.className = 'vote-cell vote-tentative';
+  } else if (current === 'tentative') {
+    input.value = 'no';
+    emoji.textContent = '❌';
+    cell.className = 'vote-cell vote-no';
+  } else {
+    input.value = 'yes';
+    emoji.textContent = '✅';
+    cell.className = 'vote-cell vote-yes';
+  }
+}
+
+document.querySelectorAll('.vote-cell').forEach(cell => {
+  cell.className = 'vote-cell vote-yes';
+});
+</script>

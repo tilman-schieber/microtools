@@ -1,0 +1,47 @@
+<% const content = `
+  <main>
+    <h1>Create Expense Share</h1>
+    <form hx-post="/expenses" hx-target="#result" hx-swap="innerHTML">
+      <label for="title">Title</label>
+      <input type="text" name="title" id="title" placeholder="e.g., Trip to Paris" required>
+      
+      <label for="currency">Currency</label>
+      <select name="currency" id="currency">
+        <option value="€" selected>€ Euro</option>
+        <option value="$">$ Dollar</option>
+        <option value="Fr.">Fr. Franken</option>
+
+      </select>
+      
+      <h3>Participants</h3>
+      <p class="hint">Add the names of everyone who will share expenses</p>
+      <div id="participants-container">
+        <div class="participant-row">
+          <input type="text" name="participants[]" placeholder="Name" required>
+          <button type="button" onclick="this.parentElement.remove()">Remove</button>
+        </div>
+        <div class="participant-row">
+          <input type="text" name="participants[]" placeholder="Name" required>
+          <button type="button" onclick="this.parentElement.remove()">Remove</button>
+        </div>
+      </div>
+      <button type="button" id="add-participant">+ Add Participant</button>
+      
+      <br><br>
+      <button type="submit">Create Expense Share</button>
+    </form>
+    <div id="result"></div>
+    <p><a href="/">Back to home</a></p>
+  </main>
+  
+  <script>
+    document.getElementById('add-participant').addEventListener('click', function() {
+      const container = document.getElementById('participants-container');
+      const row = document.createElement('div');
+      row.className = 'participant-row';
+      row.innerHTML = '<input type="text" name="participants[]" placeholder="Name" required> <button type="button" onclick="this.parentElement.remove()">Remove</button>';
+      container.appendChild(row);
+    });
+  </script>
+` %>
+<%- include('../layout', { content, title }) %>

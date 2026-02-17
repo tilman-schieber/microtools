@@ -1,0 +1,81 @@
+<%
+const data = bringlist.data;
+const titleText = data.title;
+const needed = data.needed || [];
+const custom = data.custom || [];
+const id = bringlist.id;
+%>
+<% const content = `
+  <main>
+    <h1>${titleText}</h1>
+    <p class="hint">Claim items you'll bring, or add something extra!</p>
+    
+    <div id="bringlist-content">
+      <h2>Needed Items</h2>
+      ${needed.length === 0 ? '<p>No items needed yet.</p>' : `
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Needed</th>
+              <th>Claimed</th>
+              <th>Remaining</th>
+              <th>Claim</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${needed.map((item, idx) => {
+              const totalClaimed = (item.claims || []).reduce((sum, c) => sum + c.amount, 0);
+              const remaining = item.amount_needed - totalClaimed;
+              const claimsList = (item.claims || []).length > 0 
+                ? '<ul class="claims-list">' + item.claims.map(c => '<li>' + c.name + ': ' + c.amount + '</li>').join('') + '</ul>'
+                : '';
+              return '<tr>' +
+                '<td><strong>' + item.item + '</strong>' + claimsList + '</td>' +
+                '<td>' + item.amount_needed + '</td>' +
+                '<td>' + totalClaimed + '</td>' +
+                '<td class="' + (remaining > 0 ? 'needed' : 'complete') + '">' + remaining + '</td>' +
+                '<td>' + (remaining > 0 
+                  ? '<form hx-post="/b/' + id + '/claim/' + idx + '" hx-target="#bringlist-content" hx-swap="innerHTML" class="inline-form">' +
+                    '<input type="text" name="name" placeholder="Your name" required>' +
+                    '<input type="number" name="amount" min="1" max="' + remaining + '" value="1" required>' +
+                    '<button type="submit">Claim</button>' +
+                    '</form>'
+                  : '<span class="complete-badge">Complete!</span>') +
+                '</td>' +
+              '</tr>';
+            }).join('')}
+          </tbody>
+        </table>
+      `}
+      
+      <h2>Extras</h2>
+      <p class="hint">Bring something not on the list</p>
+      
+      <form hx-post="/b/${id}/custom" hx-target="#bringlist-content" hx-swap="innerHTML" class="custom-form">
+        <input type="text" name="name" placeholder="Your name" required>
+        <input type="text" name="item" placeholder="Item" required>
+        <input type="number" name="amount" min="1" value="1" required>
+        <button type="submit">Add</button>
+      </form>
+      
+      ${custom.length > 0 ? `
+        <table>
+          <thead>
+            <tr>
+              <th>Who</th>
+              <th>Item</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${custom.map(c => '<tr><td>' + c.name + '</td><td>' + c.item + '</td><td>' + c.amount + '</td></tr>').join('')}
+          </tbody>
+        </table>
+      ` : ''}
+    </div>
+    
+    <p><a href="/">Back to home</a></p>
+  </main>
+` %>
+<%- include('../layout', { content, title: titleText }) %>

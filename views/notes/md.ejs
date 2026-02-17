@@ -1,0 +1,17 @@
+<%
+const noteTitle = note.data.title || 'Note';
+%>
+<% const content = `
+  <main>
+    <h1>${noteTitle}</h1>
+    <div class="markdown-content">
+      ${renderedMarkdown}
+    </div>
+    <div class="note-links">
+      <a href="/notes/${note.id}">View original</a>
+      <a href="/notes/${note.id}/raw">View raw</a>
+    </div>
+    <p><a href="/">Back to home</a></p>
+  </main>
+` %>
+<%- include('../layout', { content, title: noteTitle }) %>

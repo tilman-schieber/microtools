@@ -1,0 +1,20 @@
+<%# Note: This template uses direct HTML instead of layout.ejs because it needs to
+    include the _container.ejs partial, which isn't possible with the template literal pattern.
+    The head elements match layout.ejs exactly. %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/public/style.css">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+  <main>
+    <h1><%= poll.data.title %></h1>
+    <%- include('_container', { poll }) %>
+    <p><a href="/">Back to home</a></p>
+  </main>
+</body>
+</html>

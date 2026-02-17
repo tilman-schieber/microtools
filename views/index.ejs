@@ -1,0 +1,45 @@
+<% const content = `
+  <main class="landing">
+    <h1>Micro Tools</h1>
+    <p class="tagline">Simple, link-based tools. No accounts needed.</p>
+    
+    <div class="tools-grid">
+      <a href="/notes/new" class="tool-card">
+        <span class="tool-icon">&#128221;</span>
+        <h2>Note Sharing</h2>
+        <p>Create and share notes instantly via a link</p>
+      </a>
+      
+      <a href="/polls/new" class="tool-card">
+        <span class="tool-icon">&#128197;</span>
+        <h2>Date Poll</h2>
+        <p>Schedule meetings with Doodle-style voting</p>
+      </a>
+      
+      <a href="/expenses/new" class="tool-card">
+        <span class="tool-icon">&#128176;</span>
+        <h2>Expense Share</h2>
+        <p>Split costs easily with friends or groups</p>
+      </a>
+      
+      <a href="/secrets/new" class="tool-card">
+        <span class="tool-icon">&#128274;</span>
+        <h2>One-Time Secret</h2>
+        <p>Share sensitive info that self-destructs after viewing</p>
+      </a>
+      
+      <a href="/files/new" class="tool-card">
+        <span class="tool-icon">&#128193;</span>
+        <h2>File Share</h2>
+        <p>Upload and share files with a simple link</p>
+      </a>
+      
+      <a href="/bring/new" class="tool-card">
+        <span class="tool-icon">&#127869;</span>
+        <h2>Potluck Planner</h2>
+        <p>Coordinate who brings what to parties</p>
+      </a>
+    </div>
+  </main>
+` %>
+<%- include('layout', { content, title }) %>

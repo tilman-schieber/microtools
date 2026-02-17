@@ -1,0 +1,51 @@
+<%
+const fileList = share.data.files || [];
+const isSingle = fileList.length === 1;
+
+// Build file list HTML
+let fileListHtml = '';
+if (isSingle) {
+  const file = fileList[0];
+  fileListHtml = `
+    <div class="file-download">
+      <p>Download your file:</p>
+      <a href="/files/${share.id}/download/${encodeURIComponent(file.name)}" class="download-btn">
+        ${file.name} (${file.sizeFormatted})
+      </a>
+    </div>
+  `;
+} else {
+  const items = fileList.map(file => `
+    <li>
+      <a href="/files/${share.id}/download/${encodeURIComponent(file.name)}">${file.name}</a>
+      <span class="file-size">(${file.sizeFormatted})</span>
+    </li>
+  `).join('');
+  
+  fileListHtml = `
+    <div class="file-listing">
+      <p>${fileList.length} files shared:</p>
+      <ul class="file-list">
+        ${items}
+      </ul>
+      <a href="/files/${share.id}/zip" class="download-btn">Download All as ZIP</a>
+    </div>
+  `;
+}
+
+const content = `
+  <main>
+    <h1>Shared Files</h1>
+    
+    ${fileListHtml}
+    
+    <div class="file-actions">
+      <button hx-delete="/files/${share.id}" hx-target="#delete-result" hx-swap="innerHTML" hx-confirm="Delete all shared files?">Delete Share</button>
+      <div id="delete-result"></div>
+    </div>
+    
+    <p><a href="/">Back to home</a></p>
+  </main>
+`;
+%>
+<%- include('../layout', { content, title }) %>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/public/style.css">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+  <main>
+    <h1>Create a Date Poll</h1>
+    <form id="poll-form" hx-post="/polls" hx-target="#result" hx-swap="innerHTML">
+      <label for="title">Poll Title</label>
+      <input type="text" name="title" id="title" placeholder="e.g., Team Meeting" required>
+      
+      <h3>1. Add Dates</h3>
+      <div class="date-picker-row">
+        <input type="date" id="date-input">
+        <button type="button" id="add-date-btn">+ Add Date</button>
+      </div>
+      <div id="dates-list"></div>
+      
+      <h3>2. Select Times</h3>
+      <p class="hint">Click cells to select. Edit times or use +/- to expand range.</p>
+      
+      <div id="time-grid-container"></div>
+      
+      <div id="hidden-inputs"></div>
+      
+      <br>
+      <button type="submit" id="create-btn" disabled>Create Poll</button>
+    </form>
+    <div id="result"></div>
+    <p><a href="/">Back to home</a></p>
+  </main>
+  
+  <script>
+    const dates = [];
+    const selectedSlots = new Map();
+    let startHour = 8;
+    let endHour = 16;
+    const customTimes = [];
+    
+    function formatDateDisplay(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+    
+    function formatTime24(h) {
+      return `${h.toString().padStart(2, '0')}:00`;
+    }
+    
+    function getAllTimes() {
+      const times = [];
+      for (let h = startHour; h <= endHour; h++) {
+        times.push(formatTime24(h));
+      }
+      customTimes.forEach(t => {
+        if (!times.includes(t)) {
+          times.push(t);
+        }
+      });
+      times.sort();
+      return times;
+    }
+    
+    function renderDates() {
+      const list = document.getElementById('dates-list');
+      list.innerHTML = dates.map((d, i) => `
+        <span class="date-chip">
+          ${formatDateDisplay(d)}
+          <button type="button" onclick="removeDate(${i})">x</button>
+        </span>
+      `).join('');
+      renderTimeGrid();
+    }
+    
+    function removeDate(index) {
+      const date = dates[index];
+      dates.splice(index, 1);
+      selectedSlots.forEach((_, key) => {
+        if (key.startsWith(date + '|')) {
+          selectedSlots.delete(key);
+        }
+      });
+      renderDates();
+    }
+    
+    function expandEarlier() {
+      if (startHour > 0) {
+        startHour--;
+        renderTimeGrid();
+      }
+    }
+    
+    function expandLater() {
+      if (endHour < 23) {
+        endHour++;
+        renderTimeGrid();
+      }
+    }
+    
+    function addCustomTime() {
+      const input = document.getElementById('custom-time-input');
+      const time = input.value;
+      if (time && !customTimes.includes(time)) {
+        customTimes.push(time);
+        customTimes.sort();
+        input.value = '';
+        renderTimeGrid();
+      }
+    }
+    
+    function renderTimeGrid() {
+      const container = document.getElementById('time-grid-container');
+      if (dates.length === 0) {
+        container.innerHTML = '<p class="hint">Add dates above to see the time grid</p>';
+        updateHiddenInputs();
+        return;
+      }
+      
+      const times = getAllTimes();
+      
+      let html = '<div class="time-controls">';
+      html += `<button type="button" class="expand-btn" onclick="expandEarlier()" ${startHour <= 0 ? 'disabled' : ''}>+ Earlier (${formatTime24(startHour - 1)})</button>`;
+      html += '<span class="custom-time-add"><input type="time" id="custom-time-input"><button type="button" onclick="addCustomTime()">+ Add Time</button></span>';
+      html += `<button type="button" class="expand-btn" onclick="expandLater()" ${endHour >= 23 ? 'disabled' : ''}>+ Later (${formatTime24(endHour + 1)})</button>`;
+      html += '</div>';
+      
+      html += '<table class="time-grid"><thead><tr><th>Time</th>';
+      dates.forEach(d => {
+        html += `<th>${formatDateDisplay(d)}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+      
+      times.forEach(time => {
+        html += `<tr><td class="time-label">${time}</td>`;
+        dates.forEach(d => {
+          const key = `${d}|${time}`;
+          const isSelected = selectedSlots.has(key);
+          html += `<td class="time-cell ${isSelected ? 'selected' : ''}" data-key="${key}" onclick="toggleSlot('${key}')">${isSelected ? '✅' : ''}</td>`;
+        });
+        html += '</tr>';
+      });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+      updateHiddenInputs();
+    }
+    
+    window.toggleSlot = function(key) {
+      if (selectedSlots.has(key)) {
+        selectedSlots.delete(key);
+      } else {
+        selectedSlots.set(key, true);
+      }
+      renderTimeGrid();
+    };
+    
+    window.removeDate = removeDate;
+    window.expandEarlier = expandEarlier;
+    window.expandLater = expandLater;
+    window.addCustomTime = addCustomTime;
+    
+    function updateHiddenInputs() {
+      const container = document.getElementById('hidden-inputs');
+      let html = '';
+      
+      const sortedKeys = Array.from(selectedSlots.keys()).sort();
+      sortedKeys.forEach(key => {
+        const [date, time] = key.split('|');
+        html += `<input type="hidden" name="dates[]" value="${date}">`;
+        html += `<input type="hidden" name="times[]" value="${time}">`;
+      });
+      
+      container.innerHTML = html;
+      document.getElementById('create-btn').disabled = sortedKeys.length === 0;
+    }
+    
+    document.getElementById('add-date-btn').addEventListener('click', function() {
+      const input = document.getElementById('date-input');
+      const date = input.value;
+      if (date && !dates.includes(date)) {
+        dates.push(date);
+        dates.sort();
+        input.value = '';
+        renderDates();
+      }
+    });
+    
+    renderTimeGrid();
+  </script>
+</body>
+</html>

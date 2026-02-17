@@ -1,0 +1,71 @@
+<% const content = `
+  <main>
+    <h1>Share Files</h1>
+    <p class="hint">Upload one or more files to get a shareable link.</p>
+    
+    <form id="file-form" enctype="multipart/form-data">
+      <label for="file-input">Select Files</label>
+      <input type="file" name="files" id="file-input" multiple required>
+      
+      <div id="file-list" class="file-list"></div>
+      
+      <button type="submit">Upload & Share</button>
+    </form>
+    
+    <div id="result"></div>
+    <p><a href="/">Back to home</a></p>
+  </main>
+
+  <script>
+    const fileInput = document.getElementById('file-input');
+    const fileList = document.getElementById('file-list');
+    
+    fileInput.addEventListener('change', () => {
+      fileList.innerHTML = '';
+      const files = fileInput.files;
+      if (files.length > 0) {
+        const ul = document.createElement('ul');
+        for (const file of files) {
+          const li = document.createElement('li');
+          li.textContent = file.name + ' (' + formatSize(file.size) + ')';
+          ul.appendChild(li);
+        }
+        fileList.appendChild(ul);
+      }
+    });
+    
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    document.getElementById('file-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const resultDiv = document.getElementById('result');
+      const files = fileInput.files;
+      
+      if (files.length === 0) {
+        resultDiv.innerHTML = '<p style="color: red;">Please select at least one file.</p>';
+        return;
+      }
+
+      const formData = new FormData();
+      for (const file of files) {
+        formData.append('files', file);
+      }
+
+      try {
+        resultDiv.innerHTML = '<p>Uploading...</p>';
+        const response = await fetch('/files', {
+          method: 'POST',
+          body: formData
+        });
+        resultDiv.innerHTML = await response.text();
+      } catch (err) {
+        resultDiv.innerHTML = '<p style="color: red;">Upload failed: ' + err.message + '</p>';
+      }
+    });
+  </script>
+` %>
+<%- include('../layout', { content, title }) %>

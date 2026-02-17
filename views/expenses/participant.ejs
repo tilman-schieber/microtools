@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= expense.data.title %> - <%= currentParticipant %></title>
+  <link rel="stylesheet" href="/public/style.css">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+  <main>
+    <h1><%= expense.data.title %></h1>
+    <p>You are: <strong><%= currentParticipant %></strong></p>
+    
+    <div id="expense-container">
+      <%- include('_entries', { expense, currentParticipant, token }) %>
+    </div>
+  </main>
+</body>
+</html>

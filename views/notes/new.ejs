@@ -1,0 +1,17 @@
+<% const content = `
+  <main>
+    <h1>Create a Note</h1>
+    <form hx-post="/notes" hx-target="#result" hx-swap="innerHTML">
+      <label for="note-title">Title (optional)</label>
+      <input type="text" name="title" id="note-title" placeholder="Give your note a title...">
+      
+      <label for="note-text">Content</label>
+      <textarea name="text" id="note-text" rows="8" placeholder="Enter your note here... (Markdown supported)" required></textarea>
+      
+      <button type="submit">Create Note</button>
+    </form>
+    <div id="result"></div>
+    <p><a href="/">Back to home</a></p>
+  </main>
+` %>
+<%- include('../layout', { content, title }) %>
