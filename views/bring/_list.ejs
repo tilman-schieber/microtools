@@ -9,56 +9,53 @@ const id = bringlist.id;
 <% if (needed.length === 0) { %>
   <p>No items needed yet.</p>
 <% } else { %>
-  <table>
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th>Needed</th>
-        <th>Claimed</th>
-        <th>Remaining</th>
-        <th>Claim</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% needed.forEach((item, idx) => { 
-        const totalClaimed = (item.claims || []).reduce((sum, c) => sum + c.amount, 0);
-        const remaining = item.amount_needed - totalClaimed;
-      %>
-        <tr>
-          <td>
-            <strong><%= item.item %></strong>
-            <% if (item.claims && item.claims.length > 0) { %>
-              <ul class="claims-list">
-                <% item.claims.forEach(c => { %>
-                  <li><%= c.name %>: <%= c.amount %></li>
-                <% }); %>
-              </ul>
-            <% } %>
-          </td>
-          <td><%= item.amount_needed %></td>
-          <td><%= totalClaimed %></td>
-          <td class="<%= remaining > 0 ? 'needed' : 'complete' %>"><%= remaining %></td>
-          <td>
-            <% if (remaining > 0) { %>
-              <form hx-post="/b/<%= id %>/claim/<%= idx %>" hx-target="#bringlist-content" hx-swap="innerHTML" class="inline-form">
-                <input type="text" name="name" placeholder="Your name" required>
-                <input type="number" name="amount" min="1" max="<%= remaining %>" value="1" required>
-                <button type="submit">Claim</button>
-              </form>
-            <% } else { %>
-              <span class="complete-badge">Complete!</span>
-            <% } %>
-          </td>
-        </tr>
-      <% }); %>
-    </tbody>
-  </table>
+  <div class="bring-items">
+    <% needed.forEach((item, idx) => {
+      const totalClaimed = (item.claims || []).reduce((sum, c) => sum + c.amount, 0);
+      const remaining = item.amount_needed - totalClaimed;
+      const pct = Math.round((totalClaimed / item.amount_needed) * 100);
+      const isComplete = remaining <= 0;
+    %>
+      <div class="bring-card <%= isComplete ? 'bring-card--complete' : '' %>">
+        <div class="bring-card-header">
+          <span class="bring-card-name"><%= item.item %></span>
+          <% if (isComplete) { %>
+            <span class="complete-badge">Complete</span>
+          <% } else { %>
+            <span class="bring-card-count"><%= totalClaimed %> of <%= item.amount_needed %></span>
+          <% } %>
+        </div>
+
+        <div class="bring-progress">
+          <div class="bring-progress-bar" style="width: <%= pct %>%"></div>
+        </div>
+
+        <% if (item.claims && item.claims.length > 0) { %>
+          <div class="bring-claims">
+            <% item.claims.forEach(c => { %>
+              <span class="bring-claim-chip"><%= c.name %>: <%= c.amount %></span>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div class="bring-claims bring-claims--empty">No claims yet</div>
+        <% } %>
+
+        <% if (!isComplete) { %>
+          <form hx-post="/b/<%= id %>/claim/<%= idx %>" hx-target="#bringlist-content" hx-swap="innerHTML" class="bring-claim-form">
+            <input type="text" name="name" placeholder="Your name" required>
+            <input type="number" name="amount" min="1" max="<%= remaining %>" value="1" required>
+            <button type="submit">Claim</button>
+          </form>
+        <% } %>
+      </div>
+    <% }); %>
+  </div>
 <% } %>
 
 <h2>Extras</h2>
 <p class="hint">Bring something not on the list</p>
 
-<form hx-post="/b/<%= id %>/custom" hx-target="#bringlist-content" hx-swap="innerHTML" class="custom-form">
+<form hx-post="/b/<%= id %>/custom" hx-target="#bringlist-content" hx-swap="innerHTML" class="bring-custom-form">
   <input type="text" name="name" placeholder="Your name" required>
   <input type="text" name="item" placeholder="Item" required>
   <input type="number" name="amount" min="1" value="1" required>
@@ -66,22 +63,11 @@ const id = bringlist.id;
 </form>
 
 <% if (custom.length > 0) { %>
-  <table>
-    <thead>
-      <tr>
-        <th>Who</th>
-        <th>Item</th>
-        <th>Amount</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% custom.forEach(c => { %>
-        <tr>
-          <td><%= c.name %></td>
-          <td><%= c.item %></td>
-          <td><%= c.amount %></td>
-        </tr>
-      <% }); %>
-    </tbody>
-  </table>
+  <div class="bring-extras">
+    <% custom.forEach(c => { %>
+      <div class="bring-extra-chip">
+        <strong><%= c.name %></strong> brings <%= c.item %><% if (c.amount > 1) { %> &times; <%= c.amount %><% } %>
+      </div>
+    <% }); %>
+  </div>
 <% } %>

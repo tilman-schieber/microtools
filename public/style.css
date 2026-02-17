@@ -646,6 +646,8 @@ label {
 }
 
 /* Bring List (Potluck) Styles */
+
+/* -- Creation form -- */
 .item-row {
   display: flex;
   gap: 0.5rem;
@@ -666,75 +668,166 @@ label {
   font-size: 1rem;
 }
 
-.claims-list {
-  margin: 0.25rem 0 0 0;
-  padding-left: 1rem;
+/* -- Item cards -- */
+.bring-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bring-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+.bring-card--complete {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.bring-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.bring-card-name {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #222;
+}
+
+.bring-card-count {
   font-size: 0.85rem;
   color: #666;
-  list-style: disc;
+  white-space: nowrap;
 }
 
-.claims-list li {
-  margin: 0.1rem 0;
+/* -- Progress bar -- */
+.bring-progress {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.6rem;
 }
 
-.inline-form {
+.bring-progress-bar {
+  height: 100%;
+  background: #22c55e;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.bring-card--complete .bring-progress-bar {
+  background: #16a34a;
+}
+
+/* -- Claims -- */
+.bring-claims {
   display: flex;
-  gap: 0.25rem;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.bring-claims--empty {
+  color: #999;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.bring-claim-chip {
+  display: inline-block;
+  background: #f3f4f6;
+  color: #444;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.bring-card--complete .bring-claim-chip {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* -- Claim form (inside each card) -- */
+.bring-claim-form {
+  display: flex;
+  gap: 0.4rem;
   align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f0f0f0;
 }
 
-.inline-form input[type="text"] {
-  width: 80px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.85rem;
+.bring-claim-form input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
 }
 
-.inline-form input[type="number"] {
-  width: 50px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.85rem;
+.bring-claim-form input[type="number"] {
+  width: 56px;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
-.inline-form button {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.85rem;
+.bring-claim-form button {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.9rem;
+  margin-top: 0;
+  white-space: nowrap;
 }
 
-.custom-form {
+/* -- Complete badge -- */
+.complete-badge {
+  background: #22c55e;
+  color: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* -- Extras section -- */
+.bring-custom-form {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
   flex-wrap: wrap;
 }
 
-.custom-form input {
+.bring-custom-form input {
   padding: 0.5rem;
 }
 
-.custom-form input[type="text"] {
+.bring-custom-form input[type="text"] {
   flex: 1;
   min-width: 100px;
 }
 
-.custom-form input[type="number"] {
+.bring-custom-form input[type="number"] {
   width: 60px;
 }
 
-.complete-badge {
-  background: #22c55e;
-  color: white;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
+.bring-extras {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-td.needed {
-  color: #dc2626;
-  font-weight: bold;
-}
-
-td.complete {
-  color: #22c55e;
-  font-weight: bold;
+.bring-extra-chip {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  color: #444;
 }
