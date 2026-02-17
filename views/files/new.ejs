@@ -9,6 +9,14 @@
       
       <div id="file-list" class="file-list"></div>
       
+      <label for="expiry-select">Expires after</label>
+      <select id="expiry-select" name="expiry">
+        <option value="1">1 day</option>
+        <option value="3" selected>3 days</option>
+        <option value="7">7 days</option>
+        <option value="30">30 days</option>
+      </select>
+      
       <button type="submit">Upload & Share</button>
     </form>
     
@@ -51,6 +59,7 @@
       }
 
       const formData = new FormData();
+      formData.append('expiry', document.getElementById('expiry-select').value);
       for (const file of files) {
         formData.append('files', file);
       }

@@ -21,6 +21,14 @@ if (!fs.existsSync(FILES_DIR)) {
   fs.mkdirSync(FILES_DIR, { recursive: true });
 }
 
+/** Clean up orphaned file directory (e.g. after lazy expiration deletes the DB row). */
+function cleanupShareDir(shareId: string): void {
+  const shareDir = path.join(FILES_DIR, shareId);
+  if (fs.existsSync(shareDir)) {
+    fs.rmSync(shareDir, { recursive: true, force: true });
+  }
+}
+
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -226,11 +234,16 @@ async function start() {
     // Generate share ID upfront
     const shareId = crypto.randomBytes(8).toString('base64url');
     const shareDir = path.join(FILES_DIR, shareId);
+    let expiryDays = 3; // default
     
     try {
       fs.mkdirSync(shareDir, { recursive: true });
       
       for await (const part of parts) {
+        if (part.type === 'field' && part.fieldname === 'expiry') {
+          const val = parseInt(part.value as string, 10);
+          if ([1, 3, 7, 30].includes(val)) expiryDays = val;
+        }
         if (part.type === 'file' && part.filename) {
           const safeName = part.filename.replace(/[^a-zA-Z0-9._-]/g, '_');
           const filePath = path.join(shareDir, safeName);
@@ -253,16 +266,19 @@ async function start() {
         return reply.type('text/html').send('<p style="color: red;">No files uploaded.</p>');
       }
       
-      // Store metadata in objectStore
-      objectStore.createWithId(shareId, 'fileshare', { files: uploadedFiles });
+      // Store metadata in objectStore with expiration
+      const expiresAt = Date.now() + expiryDays * 24 * 60 * 60 * 1000;
+      objectStore.createWithId(shareId, 'fileshare', { files: uploadedFiles }, expiresAt);
       
       const protocol = request.headers['x-forwarded-proto'] || 'http';
       const host = request.headers.host;
       const shareUrl = `${protocol}://${host}/files/${shareId}`;
       
+      const expiryLabel = expiryDays === 1 ? '1 day' : `${expiryDays} days`;
       return reply.type('text/html').send(`
         <p>Files uploaded! Share this link:</p>
         <p><a href="${shareUrl}">${shareUrl}</a></p>
+        <p class="hint">Expires in ${expiryLabel}.</p>
       `);
     } catch (err) {
       // Clean up on error
@@ -279,6 +295,7 @@ async function start() {
     const share = objectStore.get(params.id);
 
     if (!share) {
+      cleanupShareDir(params.id);
       return reply.view('files/gone', { title: 'Files Not Found' });
     }
 
@@ -294,6 +311,7 @@ async function start() {
     const share = objectStore.get(params.id);
 
     if (!share) {
+      cleanupShareDir(params.id);
       return reply.status(404).send('Not found');
     }
 
@@ -319,6 +337,7 @@ async function start() {
     const share = objectStore.get(params.id);
 
     if (!share) {
+      cleanupShareDir(params.id);
       return reply.status(404).send('Not found');
     }
 
@@ -351,6 +370,7 @@ async function start() {
     const share = objectStore.get(params.id);
 
     if (!share) {
+      cleanupShareDir(params.id);
       return reply.type('text/html').send('<p>Share not found.</p>');
     }
 
@@ -785,6 +805,27 @@ async function start() {
   });
 
   const port = parseInt(process.env.PORT || "5000", 10);
+
+  // Periodic cleanup: purge expired objects and their files every hour
+  const CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
+  setInterval(() => {
+    try {
+      const purged = objectStore.purgeExpired();
+      for (const row of purged) {
+        if (row.type === 'fileshare') {
+          const shareDir = path.join(FILES_DIR, row.id);
+          if (fs.existsSync(shareDir)) {
+            fs.rmSync(shareDir, { recursive: true, force: true });
+          }
+        }
+      }
+      if (purged.length > 0) {
+        log(`cleanup: purged ${purged.length} expired object(s)`);
+      }
+    } catch (err) {
+      log(`cleanup error: ${(err as Error).message}`);
+    }
+  }, CLEANUP_INTERVAL);
 
   try {
     await fastify.listen({ port, host: '0.0.0.0' });

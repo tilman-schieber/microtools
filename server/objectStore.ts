@@ -54,6 +54,12 @@ export function get(id: string): StoredObject | null {
     return null;
   }
 
+  // Lazy expiration: treat as not found if expired
+  if (row.expires_at && row.expires_at < Date.now()) {
+    remove(id);
+    return null;
+  }
+
   return {
     id: row.id,
     type: row.type,
@@ -84,3 +90,19 @@ export function remove(id: string): boolean {
 }
 
 export { remove as deleteObject };
+
+/** Delete all rows whose expires_at is in the past. Returns the deleted rows (id + type) so callers can clean up associated files. */
+export function purgeExpired(): Array<{ id: string; type: string }> {
+  const now = Date.now();
+  const rows = db.prepare(
+    'SELECT id, type FROM objects WHERE expires_at IS NOT NULL AND expires_at < ?'
+  ).all(now) as Array<{ id: string; type: string }>;
+
+  if (rows.length > 0) {
+    db.prepare(
+      'DELETE FROM objects WHERE expires_at IS NOT NULL AND expires_at < ?'
+    ).run(now);
+  }
+
+  return rows;
+}

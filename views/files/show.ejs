@@ -2,6 +2,14 @@
 const fileList = share.data.files || [];
 const isSingle = fileList.length === 1;
 
+// Format expiration
+let expiryHtml = '';
+if (share.expires_at) {
+  const d = new Date(share.expires_at);
+  const formatted = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  expiryHtml = `<p class="hint">Expires on ${formatted}</p>`;
+}
+
 // Build file list HTML
 let fileListHtml = '';
 if (isSingle) {
@@ -38,6 +46,7 @@ const content = `
     <h1>Shared Files</h1>
     
     ${fileListHtml}
+    ${expiryHtml}
     
     <div class="file-actions">
       <button hx-delete="/files/${share.id}" hx-target="#delete-result" hx-swap="innerHTML" hx-confirm="Delete all shared files?">Delete Share</button>
