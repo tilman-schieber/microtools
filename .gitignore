@@ -3,3 +3,5 @@ dist
 data
 .DS_Store
 *.tar.gz
+public/htmx.min.js
+public/qrcode.min.js

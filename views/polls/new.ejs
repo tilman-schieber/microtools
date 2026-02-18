@@ -6,8 +6,8 @@
   <title><%= title %></title>
   <link rel="stylesheet" href="/public/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
-  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script src="/public/htmx.min.js"></script>
+  <script src="/public/qrcode.min.js"></script>
   <script>
     function renderQRCodes(root) {
       (root || document).querySelectorAll('.qrcode[data-url]').forEach(function(el) {

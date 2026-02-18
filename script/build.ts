@@ -1,5 +1,5 @@
-import { build as esbuild } from "esbuild";
-import { rm, readFile } from "fs/promises";
+import { build as esbuild, transform } from "esbuild";
+import { rm, readFile, copyFile, writeFile } from "fs/promises";
 
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
@@ -37,6 +37,18 @@ async function buildAll() {
     external: externals,
     logLevel: "info",
   });
+
+  // Copy client-side vendor scripts to public/
+  console.log("\nvendoring client scripts...");
+
+  await copyFile("node_modules/htmx.org/dist/htmx.min.js", "public/htmx.min.js");
+  console.log("  public/htmx.min.js");
+
+  // Minify qrcode-generator (ships unminified)
+  const qrSrc = await readFile("node_modules/qrcode-generator/qrcode.js", "utf-8");
+  const qrMinified = await transform(qrSrc, { minify: true });
+  await writeFile("public/qrcode.min.js", qrMinified.code);
+  console.log(`  public/qrcode.min.js (${(qrMinified.code.length / 1024).toFixed(1)}kb from ${(qrSrc.length / 1024).toFixed(1)}kb)`);
 }
 
 buildAll().catch((err) => {
