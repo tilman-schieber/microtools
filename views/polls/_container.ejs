@@ -19,6 +19,7 @@ function getVoteEmoji(vote) {
 %>
 <div id="poll-container">
   <h2>Responses</h2>
+  <div class="overflow-x-auto">
   <table class="poll-table">
     <thead>
       <tr>
@@ -43,6 +44,7 @@ function getVoteEmoji(vote) {
       <% } %>
     </tbody>
   </table>
+  </div>
   
   <h3>Add Your Response</h3>
   <form hx-post="/polls/<%= poll.id %>/responses" hx-target="#poll-container" hx-swap="outerHTML">
@@ -51,6 +53,7 @@ function getVoteEmoji(vote) {
     
     <p class="hint">Click cells to toggle: ✅ Yes, 🟡 Maybe, ❌ No</p>
     
+    <div class="overflow-x-auto">
     <table class="poll-table vote-grid">
       <thead>
         <tr>
@@ -70,6 +73,7 @@ function getVoteEmoji(vote) {
         </tr>
       </tbody>
     </table>
+    </div>
     
     <button type="submit">Submit Response</button>
   </form>

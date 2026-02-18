@@ -129,7 +129,7 @@
       html += `<button type="button" class="expand-btn" onclick="expandLater()" ${endHour >= 23 ? 'disabled' : ''}>+ Later (${formatTime24(endHour + 1)})</button>`;
       html += '</div>';
       
-      html += '<table class="time-grid"><thead><tr><th>Time</th>';
+      html += '<div class="overflow-x-auto"><table class="time-grid"><thead><tr><th>Time</th>';
       dates.forEach(d => {
         html += `<th>${formatDateDisplay(d)}</th>`;
       });
@@ -145,7 +145,7 @@
         html += '</tr>';
       });
       
-      html += '</tbody></table>';
+      html += '</tbody></table></div>';
       container.innerHTML = html;
       updateHiddenInputs();
     }

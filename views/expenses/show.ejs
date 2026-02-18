@@ -92,6 +92,7 @@ const settlements = simplifyDebts(balances);
     <% if (entries.length === 0) { %>
       <p>No expenses recorded yet.</p>
     <% } else { %>
+      <div class="overflow-x-auto">
       <table class="expense-table">
         <thead>
           <tr>
@@ -112,6 +113,7 @@ const settlements = simplifyDebts(balances);
           <% }); %>
         </tbody>
       </table>
+      </div>
     <% } %>
 
     <h2>Balances</h2>

@@ -94,6 +94,7 @@ button:hover {
 
 /* Forms */
 input[type="text"],
+input[type="number"],
 input[type="date"],
 input[type="time"],
 select {
@@ -105,6 +106,7 @@ select {
 }
 
 input[type="text"]:focus,
+input[type="number"]:focus,
 input[type="date"]:focus,
 input[type="time"]:focus,
 select:focus {
@@ -869,4 +871,135 @@ label {
   padding: 0.5rem 0.75rem;
   font-size: 0.9rem;
   color: #444;
+}
+
+/* Standalone form inputs full-width */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+select {
+  width: 100%;
+}
+
+.slot-row input,
+.participant-row input,
+.item-row input,
+.date-picker-row input,
+.bring-claim-form input,
+.bring-custom-form input,
+.custom-time-add input,
+.split-checkboxes input {
+  width: auto;
+}
+
+/* Overflow utility for wide tables */
+.overflow-x-auto {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Long URLs (e.g. secret links with #fragment) */
+#result a {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* Pre content horizontal scroll */
+.note-text {
+  overflow-x: auto;
+}
+
+/* ===== Mobile Responsive ===== */
+@media (max-width: 480px) {
+  body {
+    padding: 1rem 0.75rem;
+  }
+
+  h2 {
+    margin-top: 1.25rem;
+  }
+
+  /* Flex rows wrap */
+  .slot-row,
+  .participant-row,
+  .item-row,
+  .date-picker-row,
+  .note-links,
+  .bring-claim-form {
+    flex-wrap: wrap;
+  }
+
+  /* Full-width inputs in wrapped flex rows */
+  .slot-row input[type="text"],
+  .slot-row input[type="date"],
+  .slot-row input[type="time"],
+  .participant-row input[type="text"],
+  .item-row input[type="text"],
+  .item-row input[type="number"],
+  .date-picker-row input[type="date"] {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  /* Larger touch targets */
+  .date-chip button {
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .claim-delete-btn {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.85rem;
+  }
+
+  .delete-btn {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.85rem;
+  }
+
+  .time-cell {
+    height: 2.75rem;
+  }
+
+  /* Reduced card padding */
+  .bring-card {
+    padding: 0.75rem;
+  }
+
+  .tool-card {
+    padding: 1rem;
+  }
+
+  /* Font-size floors */
+  .time-grid {
+    font-size: 0.9rem;
+  }
+
+  .time-grid th {
+    font-size: 0.85rem;
+  }
+
+  .bring-claim-chip {
+    font-size: 0.85rem;
+  }
+
+  .complete-badge {
+    font-size: 0.8rem;
+  }
+
+  /* Time controls stacked */
+  .time-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .time-controls .expand-btn {
+    width: 100%;
+  }
 }
