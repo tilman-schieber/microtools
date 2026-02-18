@@ -1003,3 +1003,24 @@ select {
     width: 100%;
   }
 }
+
+/* QR Code */
+.qrcode {
+  margin: 0.75rem 0;
+}
+
+.qrcode svg {
+  max-width: 180px;
+  height: auto;
+}
+
+.qr-toggle-btn {
+  background: #6c757d;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.7rem;
+  margin-left: 0.5rem;
+}
+
+.qr-toggle-btn:hover {
+  background: #5a6268;
+}

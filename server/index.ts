@@ -123,6 +123,7 @@ async function start() {
       <p>Note created! Share this link:</p>
       <p><a href="${noteUrl}">${noteUrl}</a></p>
       <button class="copy-btn" onclick="navigator.clipboard.writeText('${noteUrl}');this.textContent='Copied!'">Copy link</button>
+      <div class="qrcode" data-url="${noteUrl}"></div>
     `);
   });
 
@@ -290,6 +291,7 @@ async function start() {
         <p>Files uploaded! Share this link:</p>
         <p><a href="${shareUrl}">${shareUrl}</a></p>
         <button class="copy-btn" onclick="navigator.clipboard.writeText('${shareUrl}');this.textContent='Copied!'">Copy link</button>
+        <div class="qrcode" data-url="${shareUrl}"></div>
         <p class="hint">Expires in ${expiryLabel}.</p>
       `);
     } catch (err) {
@@ -440,6 +442,7 @@ async function start() {
       <p>Poll created! Share this link:</p>
       <p><a href="${pollUrl}">${pollUrl}</a></p>
       <button class="copy-btn" onclick="navigator.clipboard.writeText('${pollUrl}');this.textContent='Copied!'">Copy link</button>
+      <div class="qrcode" data-url="${pollUrl}"></div>
     `);
   });
 
@@ -534,6 +537,7 @@ async function start() {
       <p>Expense share created!</p>
       <p><strong>Summary link:</strong> <a href="${summaryUrl}">${summaryUrl}</a></p>
       <button class="copy-btn" onclick="navigator.clipboard.writeText('${summaryUrl}');this.textContent='Copied!'">Copy link</button>
+      <div class="qrcode" data-url="${summaryUrl}"></div>
       <h3>Participant Links</h3>
       <ul>
     `;
@@ -541,7 +545,9 @@ async function start() {
     for (const p of participants) {
       const pUrl = `${protocol}://${host}/e/${expense.id}/p/${p.token}`;
       html += `<li><strong>${escapeHtml(p.name)}:</strong> <a href="${pUrl}">${pUrl}</a>
-        <button class="copy-btn" onclick="navigator.clipboard.writeText('${pUrl}');this.textContent='Copied!'">Copy</button></li>`;
+        <button class="copy-btn" onclick="navigator.clipboard.writeText('${pUrl}');this.textContent='Copied!'">Copy</button>
+        <button class="qr-toggle-btn" onclick="var d=this.nextElementSibling;d.style.display=d.style.display==='none'?'block':'none';if(d.style.display!=='none')renderQRCodes(d);">QR</button>
+        <div class="qrcode" data-url="${pUrl}" style="display:none"></div></li>`;
     }
     
     html += '</ul>';
@@ -728,6 +734,7 @@ async function start() {
       <p><strong>Share this link:</strong></p>
       <p><a href="${url}">${url}</a></p>
       <button class="copy-btn" onclick="navigator.clipboard.writeText('${url}');this.textContent='Copied!'">Copy link</button>
+      <div class="qrcode" data-url="${url}"></div>
     `);
   });
 

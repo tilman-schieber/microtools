@@ -7,11 +7,25 @@
   <link rel="stylesheet" href="/public/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script>
+    function renderQRCodes(root) {
+      (root || document).querySelectorAll('.qrcode[data-url]').forEach(function(el) {
+        if (el.dataset.rendered) return;
+        var qr = qrcode(0, 'M');
+        qr.addData(el.dataset.url);
+        qr.make();
+        el.innerHTML = qr.createSvgTag(3, 0);
+        el.dataset.rendered = '1';
+      });
+    }
+    document.addEventListener('DOMContentLoaded', function() { renderQRCodes(); });
+    document.addEventListener('htmx:afterSwap', function(e) { renderQRCodes(e.detail.target); });
+  </script>
 </head>
 <body>
   <main>
-    <h1>Create a Date Poll</h1>
-    <form id="poll-form" hx-post="/polls" hx-target="#result" hx-swap="innerHTML">
+    <h1>Create a Date Poll</h1>    <form id="poll-form" hx-post="/polls" hx-target="#result" hx-swap="innerHTML">
       <label for="title">Poll Title</label>
       <input type="text" name="title" id="title" placeholder="e.g., Team Meeting" required>
       
