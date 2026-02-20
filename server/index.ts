@@ -313,9 +313,14 @@ async function start() {
       return reply.view('files/gone', { title: 'Files Not Found' });
     }
 
+    const protocol = request.headers['x-forwarded-proto'] || 'http';
+    const host = request.headers.host;
+    const shareUrl = `${protocol}://${host}/files/${params.id}`;
+
     return reply.view('files/show', {
       title: 'Shared Files',
-      share
+      share,
+      shareUrl
     });
   });
 

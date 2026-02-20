@@ -56,6 +56,12 @@ const isSingle = fileList.length === 1;
       <p class="hint">Expires on <%= new Date(share.expires_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
     <% } %>
 
+    <div class="share-link">
+      <p>Share this link:</p>
+      <p><a href="<%= shareUrl %>"><%= shareUrl %></a></p>
+      <div class="qrcode" data-url="<%= shareUrl %>"></div>
+    </div>
+
     <div class="file-actions">
       <button hx-delete="/files/<%= share.id %>" hx-target="#delete-result" hx-swap="innerHTML" hx-confirm="Delete all shared files?">Delete Share</button>
       <div id="delete-result"></div>
