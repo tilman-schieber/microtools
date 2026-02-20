@@ -888,7 +888,7 @@ async function start() {
     return reply.view('bring/_list', { bringlist });
   });
 
-  const port = parseInt(process.env.PORT || "5000", 10);
+  const port = parseInt(process.env.PORT || "3459", 10);
 
   // Periodic cleanup: purge expired objects and their files every hour
   const CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
@@ -911,8 +911,10 @@ async function start() {
     }
   }, CLEANUP_INTERVAL);
 
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
+
   try {
-    await fastify.listen({ port, host: '0.0.0.0' });
+    await fastify.listen({ port, host });
     log(`serving on port ${port}`);
   } catch (err) {
     fastify.log.error(err);

@@ -34,7 +34,7 @@ npm install
 
 ```bash
 npm run dev
-# Server starts on port 5000 by default
+# Server starts on port 3459 by default
 # Override with: PORT=3000 npm run dev
 ```
 
@@ -53,7 +53,7 @@ The build script copies [htmx](https://htmx.org/) and [qrcode-generator](https:/
 
 | Variable   | Default | Description          |
 |------------|---------|----------------------|
-| `PORT`     | `5000`  | HTTP listen port     |
+| `PORT`     | `3459`  | HTTP listen port     |
 | `NODE_ENV` | —       | Set to `production` by the build script |
 
 ## Project structure
