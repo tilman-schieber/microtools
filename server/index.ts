@@ -92,6 +92,13 @@ async function start() {
     });
   });
 
+  // Passwords: Generator page
+  fastify.get('/passwords/new', async (request, reply) => {
+    return reply.view('passwords/new', {
+      title: 'Password Generator'
+    });
+  });
+
   // Notes: Create form page
   fastify.get('/notes/new', async (request, reply) => {
     return reply.view('notes/new', {

@@ -9,6 +9,7 @@ A self-hosted collection of simple, link-based web utilities. No accounts, no tr
 - **Expense Share** — Split costs in a group with per-participant links and settlement calculation
 - **One-Time Secret** — Client-side encrypted messages that self-destruct after one view
 - **File Share** — Upload files and share them via link, with configurable expiration
+- **Password Generator** — Local-only alphanumeric passwords and XKCD-style passphrases in English or German
 - **Potluck Planner** — Coordinate who brings what, with real-time claim tracking
 
 ## Stack
@@ -73,9 +74,12 @@ microtools/
 │   ├── expenses/         # Expense templates (show, participant, new, _entries partial)
 │   ├── secrets/          # Secret templates (show, gone, new)
 │   ├── files/            # File share templates (show, gone, new)
+│   ├── passwords/        # Password generator template
 │   └── bring/            # Potluck templates (show, new, _list partial)
 ├── public/
 │   ├── style.css         # All styles (single file, no build step)
+│   ├── password-words.js  # Vendored local word lists for the password generator
+│   ├── passwords.js      # Client-side password generator logic
 │   ├── htmx.min.js       # Vendored from node_modules (gitignored)
 │   └── qrcode.min.js     # Vendored from node_modules (gitignored)
 ├── script/

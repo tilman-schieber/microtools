@@ -1,0 +1,97 @@
+<% const content = `
+  <main class="password-tool">
+    <h1>Password Generator</h1>
+    <p class="tagline">Generates passwords locally in your browser. Nothing is sent to the server.</p>
+
+    <section class="password-output">
+      <label for="generated-password">Generated password</label>
+      <textarea id="generated-password" class="password-value" rows="3" readonly spellcheck="false"></textarea>
+
+      <div class="password-actions">
+        <button type="button" id="generate-password-btn">Generate</button>
+        <button type="button" id="copy-password-btn" class="copy-btn">Copy</button>
+      </div>
+
+      <p id="password-meta" class="hint"></p>
+      <p id="password-error" class="error" hidden></p>
+    </section>
+
+    <div class="password-tabs" role="tablist" aria-label="Password generator mode">
+      <button type="button" class="password-tab is-active" data-tab="alphanumeric" role="tab" aria-selected="true" aria-controls="password-panel-alphanumeric" id="password-tab-alphanumeric">Alphanumeric</button>
+      <button type="button" class="password-tab" data-tab="xkcd" role="tab" aria-selected="false" aria-controls="password-panel-xkcd" id="password-tab-xkcd">XKCD</button>
+    </div>
+
+    <section id="password-panel-alphanumeric" class="password-panel" data-panel="alphanumeric" role="tabpanel" aria-labelledby="password-tab-alphanumeric">
+      <h2>Alphanumeric</h2>
+
+      <div class="password-field password-length-field">
+        <label for="alpha-length">Length</label>
+        <div class="password-length-controls">
+          <input type="range" id="alpha-length-range" min="8" max="64" value="20">
+          <input type="number" id="alpha-length" min="8" max="64" value="20">
+        </div>
+      </div>
+
+      <div class="password-options-grid">
+        <fieldset class="password-fieldset">
+          <legend>Character sets</legend>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-lowercase" checked> Lowercase</label>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-uppercase" checked> Uppercase</label>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-digits" checked> Numbers</label>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-symbols"> Symbols</label>
+        </fieldset>
+
+        <fieldset class="password-fieldset">
+          <legend>Options</legend>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-avoid-ambiguous" checked> Avoid ambiguous characters</label>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-require-each" checked> Include every selected set</label>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-unique"> No repeated characters</label>
+        </fieldset>
+      </div>
+
+      <p class="hint">Symbols use a conservative set by default: <code>!#$%&amp;*+-=?@^_~</code></p>
+    </section>
+
+    <section id="password-panel-xkcd" class="password-panel" data-panel="xkcd" role="tabpanel" aria-labelledby="password-tab-xkcd" hidden>
+      <h2>XKCD Passphrase</h2>
+
+      <div class="password-options-grid">
+        <div class="password-field">
+          <label for="xkcd-language">Language</label>
+          <select id="xkcd-language">
+            <option value="en" selected>English</option>
+            <option value="de">Deutsch</option>
+          </select>
+        </div>
+
+        <div class="password-field">
+          <label for="xkcd-word-count">Words</label>
+          <input type="number" id="xkcd-word-count" min="3" max="8" value="5">
+        </div>
+
+        <div class="password-field">
+          <label for="xkcd-separator">Separator</label>
+          <select id="xkcd-separator">
+            <option value="-" selected>Hyphen</option>
+            <option value=" ">Space</option>
+            <option value=".">Dot</option>
+          </select>
+        </div>
+
+        <fieldset class="password-fieldset">
+          <legend>Options</legend>
+          <label class="checkbox-option"><input type="checkbox" id="xkcd-capitalize"> Capitalize words</label>
+          <label class="checkbox-option"><input type="checkbox" id="xkcd-unique" checked> Avoid repeated words</label>
+        </fieldset>
+      </div>
+
+      <p class="hint">Plain random words are intentional. Add more words for more entropy.</p>
+    </section>
+
+    <p><a href="/">Back to home</a></p>
+  </main>
+
+  <script src="/public/password-words.js"></script>
+  <script src="/public/passwords.js"></script>
+` %>
+<%- include('../layout', { content, title }) %>
