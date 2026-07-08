@@ -10,6 +10,7 @@ A self-hosted collection of simple, link-based web utilities. No accounts, no tr
 - **One-Time Secret** — Client-side encrypted messages that self-destruct after one view
 - **File Share** — Upload files and share them via link, with configurable expiration
 - **Password Generator** — Local-only alphanumeric passwords and XKCD-style passphrases in English or German
+- **Clock** — Parameter-based digital, Swiss railway analogue, and countdown clock displays; analogue mode adapts [Swiss-Railway-Clock](https://github.com/manuelmeister/Swiss-Railway-Clock) by Manuel Meister
 - **Potluck Planner** — Coordinate who brings what, with real-time claim tracking
 
 ## Stack
@@ -74,10 +75,13 @@ microtools/
 │   ├── expenses/         # Expense templates (show, participant, new, _entries partial)
 │   ├── secrets/          # Secret templates (show, gone, new)
 │   ├── files/            # File share templates (show, gone, new)
+│   ├── clock/            # Clock config + display templates
 │   ├── passwords/        # Password generator template
 │   └── bring/            # Potluck templates (show, new, _list partial)
 ├── public/
 │   ├── style.css         # All styles (single file, no build step)
+│   ├── clock-config.js   # Client-side clock link generator
+│   ├── clock-display.js  # Client-side clock renderer
 │   ├── password-words.js  # Vendored local word lists for the password generator
 │   ├── passwords.js      # Client-side password generator logic
 │   ├── htmx.min.js       # Vendored from node_modules (gitignored)

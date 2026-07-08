@@ -2,6 +2,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   font-family: system-ui, -apple-system, sans-serif;
   line-height: 1.6;
@@ -479,9 +483,21 @@ label {
 
 .tools-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.5rem;
   margin-top: 2rem;
+}
+
+@media (max-width: 900px) {
+  .tools-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .tools-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .tool-card {
@@ -1151,5 +1167,233 @@ select {
 
   .password-length-controls {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Clock tool */
+.clock-tool {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.clock-config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.clock-config-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.clock-duration-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.clock-open-link {
+  margin-top: 0;
+}
+
+.clock-display-page {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: #f4f1eb;
+  color: #171717;
+}
+
+.clock-screen {
+  min-height: 100vh;
+}
+
+.clock-layout {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.clock-layout--split {
+  gap: clamp(1.5rem, 5vw, 4rem);
+}
+
+.clock-layout--countdown-only {
+  justify-content: center;
+}
+
+.clock-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.digital-clock-display,
+.countdown-display {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: #171717;
+}
+
+.digital-clock-display {
+  font-size: clamp(3rem, 10vw, 8rem);
+}
+
+.countdown-display {
+  font-size: clamp(3rem, 9vw, 7rem);
+  text-align: center;
+}
+
+.countdown-panel {
+  transition: color 0.2s ease;
+}
+
+.countdown-panel--warn-third .countdown-display {
+  color: #8f6700;
+}
+
+.countdown-panel--warn-sixth .countdown-display {
+  color: #b25400;
+}
+
+.countdown-panel--warn-twelfth .countdown-display {
+  color: #98261b;
+}
+
+.analog-clock-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.clock-credit {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #555;
+  text-align: center;
+}
+
+.clock {
+  border-radius: 50%;
+  background: radial-gradient(#000, #000 0.1em, #fff 0.1em, #fff), #fff;
+  display: inline-block;
+  position: relative;
+  width: min(72vmin, 420px);
+  aspect-ratio: 1;
+}
+
+.clock::after {
+  background: #111;
+  border-radius: 50%;
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 4%;
+  height: 4%;
+  z-index: 12;
+}
+
+.clock.station {
+  background: #fff;
+  border: 10px solid #424242;
+  box-shadow: 0 0 1em rgba(0, 0, 0, 0.12) inset;
+}
+
+.swiss-clock-face {
+  position: absolute;
+  inset: 3.5%;
+}
+
+.clock.station .seconds::before {
+  background: red;
+  border-radius: 100%;
+  content: '';
+  position: absolute;
+  top: -15%;
+  left: -342%;
+  height: 23.98765%;
+  width: 800%;
+}
+
+.hours-container,
+.minutes-container,
+.seconds-container {
+  position: absolute;
+  inset: 0;
+}
+
+.seconds {
+  background: red;
+  width: 1.25%;
+  height: 42%;
+  position: absolute;
+  left: 49.39%;
+  top: 20%;
+  transform-origin: 50% 71%;
+  z-index: 8;
+}
+
+.minutes {
+  background: #000;
+  width: 4.2%;
+  height: 55%;
+  position: absolute;
+  left: 48.1%;
+  top: 6.95%;
+  transform-origin: 50% 78.5%;
+  z-index: 6;
+}
+
+.hours {
+  background: #000;
+  width: 3.5%;
+  height: 40%;
+  position: absolute;
+  left: 48.25%;
+  top: 22%;
+  transform-origin: 50% 71%;
+  z-index: 5;
+}
+
+.clock--hide-seconds .seconds-container {
+  display: none;
+}
+
+.clock-screen-error {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+@media (max-width: 720px) {
+  .clock-duration-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .clock-layout--split {
+    flex-direction: column;
+  }
+
+  .digital-clock-display,
+  .countdown-display {
+    font-size: clamp(2.6rem, 15vw, 5rem);
   }
 }

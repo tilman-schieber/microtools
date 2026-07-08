@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/public/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
+</head>
+<body class="clock-display-page">
+  <main class="clock-screen">
+    <div id="clock-layout" class="clock-layout" hidden>
+      <section id="clock-panel" class="clock-panel" hidden>
+        <div id="digital-clock" class="digital-clock-display" hidden></div>
+
+        <div id="analog-clock" class="analog-clock-panel" hidden>
+          <div id="swiss-clock" class="clock station" aria-label="Swiss railway clock" role="img">
+            <svg id="swiss-clock-face" class="swiss-clock-face" viewBox="0 0 100 100" aria-hidden="true"></svg>
+            <div id="hours-container" class="hours-container"><div class="hours"></div></div>
+            <div id="minutes-container" class="minutes-container"><div class="minutes"></div></div>
+            <div id="seconds-container" class="seconds-container"><div class="seconds"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="countdown-panel" class="clock-panel countdown-panel" hidden>
+        <div id="countdown-display" class="countdown-display"></div>
+      </section>
+    </div>
+
+    <p id="clock-screen-error" class="error clock-screen-error" hidden></p>
+  </main>
+
+  <script src="/public/clock-display.js"></script>
+</body>
+</html>

@@ -99,6 +99,20 @@ async function start() {
     });
   });
 
+  // Clock: Configuration page
+  fastify.get('/clock/new', async (request, reply) => {
+    return reply.view('clock/new', {
+      title: 'Clock'
+    });
+  });
+
+  // Clock: Display page configured entirely by URL params
+  fastify.get('/clock', async (request, reply) => {
+    return reply.view('clock/show', {
+      title: 'Clock'
+    });
+  });
+
   // Notes: Create form page
   fastify.get('/notes/new', async (request, reply) => {
     return reply.view('notes/new', {
