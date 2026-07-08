@@ -85,30 +85,31 @@
       return node;
     }
 
-    append('circle', { cx: '50', cy: '50', r: '47.5', fill: '#fff', stroke: '#3f3f3f', 'stroke-width': '3.5' });
+    append('circle', { cx: '50', cy: '50', r: '48.4', fill: '#fff', stroke: '#4a4a4a', 'stroke-width': '1.6' });
 
     for (let tick = 0; tick < 60; tick += 1) {
-      const angle = (Math.PI * 2 * tick) / 60;
+      const angle = (360 * tick) / 60;
       const major = tick % 5 === 0;
-      const inner = major ? 11 : 7.5;
-      const outer = 2.8;
-      const x1 = 50 + Math.sin(angle) * (50 - inner);
-      const y1 = 50 - Math.cos(angle) * (50 - inner);
-      const x2 = 50 + Math.sin(angle) * (50 - outer);
-      const y2 = 50 - Math.cos(angle) * (50 - outer);
-
-      append('line', {
-        x1: x1.toFixed(2),
-        y1: y1.toFixed(2),
-        x2: x2.toFixed(2),
-        y2: y2.toFixed(2),
-        stroke: '#111',
-        'stroke-width': major ? '1.9' : '0.8',
-        'stroke-linecap': 'round'
-      });
+      if (major) {
+        append('rect', {
+          x: '47.8',
+          y: '4.9',
+          width: '4.4',
+          height: '13.2',
+          fill: '#000',
+          transform: 'rotate(' + angle + ' 50 50)'
+        });
+      } else {
+        append('rect', {
+          x: '49.15',
+          y: '5.2',
+          width: '1.7',
+          height: '7.8',
+          fill: '#000',
+          transform: 'rotate(' + angle + ' 50 50)'
+        });
+      }
     }
-
-    append('circle', { cx: '50', cy: '50', r: '1.8', fill: '#111' });
   }
 
   function clearAnalogTimers() {
