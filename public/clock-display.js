@@ -18,7 +18,6 @@
   const minutesContainer = document.getElementById('minutes-container');
   const secondsContainer = document.getElementById('seconds-container');
   const swissClock = document.getElementById('swiss-clock');
-  const swissClockFace = document.getElementById('swiss-clock-face');
 
   let analogSecondAnimation = null;
   let analogMinuteTimeout = null;
@@ -71,45 +70,6 @@
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     return String(hours).padStart(2, '0') + ':' + pad(minutes);
-  }
-
-  function buildSwissClockFace() {
-    const svgNS = 'http://www.w3.org/2000/svg';
-
-    function append(name, attributes) {
-      const node = document.createElementNS(svgNS, name);
-      for (const [key, value] of Object.entries(attributes)) {
-        node.setAttribute(key, value);
-      }
-      swissClockFace.appendChild(node);
-      return node;
-    }
-
-    append('circle', { cx: '50', cy: '50', r: '48.4', fill: '#fff', stroke: '#4a4a4a', 'stroke-width': '1.6' });
-
-    for (let tick = 0; tick < 60; tick += 1) {
-      const angle = (360 * tick) / 60;
-      const major = tick % 5 === 0;
-      if (major) {
-        append('rect', {
-          x: '47.8',
-          y: '4.9',
-          width: '4.4',
-          height: '13.2',
-          fill: '#000',
-          transform: 'rotate(' + angle + ' 50 50)'
-        });
-      } else {
-        append('rect', {
-          x: '49.15',
-          y: '5.2',
-          width: '1.7',
-          height: '7.8',
-          fill: '#000',
-          transform: 'rotate(' + angle + ' 50 50)'
-        });
-      }
-    }
   }
 
   function clearAnalogTimers() {
@@ -246,17 +206,18 @@
 
   let countdownDeadline = null;
   let countdownTotalDuration = null;
+  let countdownStartsAt = null;
   if (countdownEnabled) {
     if (durationSeconds === null || startedAt === null || durationSeconds <= 0) {
       setError('Countdown parameters are missing or invalid.');
       return;
     }
     countdownTotalDuration = durationSeconds * 1000;
+    countdownStartsAt = startedAt;
     countdownDeadline = startedAt + countdownTotalDuration;
   }
 
   if (type === 'analog') {
-    buildSwissClockFace();
     analogClock.hidden = false;
     digitalClock.hidden = true;
     swissClock.classList.toggle('clock--hide-seconds', !clockShowSeconds);
@@ -298,11 +259,12 @@
       digitalClock.textContent = formatDigitalTime(now, clockShowSeconds);
     }
     if (countdownEnabled) {
-      const remaining = Math.max(0, countdownDeadline - now.getTime());
+      const hasStarted = now.getTime() >= countdownStartsAt;
+      const remaining = hasStarted ? Math.max(0, countdownDeadline - now.getTime()) : countdownTotalDuration;
       countdownDisplay.textContent = formatCountdown(remaining, countdownShowSeconds);
 
       countdownPanel.classList.remove('countdown-panel--warn-third', 'countdown-panel--warn-sixth', 'countdown-panel--warn-twelfth');
-      if (countdownColor && countdownTotalDuration > 0) {
+      if (countdownColor && countdownTotalDuration > 0 && hasStarted) {
         if (remaining <= countdownTotalDuration / 12) {
           countdownPanel.classList.add('countdown-panel--warn-twelfth');
         } else if (remaining <= countdownTotalDuration / 6) {

@@ -15,6 +15,7 @@
   const countdownHours = document.getElementById('countdown-hours');
   const countdownMinutes = document.getElementById('countdown-minutes');
   const countdownSecondsInput = document.getElementById('countdown-seconds-input');
+  const countdownStart = document.getElementById('countdown-start');
   const countdownShowSeconds = document.getElementById('countdown-show-seconds');
   const countdownColor = document.getElementById('countdown-color');
 
@@ -41,6 +42,15 @@
     return Number.isFinite(value) && value >= 0 ? value : fallback;
   }
 
+  function parseStartTime() {
+    if (!countdownStart.value) {
+      return Date.now();
+    }
+
+    const timestamp = new Date(countdownStart.value).getTime();
+    return Number.isFinite(timestamp) ? timestamp : null;
+  }
+
   function generateLink() {
     const type = clockType.value;
     const showClock = type !== 'none';
@@ -60,15 +70,21 @@
       const minutes = Math.min(59, parseNumber(countdownMinutes, 0));
       const seconds = Math.min(59, parseNumber(countdownSecondsInput, 0));
       const durationSeconds = hours * 3600 + minutes * 60 + seconds;
+      const startTime = parseStartTime();
 
       if (durationSeconds <= 0) {
         setError('Countdown duration must be at least one second.');
         return;
       }
 
+      if (startTime === null) {
+        setError('Start time is invalid.');
+        return;
+      }
+
       url.searchParams.set('countdown', '1');
       url.searchParams.set('duration', String(durationSeconds));
-      url.searchParams.set('started', String(Date.now()));
+      url.searchParams.set('started', String(startTime));
       url.searchParams.set('countdownSeconds', countdownShowSeconds.checked ? '1' : '0');
       url.searchParams.set('countdownColor', countdownColor.checked ? '1' : '0');
     }
@@ -77,7 +93,7 @@
     linkOutput.value = href;
     openLink.href = href;
     openLink.hidden = false;
-    meta.textContent = showCountdown ? 'This link starts counting down from the moment it was generated.' : 'This link is fully configured by its query parameters.';
+    meta.textContent = showCountdown ? 'This link waits until the configured start time, then begins counting down.' : 'This link is fully configured by its query parameters.';
     setError('');
   }
 

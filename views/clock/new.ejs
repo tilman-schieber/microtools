@@ -41,9 +41,14 @@
             </div>
           </div>
 
+          <div class="password-field">
+            <label for="countdown-start">Start time</label>
+            <input type="datetime-local" id="countdown-start">
+          </div>
+
           <label class="checkbox-option"><input type="checkbox" id="countdown-show-seconds"> Show seconds</label>
           <label class="checkbox-option"><input type="checkbox" id="countdown-color" checked> Enable warning colors</label>
-          <p class="hint">Warning colors switch to yellow, orange, and red during the last 1/3, 1/6, and 1/12 of the countdown.</p>
+          <p class="hint">If no start time is set, the countdown starts immediately. Warning colors switch to yellow, orange, and red during the last 1/3, 1/6, and 1/12 of the countdown.</p>
         </fieldset>
       </div>
 
@@ -58,7 +63,7 @@
 
       <div class="password-actions">
         <button type="button" id="clock-copy-link-btn" class="copy-btn">Copy</button>
-        <a id="clock-open-link" class="download-btn clock-open-link" href="#" hidden>Open Clock</a>
+        <a id="clock-open-link" class="download-btn clock-open-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Open Clock</a>
       </div>
 
       <p id="clock-config-meta" class="hint">Generate a link to freeze the countdown start time.</p>

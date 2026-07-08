@@ -1287,20 +1287,22 @@ select {
 
 .clock {
   border-radius: 50%;
-  background: #fff;
+  background: radial-gradient(#000, #000 0.1em, #fff 0.1em, #fff), #fff;
   display: inline-block;
   position: relative;
   width: min(72vmin, 420px);
   aspect-ratio: 1;
 }
 
-.clock.station {
-  background: #fff;
+.clock::after {
+  display: none;
 }
 
-.swiss-clock-face {
-  position: absolute;
-  inset: 0;
+.clock.station {
+  background: #fff url('/public/station_clock.svg') no-repeat center;
+  background-size: 95%;
+  border: 10px solid #424242;
+  box-shadow: 0 0 1em rgba(0, 0, 0, 0.2) inset;
 }
 
 .clock.station .seconds::before {
@@ -1308,11 +1310,10 @@ select {
   border-radius: 100%;
   content: '';
   position: absolute;
-  top: -18%;
-  left: -256%;
-  height: 28%;
-  width: 620%;
-  z-index: 11;
+  top: -15%;
+  left: -342%;
+  height: 23.98765%;
+  width: 800%;
 }
 
 .hours-container,
@@ -1336,35 +1337,32 @@ select {
 
 .seconds {
   background: red;
-  width: 1.2%;
-  height: 46%;
+  width: 1.25%;
+  height: 42%;
   position: absolute;
-  left: 49.4%;
-  top: 14.5%;
-  transform-origin: 50% 76.5%;
-  z-index: 11;
+  left: 49.39%;
+  top: 20%;
+  transform-origin: 50% 71%;
 }
 
 .minutes {
   background: #000;
-  width: 3.9%;
-  height: 52%;
+  width: 4.2%;
+  height: 55%;
   position: absolute;
-  left: 48.05%;
-  top: 12.5%;
-  transform-origin: 50% 72.5%;
-  z-index: 6;
+  left: 48.1%;
+  top: 6.95%;
+  transform-origin: 50% 78.5%;
 }
 
 .hours {
   background: #000;
-  width: 3.8%;
-  height: 34%;
+  width: 3.5%;
+  height: 40%;
   position: absolute;
-  left: 48.1%;
-  top: 26%;
-  transform-origin: 50% 70%;
-  z-index: 5;
+  left: 48.25%;
+  top: 22%;
+  transform-origin: 50% 71%;
 }
 
 .clock--hide-seconds .seconds-container {
