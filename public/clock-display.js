@@ -1,5 +1,6 @@
 (function () {
   const swissTravelDuration = 58500;
+  const swissMinuteJumpDuration = 300;
   const degreePerMinute = 360 / 60;
   const degreePerHour = 360 / 12;
   const degreePerHourInMinutes = degreePerHour / 60;
@@ -93,17 +94,21 @@
     minutesContainer.style.transform = 'rotate(' + (value * degreePerMinute) + 'deg)';
   }
 
-  function animateSwissMinute(initialMinute, newMinute) {
+  function animateSwissMinute(initialMinute, newMinute, progressMs) {
     const finishAtZero = newMinute === 60;
     const animation = minutesContainer.animate([
       { transform: 'rotate(' + (initialMinute * degreePerMinute) + 'deg)' },
       { transform: 'rotate(' + (newMinute * degreePerMinute) + 'deg)' }
     ], {
-      duration: 300,
+      duration: swissMinuteJumpDuration,
       iterations: 1,
       easing: 'cubic-bezier(1, 2.52, 0.71, 0.6)',
       fill: finishAtZero ? 'forwards' : 'both'
     });
+
+    if (typeof progressMs === 'number' && progressMs > 0) {
+      animation.currentTime = Math.min(progressMs, swissMinuteJumpDuration);
+    }
 
     if (finishAtZero) {
       animation.finished.then(function () {
@@ -169,9 +174,24 @@
 
     const dateNow = new Date();
     const elapsed = dateNow.getSeconds() * 1000 + dateNow.getMilliseconds();
+    const currentMinute = dateNow.getMinutes();
 
-    setSwissHour(dateNow.getHours(), dateNow.getMinutes());
-    setSwissMinute(dateNow.getMinutes());
+    setSwissHour(dateNow.getHours(), currentMinute);
+
+    if (elapsed < swissMinuteJumpDuration) {
+      const previousMinute = currentMinute === 0 ? 59 : currentMinute - 1;
+      animateSwissMinute(previousMinute, currentMinute === 0 ? 60 : currentMinute, elapsed);
+
+      if (!clockShowSeconds) {
+        analogMinuteTimeout = window.setTimeout(startSwissClock, 60000 - elapsed);
+        return;
+      }
+
+      runSwissSecondAnimation(elapsed / swissTravelDuration, (swissTravelDuration - elapsed) / swissTravelDuration);
+      return;
+    }
+
+    setSwissMinute(currentMinute);
 
     if (!clockShowSeconds) {
       analogMinuteTimeout = window.setTimeout(startSwissClock, 60000 - elapsed);
@@ -240,24 +260,11 @@
 
   layout.hidden = false;
 
-  document.addEventListener('visibilitychange', function () {
-    if (type !== 'analog') {
-      return;
-    }
-
-    if (document.hidden) {
-      clearAnalogTimers();
-    } else {
-      startSwissClock();
-    }
-  });
-
-  function update() {
-    const now = new Date();
-
+  function render(now) {
     if (type === 'digital') {
       digitalClock.textContent = formatDigitalTime(now, clockShowSeconds);
     }
+
     if (countdownEnabled) {
       const hasStarted = now.getTime() >= countdownStartsAt;
       const remaining = hasStarted ? Math.max(0, countdownDeadline - now.getTime()) : countdownTotalDuration;
@@ -274,6 +281,32 @@
         }
       }
     }
+  }
+
+  function syncToCurrentTime() {
+    const now = new Date();
+    render(now);
+
+    if (type === 'analog' && !document.hidden) {
+      startSwissClock();
+    }
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      if (type === 'analog') {
+        clearAnalogTimers();
+      }
+      return;
+    }
+
+    syncToCurrentTime();
+  });
+
+  window.addEventListener('focus', syncToCurrentTime);
+
+  function update() {
+    render(new Date());
 
     window.requestAnimationFrame(update);
   }
