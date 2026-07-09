@@ -16,6 +16,12 @@ body {
   color: #333;
 }
 
+body.landing-page {
+  max-width: 1280px;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
 h1 {
   color: #222;
   margin-bottom: 0.5rem;
@@ -473,6 +479,8 @@ label {
 /* Landing page */
 .landing {
   text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .tagline {
@@ -486,6 +494,7 @@ label {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.5rem;
   margin-top: 2rem;
+  align-items: stretch;
 }
 
 @media (max-width: 900px) {
@@ -509,6 +518,7 @@ label {
   text-decoration: none;
   color: inherit;
   transition: transform 0.15s, box-shadow 0.15s;
+  height: 100%;
 }
 
 .tool-card:hover {
