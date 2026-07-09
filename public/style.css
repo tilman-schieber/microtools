@@ -1217,11 +1217,11 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1rem;
 }
 
 .clock-layout--split {
-  gap: clamp(1.5rem, 5vw, 4rem);
+  gap: clamp(2.75rem, 8vw, 6rem);
 }
 
 .clock-layout--countdown-only {
@@ -1247,11 +1247,11 @@ select {
 }
 
 .digital-clock-display {
-  font-size: clamp(3rem, 10vw, 8rem);
+  font-size: clamp(3.5rem, 11vw, 9rem);
 }
 
 .countdown-display {
-  font-size: clamp(3rem, 9vw, 7rem);
+  font-size: clamp(3.35rem, 10vw, 8rem);
   text-align: center;
 }
 
@@ -1290,7 +1290,7 @@ select {
   background: radial-gradient(#000, #000 0.1em, #fff 0.1em, #fff), #fff;
   display: inline-block;
   position: relative;
-  width: min(72vmin, 420px);
+  width: min(78vmin, 500px);
   aspect-ratio: 1;
 }
 
@@ -1390,6 +1390,6 @@ select {
 
   .digital-clock-display,
   .countdown-display {
-    font-size: clamp(2.6rem, 15vw, 5rem);
+    font-size: clamp(3rem, 15vw, 5.5rem);
   }
 }

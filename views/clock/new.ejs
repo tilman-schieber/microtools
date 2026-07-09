@@ -43,7 +43,7 @@
 
           <div class="password-field">
             <label for="countdown-start">Start time</label>
-            <input type="datetime-local" id="countdown-start">
+            <input type="time" id="countdown-start">
           </div>
 
           <label class="checkbox-option"><input type="checkbox" id="countdown-show-seconds"> Show seconds</label>
@@ -52,9 +52,6 @@
         </fieldset>
       </div>
 
-      <div class="clock-config-actions">
-        <button type="button" id="clock-generate-link-btn">Generate Link</button>
-      </div>
     </form>
 
     <section class="password-output" id="clock-link-section">
@@ -66,7 +63,7 @@
         <a id="clock-open-link" class="download-btn clock-open-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Open Clock</a>
       </div>
 
-      <p id="clock-config-meta" class="hint">Generate a link to freeze the countdown start time.</p>
+      <p id="clock-config-meta" class="hint">The link updates automatically as you change the settings.</p>
       <p id="clock-config-error" class="error" hidden></p>
     </section>
 

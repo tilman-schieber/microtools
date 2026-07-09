@@ -6,7 +6,6 @@
   const openLink = document.getElementById('clock-open-link');
   const error = document.getElementById('clock-config-error');
   const meta = document.getElementById('clock-config-meta');
-  const generateButton = document.getElementById('clock-generate-link-btn');
   const copyButton = document.getElementById('clock-copy-link-btn');
 
   const clockType = document.getElementById('clock-type');
@@ -29,14 +28,6 @@
     }
   }
 
-  function clearGeneratedLink() {
-    linkOutput.value = '';
-    openLink.hidden = true;
-    openLink.removeAttribute('href');
-    meta.textContent = 'Generate a link to freeze the countdown start time.';
-    setError('');
-  }
-
   function parseNumber(input, fallback) {
     const value = Number(input.value);
     return Number.isFinite(value) && value >= 0 ? value : fallback;
@@ -47,7 +38,20 @@
       return Date.now();
     }
 
-    const timestamp = new Date(countdownStart.value).getTime();
+    const parts = countdownStart.value.split(':');
+    if (parts.length < 2) {
+      return null;
+    }
+
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+    if (!Number.isInteger(hours) || !Number.isInteger(minutes)) {
+      return null;
+    }
+
+    const start = new Date();
+    start.setHours(hours, minutes, 0, 0);
+    const timestamp = start.getTime();
     return Number.isFinite(timestamp) ? timestamp : null;
   }
 
@@ -57,6 +61,10 @@
     const showCountdown = countdownEnabled.checked;
 
     if (!showClock && !showCountdown) {
+      linkOutput.value = '';
+      openLink.hidden = true;
+      openLink.removeAttribute('href');
+      meta.textContent = 'Choose a clock or enable a countdown.';
       setError('Choose a clock or enable a countdown.');
       return;
     }
@@ -73,11 +81,17 @@
       const startTime = parseStartTime();
 
       if (durationSeconds <= 0) {
+        linkOutput.value = '';
+        openLink.hidden = true;
+        openLink.removeAttribute('href');
         setError('Countdown duration must be at least one second.');
         return;
       }
 
       if (startTime === null) {
+        linkOutput.value = '';
+        openLink.hidden = true;
+        openLink.removeAttribute('href');
         setError('Start time is invalid.');
         return;
       }
@@ -97,11 +111,9 @@
     setError('');
   }
 
-  generateButton.addEventListener('click', generateLink);
-
   copyButton.addEventListener('click', async function () {
     if (!linkOutput.value) {
-      setError('Generate a link first.');
+      setError('There is no valid link to copy yet.');
       return;
     }
 
@@ -118,9 +130,9 @@
   });
 
   for (const element of form.querySelectorAll('input, select')) {
-    element.addEventListener('input', clearGeneratedLink);
-    element.addEventListener('change', clearGeneratedLink);
+    element.addEventListener('input', generateLink);
+    element.addEventListener('change', generateLink);
   }
 
-  clearGeneratedLink();
+  generateLink();
 })();
