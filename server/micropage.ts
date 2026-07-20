@@ -190,6 +190,38 @@ function el(tag: string, cls: string, content: string): string {
   return content.trim() ? `<${tag} class="${cls}">${inline(content)}</${tag}>` : '';
 }
 
+export const WIFI_SECURITY = ['WPA', 'WEP', 'none'];
+
+/**
+ * The WIFI: payload a phone camera reads to offer joining a network.
+ *
+ *   WIFI:T:WPA;S:My Network;P:secret;;
+ *
+ * Backslash-escaping is required for \ ; , : and " inside the values, otherwise
+ * an SSID containing a semicolon truncates the payload and the code silently
+ * encodes the wrong network. An open network omits the P field entirely.
+ */
+export function wifiPayload(ssid: string, password: string, type: string): string {
+  const esc = (v: string) => v.replace(/([\\;,:"])/g, '\\$1');
+  const pass = type === 'nopass' ? '' : `P:${esc(password)};`;
+  return `WIFI:T:${type};S:${esc(ssid)};${pass};`;
+}
+
+/**
+ * Three arcs and a dot. Stroked with currentColor and sized in em so it inherits
+ * whatever the theme sets, rather than carrying colours of its own.
+ */
+function wifiIcon(): string {
+  return `
+      <svg class="mp-wifi-icon" viewBox="0 0 24 24" role="img" aria-label="Wi-Fi"
+           fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
+        <path d="M1.6 8.9a15 15 0 0 1 20.8 0"/>
+        <path d="M5.2 12.9a10 10 0 0 1 13.6 0"/>
+        <path d="M8.7 16.7a5.2 5.2 0 0 1 6.6 0"/>
+        <circle cx="12" cy="20.4" r="1.35" fill="currentColor" stroke="none"/>
+      </svg>`;
+}
+
 /** Widest bucket the sign stylesheet defines; longer text simply renders smaller. */
 export const SIGN_MAX_WIDTH = 44;
 
@@ -293,6 +325,60 @@ export const TEMPLATES: TemplateDef[] = [
       <section class="mp-sign">
         <div class="mp-sign-text mp-sign-text--w${signWidthBucket(text)}">${inline(text)}</div>
         ${el('p', 'mp-sign-note', note)}
+      </section>`;
+    }
+  },
+  {
+    code: 'twf',
+    name: 'WiFi',
+    description: 'A network name, password, and a QR code that joins the network when scanned.',
+    slots: [
+      { name: 'network', kind: 'inline', description: 'The SSID, exactly as broadcast' },
+      { name: 'password', kind: 'inline', description: 'The passphrase; leave empty for an open network' },
+      { name: 'security', kind: 'enum', description: 'Encryption', values: WIFI_SECURITY }
+    ],
+    example: 'twf.cl.asky~Guest WiFi~hunter2hunter2~WPA',
+    render: (s) => {
+      const ssid = (s[0] ?? '').trim();
+      const password = (s[1] ?? '').trim();
+      const chosen = (s[2] ?? '').trim();
+      const security = WIFI_SECURITY.includes(chosen) ? chosen : (password ? 'WPA' : 'none');
+
+      if (!ssid) {
+        return `<section class="mp-wifi">${wifiIcon()}
+          <p class="mp-lede">Add a network name to generate a join code.</p></section>`;
+      }
+
+      const type = security === 'none' ? 'nopass' : security;
+      const payload = wifiPayload(ssid, password, type);
+
+      let svg: string;
+      try {
+        const qr = qrcode(0, 'M');
+        qr.addData(payload);
+        qr.make();
+        svg = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+      } catch {
+        throw new SpecError(
+          'That network name and password are too long for a QR code.',
+          'Shorten them, or drop the password and share it separately.'
+        );
+      }
+
+      const rows = [
+        `<div><dt>Network</dt><dd class="mp-wifi-value">${escapeAttr(ssid)}</dd></div>`,
+        type === 'nopass'
+          ? `<div><dt>Password</dt><dd class="mp-wifi-value">None — open network</dd></div>`
+          : `<div><dt>Password</dt><dd class="mp-wifi-value">${escapeAttr(password)}</dd></div>`
+      ].join('');
+
+      return `
+      <section class="mp-wifi">
+        ${wifiIcon()}
+        <h1 class="mp-title">${inline(ssid)}</h1>
+        <div class="mp-qr-frame">${svg}</div>
+        <p class="mp-wifi-hint">Point a camera at the code to join</p>
+        <dl class="mp-wifi-details">${rows}</dl>
       </section>`;
     }
   },

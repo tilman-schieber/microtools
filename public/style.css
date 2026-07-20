@@ -1829,6 +1829,62 @@ select {
 .mp-sign-text--w43 { --sign-w: 43; }
 .mp-sign-text--w44 { --sign-w: 44; }
 
+/* -- WiFi -- */
+.mp-wifi { text-align: center; }
+
+.mp-wifi-icon {
+  /* currentColor + em sizing, so the icon takes the theme's accent and scale
+     rather than carrying any colour of its own */
+  color: var(--mp-link);
+  width: clamp(3rem, 9vw, 5rem);
+  height: auto;
+  display: block;
+  margin: 0 auto 1.25rem;
+}
+
+.mp-wifi .mp-title { margin-bottom: 0; }
+.mp-wifi .mp-title::after { margin-left: auto; margin-right: auto; }
+
+.mp-wifi .mp-qr-frame { margin-top: 1.75rem; }
+
+.mp-wifi-hint {
+  margin: 0 0 1.75rem;
+  color: var(--mp-muted);
+  font-size: 0.95rem;
+}
+
+.mp-wifi-details {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem 2.5rem;
+  margin: 0;
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--mp-rule);
+  border-radius: 8px;
+  background: var(--mp-panel);
+  text-align: left;
+}
+
+.micropage-page--cb .mp-wifi-details { border-radius: 0; border-width: 2px; }
+
+.mp-wifi-details dt {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--mp-muted);
+  margin-bottom: 0.25rem;
+}
+
+.mp-wifi-details dd {
+  margin: 0;
+  /* Monospace so 0/O and 1/l are distinguishable when someone types the key */
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: clamp(1rem, 2.4vw, 1.35rem);
+  font-weight: 600;
+  word-break: break-all;
+}
+
 /* -- QR code -- */
 .mp-qr { text-align: center; }
 

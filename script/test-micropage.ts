@@ -1,4 +1,4 @@
-import { parseSpec, renderPage, describeRegistry, TEMPLATES, SpecError, LIMITS, estimateEmWidth, SIGN_MAX_WIDTH } from '../server/micropage';
+import { parseSpec, renderPage, describeRegistry, TEMPLATES, SpecError, LIMITS, estimateEmWidth, SIGN_MAX_WIDTH, wifiPayload } from '../server/micropage';
 
 let failed = 0;
 const fail = (what: string, detail: string) => { console.log(`FAIL ${what}\n     ${detail}`); failed++; };
@@ -171,11 +171,60 @@ mustThrow('query too long', 'p=thp~' + 'x'.repeat(LIMITS.maxQueryLength + 50), /
   if (!r.bodyClass.includes('micropage-page--tsg')) fail('template body class', r.bodyClass);
 }
 
+// --- WiFi payload (what a phone actually reads) ----------------------------
+
+{
+  const cases: [string, string, string, string][] = [
+    ['Guest WiFi', 'hunter2', 'WPA', 'WIFI:T:WPA;S:Guest WiFi;P:hunter2;;'],
+    ['Open Net', '', 'nopass', 'WIFI:T:nopass;S:Open Net;;'],
+    ['Old AP', 'abc', 'WEP', 'WIFI:T:WEP;S:Old AP;P:abc;;'],
+    // Characters special to the format must be escaped or the payload truncates
+    ['My;Net', 'a:b', 'WPA', 'WIFI:T:WPA;S:My\\;Net;P:a\\:b;;'],
+    ['back\\slash', 'q,w', 'WPA', 'WIFI:T:WPA;S:back\\\\slash;P:q\\,w;;']
+  ];
+  for (const [ssid, pw, type, expected] of cases) {
+    const got = wifiPayload(ssid, pw, type);
+    if (got !== expected) fail(`wifi payload for ${JSON.stringify(ssid)}`, `got      ${got}\n     expected ${expected}`);
+  }
+}
+
+// --- WiFi template ---------------------------------------------------------
+
+{
+  const r = renderPage(parse('p=twf~' + encodeURIComponent('Guest WiFi') + '~' + encodeURIComponent('hunter2') + '~WPA'));
+  if (!r.html.includes('<svg')) fail('wifi renders a qr', r.html.slice(0, 200));
+  if (!r.html.includes('mp-wifi-icon')) fail('wifi renders the icon', r.html.slice(0, 200));
+  if (!r.html.includes('Guest WiFi')) fail('wifi shows the ssid', r.html.slice(0, 300));
+  if (!r.html.includes('hunter2')) fail('wifi shows the password', r.html.slice(0, 400));
+}
+{
+  // The icon must carry no colour of its own, so themes can drive it
+  const r = renderPage(parse('p=twf~Net~pw~WPA'));
+  const icon = r.html.slice(r.html.indexOf('<svg'), r.html.indexOf('</svg>'));
+  if (/#[0-9a-fA-F]{3,6}/.test(icon)) fail('icon hardcodes a colour', icon);
+  if (!icon.includes('currentColor')) fail('icon should use currentColor', icon);
+}
+{
+  // Open network: no password field in the payload, and it says so
+  const r = renderPage(parse('p=twf~' + encodeURIComponent('Open Net') + '~~none'));
+  if (!/open network/i.test(r.html)) fail('open network is labelled', r.html);
+}
+{
+  // Characters special to the WIFI: payload must be escaped, not truncate it
+  const r = renderPage(parse('p=twf~' + encodeURIComponent('My;Net') + '~' + encodeURIComponent('a:b;c') + '~WPA'));
+  if (!r.html.includes('<svg')) fail('wifi with special chars still encodes', r.html.slice(0, 200));
+}
+{
+  // No SSID yet: prompt rather than a broken code
+  const r = renderPage(parse('p=twf~'));
+  if (r.html.includes('<svg') && !r.html.includes('mp-wifi-icon')) fail('empty wifi should not render a qr', r.html);
+}
+
 // --- the template set is exactly what we kept ------------------------------
 
 {
   const codes = TEMPLATES.map((t) => t.code).sort().join(' ');
-  if (codes !== 'tar tev thp tqr tsg') fail('template set', codes);
+  if (codes !== 'tar tev thp tqr tsg twf') fail('template set', codes);
 }
 
 // --- every template's documented example must actually render --------------
