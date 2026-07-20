@@ -1716,17 +1716,25 @@ select {
 
 /* -- Event -- */
 .mp-meta {
-  border-left: 3px solid var(--mp-accent);
-  padding-left: 1rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
-  margin: 1.5rem 0;
-  padding: 1rem 0;
+  gap: 1.25rem 3rem;
+  margin: 1.75rem 0;
+  /* Left padding must live in the shorthand: a separate padding-left before it
+     would be reset to 0, leaving the text flush against the accent rule. */
+  padding: 1.1rem 0 1.1rem 1.4rem;
+  border-left: 3px solid var(--mp-accent);
   border-top: 1px solid var(--mp-rule);
   border-bottom: 1px solid var(--mp-rule);
 }
-.micropage-page--xc .mp-meta { justify-content: center; }
+/* Centred: a left rule with asymmetric padding reads as a mistake, so move the
+   accent to the top edge and even the padding out. */
+.micropage-page--xc .mp-meta {
+  justify-content: center;
+  border-left: none;
+  border-top: 3px solid var(--mp-accent);
+  padding: 1.1rem 1.4rem;
+}
 .mp-meta dt {
   font-size: 0.75rem;
   text-transform: uppercase;
