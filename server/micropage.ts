@@ -44,34 +44,95 @@ export interface AccentDef {
   code: string;
   name: string;
   hex: string;
+  /** Readable text colour when this accent is used as a background. */
+  on: string;
+  /** Readable link colour on a light page. */
+  onLight: string;
+  /** Readable link colour on a dark page. */
+  onDark: string;
 }
+
+/** WCAG relative luminance. */
+function luminance(hex: string): number {
+  const v = hex.replace('#', '');
+  const channels = [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16) / 255);
+  const linear = channels.map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
+  return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+}
+
+function contrast(a: number, b: number): number {
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
+/**
+ * Text on an accent background must not inherit the page background colour:
+ * white on amber is unreadable. Pick whichever of near-black/white contrasts better.
+ */
+function readableOn(hex: string): string {
+  const l = luminance(hex);
+  return contrast(l, 1) >= contrast(l, 0) ? '#ffffff' : '#141414';
+}
+
+function mix(hex: string, towards: string, amount: number): string {
+  const parse = (h: string) => [0, 2, 4].map((i) => parseInt(h.replace('#', '').slice(i, i + 2), 16));
+  const [r1, g1, b1] = parse(hex);
+  const [r2, g2, b2] = parse(towards);
+  const c = (a: number, b: number) => Math.round(a + (b - a) * amount);
+  return '#' + [c(r1, r2), c(g1, g2), c(b1, b2)].map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * An accent used as link *text* has the opposite problem to one used as a background:
+ * amber on white is ~1.7:1. Darken (or lighten, on dark themes) until it clears WCAG AA.
+ */
+function readableText(hex: string, background: string): string {
+  const bg = luminance(background);
+  const towards = bg > 0.5 ? '#000000' : '#ffffff';
+  let candidate = hex;
+  for (let step = 0; step <= 20; step++) {
+    if (contrast(luminance(candidate), bg) >= 4.5) return candidate;
+    candidate = mix(hex, towards, step / 20);
+  }
+  return towards === '#000000' ? '#141414' : '#f5f5f5';
+}
+
+/** Backgrounds the themes actually use, so link colours can be precomputed against them. */
+const LIGHT_BG = '#ffffff';
+const DARK_BG = '#14161a';
 
 /** Named accents rather than raw hex: a lookup key cannot inject CSS. */
 export const ACCENTS: AccentDef[] = [
   { code: 'lob', name: 'Lobster', hex: '#E15554' },
-  { code: 'saf', name: 'Saffron', hex: '#E1BC29' },
+  { code: 'rub', name: 'Ruby', hex: '#A31621' },
   { code: 'amb', name: 'Amber', hex: '#ECC30B' },
+  { code: 'tig', name: 'Tiger', hex: '#F18701' },
   { code: 'lil', name: 'Lilac', hex: '#7768AE' },
   { code: 'sky', name: 'Sky', hex: '#4D9DE0' },
   { code: 'esp', name: 'Espresso', hex: '#551B14' },
-  { code: 'tig', name: 'Tiger', hex: '#F18701' },
-  { code: 'pru', name: 'Prussian', hex: '#0A2239' }
-];
+  { code: 'pru', name: 'Prussian', hex: '#0A2239' },
+  { code: 'gry', name: 'Grey', hex: '#6B7280' }
+].map((a) => ({
+  ...a,
+  on: readableOn(a.hex),
+  onLight: readableText(a.hex, LIGHT_BG),
+  onDark: readableText(a.hex, DARK_BG)
+}));
 
 export interface ThemeDef {
   code: string;
   name: string;
   description: string;
   defaultAccent: string;
+  dark: boolean;
 }
 
 export const THEMES: ThemeDef[] = [
-  { code: 'cl', name: 'Light', description: 'Clean light page, system sans', defaultAccent: 'sky' },
-  { code: 'cd', name: 'Dark', description: 'Dark page, system sans', defaultAccent: 'amb' },
-  { code: 'cm', name: 'Minimal mono', description: 'Monospace, generous whitespace', defaultAccent: 'pru' },
-  { code: 'cp', name: 'Paper', description: 'Serif on faintly textured off-white', defaultAccent: 'esp' },
-  { code: 'ct', name: 'Terminal', description: 'Monospace, green on near-black', defaultAccent: 'saf' },
-  { code: 'cb', name: 'Brutalist', description: 'Heavy rules, flat black on white', defaultAccent: 'lob' }
+  { code: 'cl', name: 'Light', description: 'Clean light page, system sans', defaultAccent: 'sky', dark: false },
+  { code: 'cd', name: 'Dark', description: 'Dark page, system sans', defaultAccent: 'amb', dark: true },
+  { code: 'cm', name: 'Minimal mono', description: 'Monospace, generous whitespace', defaultAccent: 'pru', dark: false },
+  { code: 'cp', name: 'Paper', description: 'Serif on faintly textured off-white', defaultAccent: 'esp', dark: false },
+  { code: 'ct', name: 'Terminal', description: 'Monospace, green on near-black', defaultAccent: 'amb', dark: true },
+  { code: 'cb', name: 'Brutalist', description: 'Heavy rules, flat black on white', defaultAccent: 'lob', dark: false }
 ];
 
 export interface WidthDef { code: string; name: string; css: string; }
@@ -546,7 +607,7 @@ export function describeRegistry(origin: string) {
     })),
     themes: THEMES.map(({ code, name, description }) => ({ code, name, description })),
     widths: WIDTHS.map(({ code, name }) => ({ code, name })),
-    accents: ACCENTS.map(({ code, name, hex }) => ({ code: 'a' + code, name, hex })),
+    accents: ACCENTS.map(({ code, name, hex, on }) => ({ code: 'a' + code, name, hex, textOn: on })),
     flags: FLAGS.map(({ code, name, description }) => ({ code: 'x' + code, name, description }))
   };
 }
