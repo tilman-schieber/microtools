@@ -1610,13 +1610,65 @@ select {
   background-size: 13px 13px, 19px 19px;
 }
 
+/* Terminal is a monospace treatment, not a colour scheme: the text is neutral so
+   the chosen accent is the only colour on the page. */
 .micropage-page--ct {
   --mp-font: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --mp-bg: #05090a;
-  --mp-fg: #4ee88a;
-  --mp-muted: #2f9e5f;
-  --mp-rule: #13351f;
-  --mp-panel: #0b1a11;
+  --mp-bg: #0b0d0f;
+  --mp-fg: #dde1e4;
+  --mp-muted: #8d9499;
+  --mp-rule: #2b3034;
+  --mp-panel: #15181b;
+}
+
+/* Rules are drawn as dashes rather than solid strokes, so they read as
+   ----- typed at a prompt.
+   Each side is named explicitly: a bare `border-style: dashed` also styles the
+   sides that have no width set, which fall back to `medium` and draw a box that
+   was never there. */
+.micropage-page--ct .mp-meta {
+  border-left-style: dashed;
+  border-top-style: dashed;
+  border-bottom-style: dashed;
+}
+
+.micropage-page--ct .mp-prose blockquote {
+  border-left-style: dashed;
+}
+
+.micropage-page--ct .mp-sign-text {
+  border-top-style: dashed;
+  border-bottom-style: dashed;
+}
+
+/* These two have a border on every side already, so styling them all is safe */
+.micropage-page--ct .mp-wifi-details {
+  border-style: dashed;
+}
+
+.micropage-page--ct .mp-qr-frame {
+  border-style: dashed;
+  border-width: 3px;
+}
+
+/* The title rule becomes literal dashes in the page's own monospace face */
+.micropage-page--ct .mp-title::after {
+  content: '--------';
+  width: auto;
+  height: auto;
+  background: none;
+  border-radius: 0;
+  margin-top: 0.35rem;
+  font-size: 0.62em;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  color: var(--mp-accent);
+}
+
+.micropage-page--ct .mp-prose hr {
+  border: 0;
+  border-top: 1px dashed var(--mp-rule);
 }
 
 .micropage-page--cb {

@@ -1,11 +1,11 @@
 /**
  * Micropage — a complete webpage encoded entirely in its URL.
  *
- *   /micropage?p=thp.cd~Welcome~Built entirely from a URL
- *                │   │  │        └── slot 2
- *                │   │  └─────────── slot 1
- *                │   └────────────── theme: dark
- *                └────────────────── template: heading + paragraph
+ *   /micropage?p=tsg.cd~BACK IN 10~Back by 14:30
+ *                │   │  │          └── slot 2: the smaller note
+ *                │   │  └───────────── slot 1: the big line
+ *                │   └──────────────── theme: dark
+ *                └──────────────────── template: sign
  *
  * Nothing is stored. The URL is the page.
  */
@@ -132,7 +132,7 @@ export const THEMES: ThemeDef[] = [
   { code: 'cd', name: 'Dark', description: 'Dark page, system sans', defaultAccent: 'amb', dark: true },
   { code: 'cm', name: 'Minimal mono', description: 'Monospace, generous whitespace', defaultAccent: 'pru', dark: false },
   { code: 'cp', name: 'Paper', description: 'Serif on faintly textured off-white', defaultAccent: 'esp', dark: false },
-  { code: 'ct', name: 'Terminal', description: 'Monospace, green on near-black', defaultAccent: 'amb', dark: true },
+  { code: 'ct', name: 'Terminal', description: 'Monospace on near-black, with dashed rules', defaultAccent: 'amb', dark: true },
   { code: 'cb', name: 'Brutalist', description: 'Heavy rules, flat black on white', defaultAccent: 'lob', dark: false }
 ];
 
@@ -251,21 +251,6 @@ function signWidthBucket(text: string): number {
 }
 
 export const TEMPLATES: TemplateDef[] = [
-  {
-    code: 'thp',
-    name: 'Hero',
-    description: 'A heading with a short paragraph beneath it.',
-    slots: [
-      { name: 'heading', kind: 'inline', description: 'The h1' },
-      { name: 'body', kind: 'inline', description: 'A short paragraph' }
-    ],
-    example: 'thp.cd~Welcome~Built entirely from a URL',
-    render: (s) => `
-      <header class="mp-hero">
-        ${el('h1', 'mp-title', s[0] ?? '')}
-        ${el('p', 'mp-lede', s[1] ?? '')}
-      </header>`
-  },
   {
     code: 'tar',
     name: 'Article',
