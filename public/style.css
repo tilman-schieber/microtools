@@ -1337,7 +1337,13 @@ select {
   min-height: 100vh;
 }
 
+/* Each layout mode advertises the space a panel may fill, so the clock and
+   countdown scale with the viewport instead of stopping at a fixed ceiling.
+   --stacked must follow --split: both apply to a digital clock + countdown,
+   and the stacked column overrides the side-by-side dimensions. */
 .clock-layout {
+  --clock-avail-w: calc(100vw - 4rem);
+  --clock-avail-h: calc(100vh - 4rem);
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -1345,11 +1351,16 @@ select {
   padding: 1rem;
 }
 
+/* Two panels share the row, minus the layout padding and the gap between them */
 .clock-layout--split {
+  --clock-avail-w: calc(50vw - 5rem);
+  --clock-avail-h: calc(100vh - 4rem);
   gap: clamp(2.75rem, 8vw, 6rem);
 }
 
 .clock-layout--stacked {
+  --clock-avail-w: calc(100vw - 4rem);
+  --clock-avail-h: calc(50vh - 5rem);
   flex-direction: column;
 }
 
@@ -1375,12 +1386,21 @@ select {
   color: #171717;
 }
 
+/* Fill the available width: monospace glyphs advance ~0.62em, so dividing the
+   available width by the live character count (set by clock-display.js) gives
+   the size that just fits. Height is the other bound. */
 .digital-clock-display {
-  font-size: clamp(3.5rem, 11vw, 9rem);
+  font-size: min(
+    calc(var(--clock-avail-w) / (var(--digital-chars, 8) * 0.62)),
+    var(--clock-avail-h)
+  );
 }
 
 .countdown-display {
-  font-size: clamp(3.35rem, 10vw, 8rem);
+  font-size: min(
+    calc(var(--clock-avail-w) / (var(--countdown-chars, 8) * 0.62)),
+    var(--clock-avail-h)
+  );
   text-align: center;
 }
 
@@ -1419,7 +1439,7 @@ select {
   background: radial-gradient(#000, #000 0.1em, #fff 0.1em, #fff), #fff;
   display: inline-block;
   position: relative;
-  width: min(78vmin, 500px);
+  width: min(var(--clock-avail-w), var(--clock-avail-h));
   aspect-ratio: 1;
 }
 
@@ -1513,12 +1533,10 @@ select {
     grid-template-columns: 1fr;
   }
 
+  /* Stacking on narrow screens frees the full width but halves the height */
   .clock-layout--split {
+    --clock-avail-w: calc(100vw - 3rem);
+    --clock-avail-h: calc(50vh - 4rem);
     flex-direction: column;
-  }
-
-  .digital-clock-display,
-  .countdown-display {
-    font-size: clamp(3rem, 15vw, 5.5rem);
   }
 }

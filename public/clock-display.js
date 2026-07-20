@@ -243,15 +243,29 @@
 
   layout.hidden = false;
 
+  /* The CSS sizes text to fill the available width, which it can only do if it
+     knows how many characters are on screen (the count shifts between e.g.
+     "9:59" and "1:00:00"). Only write on change to avoid needless style recalc. */
+  function setCharCount(el, name, text) {
+    const chars = String(text.length);
+    if (el.style.getPropertyValue(name) !== chars) {
+      el.style.setProperty(name, chars);
+    }
+  }
+
   function render(now) {
     if (type === 'digital') {
-      digitalClock.textContent = formatDigitalTime(now, clockShowSeconds);
+      const text = formatDigitalTime(now, clockShowSeconds);
+      digitalClock.textContent = text;
+      setCharCount(layout, '--digital-chars', text);
     }
 
     if (countdownEnabled) {
       const hasStarted = now.getTime() >= countdownStartsAt;
       const remaining = hasStarted ? Math.max(0, countdownDeadline - now.getTime()) : countdownTotalDuration;
-      countdownDisplay.textContent = formatCountdown(remaining, countdownShowSeconds);
+      const countdownText = formatCountdown(remaining, countdownShowSeconds);
+      countdownDisplay.textContent = countdownText;
+      setCharCount(layout, '--countdown-chars', countdownText);
 
       countdownPanel.classList.remove('countdown-panel--warn-third', 'countdown-panel--warn-sixth', 'countdown-panel--warn-twelfth');
       if (countdownColor && countdownTotalDuration > 0 && hasStarted) {
