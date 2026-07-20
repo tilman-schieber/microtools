@@ -1540,3 +1540,365 @@ select {
     flex-direction: column;
   }
 }
+
+/* ===== Micropage ===== */
+
+/* -- Page shell -- */
+.micropage-page {
+  --mp-width: 44rem;
+  --mp-bg: #ffffff;
+  --mp-fg: #1a1a1a;
+  --mp-muted: #666666;
+  --mp-rule: #e5e5e5;
+  --mp-panel: #f7f7f7;
+  --mp-font: system-ui, -apple-system, sans-serif;
+  --mp-heading-font: var(--mp-font);
+  --mp-scale: 1;
+
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: var(--mp-bg);
+  color: var(--mp-fg);
+  font-family: var(--mp-font);
+}
+
+.mp-canvas {
+  max-width: var(--mp-width);
+  margin: 0 auto;
+  padding: clamp(2rem, 7vh, 5rem) 1.5rem;
+}
+
+.micropage-page--xc .mp-canvas { text-align: center; }
+.micropage-page--xb { --mp-scale: 1.35; }
+
+/* -- Themes -- */
+.micropage-page--cd {
+  --mp-bg: #14161a;
+  --mp-fg: #e9e9ea;
+  --mp-muted: #9a9aa2;
+  --mp-rule: #2b2f36;
+  --mp-panel: #1c1f25;
+}
+
+.micropage-page--cm {
+  --mp-font: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --mp-bg: #fbfbfb;
+  --mp-fg: #202020;
+  --mp-muted: #757575;
+  --mp-rule: #e0e0e0;
+  --mp-panel: #f2f2f2;
+}
+
+.micropage-page--cp {
+  --mp-font: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  --mp-bg: #f6f2e9;
+  --mp-fg: #2a2521;
+  --mp-muted: #6d6257;
+  --mp-rule: #ddd3c2;
+  --mp-panel: #efe9dc;
+  /* Faint paper tooth, drawn rather than fetched so no external asset is needed */
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(120, 100, 70, 0.045) 0 1px, transparent 1px),
+    radial-gradient(circle at 65% 70%, rgba(120, 100, 70, 0.035) 0 1px, transparent 1px);
+  background-size: 13px 13px, 19px 19px;
+}
+
+.micropage-page--ct {
+  --mp-font: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --mp-bg: #05090a;
+  --mp-fg: #4ee88a;
+  --mp-muted: #2f9e5f;
+  --mp-rule: #13351f;
+  --mp-panel: #0b1a11;
+}
+
+.micropage-page--cb {
+  --mp-bg: #ffffff;
+  --mp-fg: #000000;
+  --mp-muted: #333333;
+  --mp-rule: #000000;
+  --mp-panel: #ffffff;
+  --mp-font: 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* -- Shared type -- */
+.mp-title {
+  font-family: var(--mp-heading-font);
+  font-size: calc(clamp(1.9rem, 5.5vw, 3rem) * var(--mp-scale));
+  line-height: 1.1;
+  margin: 0 0 0.75rem;
+  color: var(--mp-fg);
+}
+
+.mp-lede,
+.mp-blurb {
+  font-size: calc(1.1rem * var(--mp-scale));
+  line-height: 1.6;
+  color: var(--mp-muted);
+  margin: 0 0 1rem;
+}
+
+.mp-role {
+  font-size: calc(1rem * var(--mp-scale));
+  color: var(--mp-accent);
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+
+.micropage-page--cb .mp-title {
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  border-bottom: 6px solid var(--mp-rule);
+  padding-bottom: 0.4rem;
+}
+
+.mp-canvas a {
+  color: var(--mp-accent);
+  text-underline-offset: 2px;
+}
+
+/* -- Prose (markdown body) -- */
+.mp-prose { line-height: 1.7; }
+.mp-prose > *:first-child { margin-top: 0; }
+.mp-prose h2,
+.mp-prose h3 {
+  font-family: var(--mp-heading-font);
+  line-height: 1.25;
+  margin: 1.75rem 0 0.6rem;
+}
+.mp-prose h2 { font-size: calc(1.4rem * var(--mp-scale)); }
+.mp-prose h3 { font-size: calc(1.15rem * var(--mp-scale)); }
+.mp-prose p { margin: 0 0 1rem; }
+.mp-prose ul,
+.mp-prose ol { padding-left: 1.5rem; margin: 0 0 1rem; }
+.mp-prose blockquote {
+  border-left: 3px solid var(--mp-accent);
+  margin: 0 0 1rem;
+  padding: 0.1rem 0 0.1rem 1rem;
+  color: var(--mp-muted);
+}
+.mp-prose code {
+  background: var(--mp-panel);
+  padding: 0.15rem 0.35rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+.mp-prose pre {
+  background: var(--mp-panel);
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+.mp-prose pre code { background: none; padding: 0; }
+.mp-prose img { max-width: 100%; height: auto; }
+
+/* -- List -- */
+.mp-items {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+}
+.mp-items li {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--mp-rule);
+  font-size: calc(1.05rem * var(--mp-scale));
+}
+.mp-items li::before {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.75rem;
+  background: var(--mp-accent);
+  border-radius: 50%;
+  vertical-align: middle;
+}
+.micropage-page--xc .mp-items li::before { display: none; }
+
+/* -- Links / link-in-bio -- */
+.mp-linklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+.mp-linkrow a {
+  display: block;
+  padding: 0.9rem 1.2rem;
+  border: 2px solid var(--mp-accent);
+  border-radius: 8px;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 600;
+  color: var(--mp-accent);
+}
+.mp-linkrow a:hover {
+  background: var(--mp-accent);
+  color: var(--mp-bg);
+}
+.micropage-page--cb .mp-linkrow a { border-radius: 0; border-width: 3px; }
+
+.mp-inline-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.micropage-page--xc .mp-inline-links { justify-content: center; }
+
+/* -- Event -- */
+.mp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+  padding: 1rem 0;
+  border-top: 1px solid var(--mp-rule);
+  border-bottom: 1px solid var(--mp-rule);
+}
+.micropage-page--xc .mp-meta { justify-content: center; }
+.mp-meta dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mp-muted);
+  margin-bottom: 0.2rem;
+}
+.mp-meta dd {
+  margin: 0;
+  font-size: calc(1.05rem * var(--mp-scale));
+  font-weight: 600;
+}
+.mp-cta a {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.8rem 1.6rem;
+  background: var(--mp-accent);
+  color: var(--mp-bg);
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+}
+.micropage-page--cb .mp-cta a { border-radius: 0; }
+
+/* -- FAQ -- */
+.mp-qa { margin: 1.5rem 0 0; }
+.mp-qa > div {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--mp-rule);
+}
+.mp-qa dt {
+  font-weight: 700;
+  font-size: calc(1.05rem * var(--mp-scale));
+  margin-bottom: 0.35rem;
+}
+.mp-qa dd {
+  margin: 0;
+  color: var(--mp-muted);
+  line-height: 1.6;
+}
+
+/* -- Notice -- */
+.mp-notice {
+  border-left: 5px solid var(--mp-accent);
+  padding: 1.25rem 1.5rem;
+  background: var(--mp-panel);
+  border-radius: 4px;
+}
+.micropage-page--xc .mp-notice { border-left: none; border-top: 5px solid var(--mp-accent); }
+.mp-notice--warn { --mp-accent: #E1BC29; }
+.mp-notice--ok   { --mp-accent: #3fa66a; }
+.mp-notice--err  { --mp-accent: #E15554; }
+
+/* -- Error page -- */
+.micropage-error-message {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #b3261e;
+}
+
+/* -- Builder -- */
+.micropage-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.micropage-slot-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.micropage-slot-row label {
+  flex: 0 0 6.5rem;
+  margin: 0;
+  padding-top: 0.55rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+.micropage-slot-row input,
+.micropage-slot-row textarea {
+  flex: 1 1 auto;
+  width: 100%;
+}
+.micropage-preview {
+  width: 100%;
+  height: 420px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  margin-top: 0.5rem;
+}
+.micropage-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.micropage-swatch {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.micropage-swatch[aria-pressed="true"] {
+  border-color: #222;
+  box-shadow: 0 0 0 2px #fff inset;
+}
+.micropage-docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+.micropage-docs-table th,
+.micropage-docs-table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+.micropage-docs-table th { background: #f5f5f5; }
+.micropage-docs-table code { white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .micropage-slot-row { flex-direction: column; gap: 0.25rem; }
+  .micropage-slot-row label { flex: none; padding-top: 0; }
+}
+
+/* -- Accents and widths (classes, not inline styles: the CSP blocks those) -- */
+.micropage-page--alob { --mp-accent: #E15554; }
+.micropage-page--asaf { --mp-accent: #E1BC29; }
+.micropage-page--aamb { --mp-accent: #ECC30B; }
+.micropage-page--alil { --mp-accent: #7768AE; }
+.micropage-page--asky { --mp-accent: #4D9DE0; }
+.micropage-page--aesp { --mp-accent: #551B14; }
+.micropage-page--atig { --mp-accent: #F18701; }
+.micropage-page--apru { --mp-accent: #0A2239; }
+
+.micropage-page--ws { --mp-width: 32rem; }
+.micropage-page--wm { --mp-width: 44rem; }
+.micropage-page--wl { --mp-width: 60rem; }
+.micropage-page--wf { --mp-width: none; }

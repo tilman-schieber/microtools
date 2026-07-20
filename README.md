@@ -12,6 +12,7 @@ A self-hosted collection of simple, link-based web utilities. No accounts, no tr
 - **Password Generator** — Local-only alphanumeric passwords and XKCD-style passphrases in English or German
 - **Clock** — Parameter-based digital, Swiss railway analogue, and countdown clock displays; analogue mode adapts [Swiss-Railway-Clock](https://github.com/manuelmeister/Swiss-Railway-Clock) by Manuel Meister
 - **Potluck Planner** — Coordinate who brings what, with real-time claim tracking
+- **Micropage** — Build a complete styled page whose entire content lives in the URL; nothing is stored server-side
 
 ## Stack
 
@@ -77,7 +78,8 @@ microtools/
 │   ├── files/            # File share templates (show, gone, new)
 │   ├── clock/            # Clock config + display templates
 │   ├── passwords/        # Password generator template
-│   └── bring/            # Potluck templates (show, new, _list partial)
+│   ├── bring/            # Potluck templates (show, new, _list partial)
+│   └── micropage/        # Micropage render, docs, builder, error
 ├── public/
 │   ├── style.css         # All styles (single file, no build step)
 │   ├── clock-config.js   # Client-side clock link generator
@@ -108,6 +110,10 @@ microtools/
 **Client-side encryption.** The secrets tool encrypts in the browser using AES-256-GCM. The key is placed in the URL fragment (`#...`), which browsers never send to the server. The server only stores ciphertext.
 
 **File storage.** Uploaded files are stored on disk under `data/files/<share-id>/`. Metadata lives in SQLite. Expired shares are cleaned up both lazily (on access) and periodically (hourly timer).
+
+**URL as storage.** The micropage tool has no database row at all — a page's template, theme and every word of its content are encoded in one `p` query parameter, so the URL *is* the document. Its parser reads `request.raw.url` and splits on `~` *before* percent-decoding, which is what makes `%7E` a literal tilde distinct from the delimiter and stops `+` silently becoming a space. Because it renders attacker-authorable markup on our own origin, `/micropage` sends a strict route-scoped CSP (`script-src 'none'`, `form-action 'none'`) and its query string is redacted from request logs.
+
+**Markdown safety.** `marked` does not sanitize URLs and does not escape image alt text, so `server/safeMarkdown.ts` overrides the `link` and `image` renderers: schemes are allowlisted after entity-decoding, and attributes are escaped. A rejected renderer override must return escaped text rather than `false`, since `false` falls through to marked's own vulnerable renderer. Covered by `npm run test:safety`.
 
 **QR codes.** Share links include an auto-generated QR code rendered client-side using [qrcode-generator](https://github.com/nicokoenig/qrcode-generator), vendored locally from npm. No server-side image generation.
 

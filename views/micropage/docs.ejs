@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/public/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
+</head>
+<body class="note-md-page">
+  <main>
+    <h1>Micropage</h1>
+    <p class="tagline"><%= registry.summary %></p>
+
+    <h2>The shape of a link</h2>
+    <pre class="note-text"><%= registry.grammar.shape %></pre>
+    <p><%= registry.grammar.head %></p>
+    <p><%= registry.grammar.slots %></p>
+
+    <h2>Rules that will bite you</h2>
+    <ul>
+      <% registry.grammar.rules.forEach(function (rule) { %>
+      <li><%= rule %></li>
+      <% }); %>
+    </ul>
+
+    <h2>Templates</h2>
+    <table class="micropage-docs-table">
+      <thead>
+        <tr><th>Code</th><th>Name</th><th>Slots, in order</th></tr>
+      </thead>
+      <tbody>
+        <% registry.templates.forEach(function (t) { %>
+        <tr>
+          <td><code><%= t.code %></code></td>
+          <td><%= t.name %><br><span class="hint"><%= t.description %></span></td>
+          <td>
+            <%= t.slots.map(function (s) { return s.name; }).join(', ') %><% if (t.repeat) { %><%= t.slots.length ? ', ' : '' %>then <%= t.repeat.fields.join(' + ') %> repeating<% } %>
+            <% if (t.repeat) { %><br><span class="hint"><%= t.repeat.description %></span><% } %>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+
+    <h2>Try one</h2>
+    <ul>
+      <% registry.templates.forEach(function (t) { %>
+      <li><a href="<%= t.example %>"><%= t.name %></a></li>
+      <% }); %>
+    </ul>
+
+    <h2>Themes</h2>
+    <table class="micropage-docs-table">
+      <thead><tr><th>Code</th><th>Name</th><th>Look</th></tr></thead>
+      <tbody>
+        <% registry.themes.forEach(function (c) { %>
+        <tr><td><code><%= c.code %></code></td><td><%= c.name %></td><td><%= c.description %></td></tr>
+        <% }); %>
+      </tbody>
+    </table>
+
+    <h2>Accents</h2>
+    <table class="micropage-docs-table">
+      <thead><tr><th>Code</th><th>Name</th><th>Colour</th></tr></thead>
+      <tbody>
+        <% registry.accents.forEach(function (a) { %>
+        <tr><td><code><%= a.code %></code></td><td><%= a.name %></td><td><code><%= a.hex %></code></td></tr>
+        <% }); %>
+      </tbody>
+    </table>
+
+    <h2>Widths and flags</h2>
+    <p>
+      Widths:
+      <% registry.widths.forEach(function (w, i) { %><code><%= w.code %></code> <%= w.name %><%= i < registry.widths.length - 1 ? ' · ' : '' %><% }); %>
+    </p>
+    <p>
+      Flags:
+      <% registry.flags.forEach(function (f, i) { %><code><%= f.code %></code> <%= f.description %><%= i < registry.flags.length - 1 ? ' · ' : '' %><% }); %>
+    </p>
+
+    <h2>Limits</h2>
+    <ul>
+      <li>Whole link: <%= registry.limits.maxQueryLength %> characters — chosen so every micropage link stays QR-encodable</li>
+      <li>Slots: <%= registry.limits.maxSlots %></li>
+      <li>One slot: <%= registry.limits.maxInlineSlot %> characters, or <%= registry.limits.maxBlockSlot %> for a markdown body</li>
+    </ul>
+
+    <h2>For agents</h2>
+    <p>
+      <a href="/micropage/agents">/micropage/agents</a> returns this same registry as JSON —
+      templates, slot order, limits, and a working example link per template.
+    </p>
+
+    <p><a href="/micropage/new">Open the builder</a> &middot; <a href="/">Back to home</a></p>
+  </main>
+</body>
+</html>

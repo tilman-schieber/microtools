@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="/public/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
+</head>
+<body>
+  <main class="micropage-error">
+    <h1>That micropage link did not work</h1>
+    <p class="micropage-error-message"><%= message %></p>
+    <% if (detail) { %><p class="hint"><%= detail %></p><% } %>
+    <p>
+      <a href="/micropage/docs">Read the docs</a> &middot;
+      <a href="/micropage/new">Build a page</a> &middot;
+      <a href="/">Back to home</a>
+    </p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<% const content = `
+  <main class="clock-tool">
+    <h1>Micropage</h1>
+    <p class="tagline">Build a whole page that lives entirely in its own link. Nothing is stored.</p>
+
+    <form id="micropage-form" class="clock-config-form">
+      <div class="password-options-grid">
+        <fieldset class="password-fieldset">
+          <legend>Layout</legend>
+
+          <label for="mp-template">Template</label>
+          <select id="mp-template"></select>
+          <p id="mp-template-hint" class="hint"></p>
+
+          <label for="mp-theme">Theme</label>
+          <select id="mp-theme"></select>
+
+          <label for="mp-width">Width</label>
+          <select id="mp-width"></select>
+
+          <label>Accent</label>
+          <div id="mp-accents" class="micropage-swatches"></div>
+
+          <label class="checkbox-option"><input type="checkbox" id="mp-flag-c"> Centre the text</label>
+          <label class="checkbox-option"><input type="checkbox" id="mp-flag-b"> Bigger type</label>
+        </fieldset>
+
+        <fieldset class="password-fieldset">
+          <legend>Content</legend>
+          <div id="mp-slots" class="micropage-slots"></div>
+          <button type="button" id="mp-add-item" hidden>Add another</button>
+          <p class="hint">Slots accept <strong>bold</strong>, italics, code, and [label](https://link) markdown.</p>
+        </fieldset>
+      </div>
+    </form>
+
+    <section class="password-output">
+      <label for="mp-link">Page link</label>
+      <input type="text" id="mp-link" readonly>
+
+      <div class="password-actions">
+        <button type="button" id="mp-copy" class="copy-btn">Copy</button>
+        <a id="mp-open" class="download-btn clock-open-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Open page</a>
+      </div>
+
+      <p id="mp-meta" class="hint"></p>
+      <p id="mp-error" class="error" hidden></p>
+
+      <div class="qrcode" id="mp-qr"></div>
+
+      <label for="mp-preview">Preview</label>
+      <iframe id="mp-preview" class="micropage-preview" title="Micropage preview"></iframe>
+    </section>
+
+    <p><a href="/micropage/docs">Docs</a> &middot; <a href="/">Back to home</a></p>
+  </main>
+
+  <script src="/public/micropage-config.js"></script>
+` %>
+<%- include('../layout', { content, title }) %>

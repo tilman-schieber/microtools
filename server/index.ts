@@ -15,6 +15,7 @@ import markedKatex from 'marked-katex-extension';
 import hljs from 'highlight.js';
 import archiver from 'archiver';
 import { safeUrlRenderer } from './safeMarkdown';
+import * as micropage from './micropage';
 
 // Sanitize markdown: escape raw HTML instead of passing it through
 function escapeHtml(s: string): string {
@@ -66,6 +67,12 @@ function cleanupShareDir(shareId: string): void {
   }
 }
 
+/** Scheme + host for the current request, honouring the reverse proxy's forwarded proto. */
+function requestOrigin(request: { headers: Record<string, unknown> }): string {
+  const protocol = (request.headers['x-forwarded-proto'] as string) || 'http';
+  return `${protocol}://${request.headers.host}`;
+}
+
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -75,7 +82,21 @@ function formatFileSize(bytes: number): string {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const fastify = Fastify({ logger: true });
+const fastify = Fastify({
+  logger: {
+    serializers: {
+      // A micropage's entire content lives in its query string, so logging the
+      // full URL would copy every page (including anything private someone
+      // pasted) into the log. Keep the path, drop the query.
+      req(request: { method: string; url: string; hostname?: string; ip?: string }) {
+        const url = request.url.startsWith('/micropage')
+          ? request.url.split('?')[0] + (request.url.includes('?') ? '?[redacted]' : '')
+          : request.url;
+        return { method: request.method, url, hostname: request.hostname, remoteAddress: request.ip };
+      }
+    }
+  }
+});
 
 function log(message: string, source = "fastify") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -136,6 +157,68 @@ async function start() {
     return reply.view('clock/show', {
       title: 'Clock'
     });
+  });
+
+  // ============ Micropage (a whole page encoded in its URL) ============
+
+  // Builder
+  fastify.get('/micropage/new', async (request, reply) => {
+    return reply.view('micropage/new', { title: 'Micropage' });
+  });
+
+  // Human documentation, generated from the same registry as /agents
+  fastify.get('/micropage/docs', async (request, reply) => {
+    return reply.view('micropage/docs', {
+      title: 'Micropage docs',
+      registry: micropage.describeRegistry(requestOrigin(request))
+    });
+  });
+
+  // Machine-readable description, for agents composing micropage URLs
+  fastify.get('/micropage/agents', async (request, reply) => {
+    return reply
+      .type('application/json; charset=utf-8')
+      .header('Cache-Control', 'public, max-age=3600')
+      .send(JSON.stringify(micropage.describeRegistry(requestOrigin(request)), null, 2));
+  });
+
+  // Render. Everything the page contains comes from the URL; nothing is stored.
+  fastify.get('/micropage', async (request, reply) => {
+    // The rendered page is attacker-authorable content served from our own origin.
+    // script-src 'none' means it can never run script; form-action 'none' means it
+    // can never collect credentials.
+    reply
+      .header('Content-Security-Policy', [
+        "default-src 'none'",
+        "img-src 'self' https: data:",
+        "style-src 'self'",
+        "font-src 'self'",
+        "script-src 'none'",
+        "form-action 'none'",
+        // 'self' rather than 'none': the builder at /micropage/new previews pages in an
+        // iframe. Third-party sites still cannot embed a micropage.
+        "frame-ancestors 'self'",
+        "base-uri 'none'",
+        "connect-src 'none'"
+      ].join('; '))
+      .header('X-Content-Type-Options', 'nosniff')
+      .header('Referrer-Policy', 'no-referrer')
+      .header('X-Robots-Tag', 'noindex, nofollow');
+
+    try {
+      const spec = micropage.parseSpec(request.raw.url || '');
+      const page = micropage.renderPage(spec);
+      return reply.header('Cache-Control', 'public, max-age=3600').view('micropage/show', { page });
+    } catch (err) {
+      if (err instanceof micropage.SpecError) {
+        return reply.status(400).view('micropage/error', {
+          title: 'Micropage',
+          message: err.message,
+          detail: err.detail || ''
+        });
+      }
+      throw err;
+    }
   });
 
   // Notes: Create form page

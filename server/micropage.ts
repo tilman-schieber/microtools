@@ -1,0 +1,552 @@
+/**
+ * Micropage — a complete webpage encoded entirely in its URL.
+ *
+ *   /micropage?p=thp.cd~Welcome~Built entirely from a URL
+ *                │   │  │        └── slot 2
+ *                │   │  └─────────── slot 1
+ *                │   └────────────── theme: dark
+ *                └────────────────── template: heading + paragraph
+ *
+ * Nothing is stored. The URL is the page.
+ */
+
+import { Marked } from 'marked';
+import { safeUrlRenderer, escapeAttr } from './safeMarkdown';
+
+// ---------------------------------------------------------------------------
+// Markdown instance
+// ---------------------------------------------------------------------------
+
+/**
+ * A dedicated instance, deliberately NOT the global `marked` from index.ts.
+ * The global has KaTeX and highlight.js applied, which would make "$5 and $10"
+ * in a slot render as maths. Micropage wants plain prose plus the URL safety.
+ */
+const md = new Marked();
+md.use({
+  breaks: true,
+  renderer: {
+    html(token: { text: string }) {
+      return escapeAttr(token.text);
+    },
+    ...safeUrlRenderer
+  }
+});
+
+const inline = (s: string): string => md.parseInline(s) as string;
+const block = (s: string): string => md.parse(s) as string;
+
+// ---------------------------------------------------------------------------
+// Palette
+// ---------------------------------------------------------------------------
+
+export interface AccentDef {
+  code: string;
+  name: string;
+  hex: string;
+}
+
+/** Named accents rather than raw hex: a lookup key cannot inject CSS. */
+export const ACCENTS: AccentDef[] = [
+  { code: 'lob', name: 'Lobster', hex: '#E15554' },
+  { code: 'saf', name: 'Saffron', hex: '#E1BC29' },
+  { code: 'amb', name: 'Amber', hex: '#ECC30B' },
+  { code: 'lil', name: 'Lilac', hex: '#7768AE' },
+  { code: 'sky', name: 'Sky', hex: '#4D9DE0' },
+  { code: 'esp', name: 'Espresso', hex: '#551B14' },
+  { code: 'tig', name: 'Tiger', hex: '#F18701' },
+  { code: 'pru', name: 'Prussian', hex: '#0A2239' }
+];
+
+export interface ThemeDef {
+  code: string;
+  name: string;
+  description: string;
+  defaultAccent: string;
+}
+
+export const THEMES: ThemeDef[] = [
+  { code: 'cl', name: 'Light', description: 'Clean light page, system sans', defaultAccent: 'sky' },
+  { code: 'cd', name: 'Dark', description: 'Dark page, system sans', defaultAccent: 'amb' },
+  { code: 'cm', name: 'Minimal mono', description: 'Monospace, generous whitespace', defaultAccent: 'pru' },
+  { code: 'cp', name: 'Paper', description: 'Serif on faintly textured off-white', defaultAccent: 'esp' },
+  { code: 'ct', name: 'Terminal', description: 'Monospace, green on near-black', defaultAccent: 'saf' },
+  { code: 'cb', name: 'Brutalist', description: 'Heavy rules, flat black on white', defaultAccent: 'lob' }
+];
+
+export interface WidthDef { code: string; name: string; css: string; }
+
+export const WIDTHS: WidthDef[] = [
+  { code: 'ws', name: 'Small', css: '32rem' },
+  { code: 'wm', name: 'Medium', css: '44rem' },
+  { code: 'wl', name: 'Large', css: '60rem' },
+  { code: 'wf', name: 'Full', css: 'none' }
+];
+
+export interface FlagDef { code: string; name: string; description: string; }
+
+export const FLAGS: FlagDef[] = [
+  { code: 'c', name: 'Center', description: 'Centre all text' },
+  { code: 'b', name: 'Big', description: 'Larger display type scale' }
+];
+
+// ---------------------------------------------------------------------------
+// Limits
+// ---------------------------------------------------------------------------
+
+export const LIMITS = {
+  /** Encoded query length. 1800 keeps every micropage URL QR-encodable (QR v40 binary ~1852 B). */
+  maxQueryLength: 1800,
+  maxSlots: 24,
+  maxInlineSlot: 600,
+  maxBlockSlot: 2000,
+  maxRenderedBytes: 64 * 1024
+};
+
+// ---------------------------------------------------------------------------
+// Templates
+// ---------------------------------------------------------------------------
+
+export interface SlotDef {
+  name: string;
+  kind: 'inline' | 'block' | 'enum';
+  description: string;
+  values?: string[];
+}
+
+export interface RepeatDef {
+  name: string;
+  /** One entry per field in each repetition; length 2 means slots come in pairs. */
+  fields: SlotDef[];
+  description: string;
+}
+
+export interface TemplateDef {
+  code: string;
+  name: string;
+  description: string;
+  slots: SlotDef[];
+  repeat?: RepeatDef;
+  example: string;
+  render: (slots: string[]) => string;
+}
+
+const NOTICE_KINDS = ['info', 'warn', 'ok', 'err'];
+
+/** Renders trailing slots in groups of `size`, dropping incomplete trailing groups. */
+function groups(slots: string[], from: number, size: number): string[][] {
+  const out: string[][] = [];
+  for (let i = from; i + size - 1 < slots.length; i += size) {
+    const group = slots.slice(i, i + size);
+    if (group.some((v) => v.trim() !== '')) out.push(group);
+  }
+  return out;
+}
+
+/** Emits an element only when the slot has content, so empty slots vanish rather than render blank. */
+function el(tag: string, cls: string, content: string): string {
+  return content.trim() ? `<${tag} class="${cls}">${inline(content)}</${tag}>` : '';
+}
+
+export const TEMPLATES: TemplateDef[] = [
+  {
+    code: 'thp',
+    name: 'Hero',
+    description: 'A heading with a short paragraph beneath it.',
+    slots: [
+      { name: 'heading', kind: 'inline', description: 'The h1' },
+      { name: 'body', kind: 'inline', description: 'A short paragraph' }
+    ],
+    example: 'thp.cd~Welcome~Built entirely from a URL',
+    render: (s) => `
+      <header class="mp-hero">
+        ${el('h1', 'mp-title', s[0] ?? '')}
+        ${el('p', 'mp-lede', s[1] ?? '')}
+      </header>`
+  },
+  {
+    code: 'tar',
+    name: 'Article',
+    description: 'Title, standfirst, and a full markdown body.',
+    slots: [
+      { name: 'title', kind: 'inline', description: 'The h1' },
+      { name: 'lede', kind: 'inline', description: 'Standfirst paragraph' },
+      { name: 'body', kind: 'block', description: 'Markdown: headings, lists, quotes, code' }
+    ],
+    example: 'tar.cp.wm~On Small Tools~Why a URL is enough~## First\\n\\nSome **prose**.',
+    render: (s) => `
+      <article class="mp-article">
+        ${el('h1', 'mp-title', s[0] ?? '')}
+        ${el('p', 'mp-lede', s[1] ?? '')}
+        ${(s[2] ?? '').trim() ? `<div class="mp-prose">${block(s[2])}</div>` : ''}
+      </article>`
+  },
+  {
+    code: 'tls',
+    name: 'List',
+    description: 'A title followed by any number of list items.',
+    slots: [{ name: 'title', kind: 'inline', description: 'The h1' }],
+    repeat: {
+      name: 'item',
+      fields: [{ name: 'item', kind: 'inline', description: 'One list item' }],
+      description: 'Every remaining slot becomes a list item.'
+    },
+    example: 'tls.cm~Packing list~Passport~Charger~Headphones',
+    render: (s) => {
+      const items = groups(s, 1, 1);
+      return `
+      <section class="mp-list">
+        ${el('h1', 'mp-title', s[0] ?? '')}
+        ${items.length ? `<ul class="mp-items">${items.map((g) => `<li>${inline(g[0])}</li>`).join('')}</ul>` : ''}
+      </section>`;
+    }
+  },
+  {
+    code: 'tlk',
+    name: 'Links',
+    description: 'A link-in-bio page. Each item is a markdown link.',
+    slots: [
+      { name: 'title', kind: 'inline', description: 'The h1' },
+      { name: 'blurb', kind: 'inline', description: 'One line under the title' }
+    ],
+    repeat: {
+      name: 'link',
+      fields: [{ name: 'link', kind: 'inline', description: 'A markdown link, e.g. [Docs](https://x.dev)' }],
+      description: 'Every remaining slot becomes a link button.'
+    },
+    example: 'tlk.cd.alil~Tilman~Things I maintain~[Microtools](https://example.dev)',
+    render: (s) => {
+      const links = groups(s, 2, 1);
+      return `
+      <section class="mp-links">
+        ${el('h1', 'mp-title', s[0] ?? '')}
+        ${el('p', 'mp-lede', s[1] ?? '')}
+        ${links.length ? `<nav class="mp-linklist">${links.map((g) => `<div class="mp-linkrow">${inline(g[0])}</div>`).join('')}</nav>` : ''}
+      </section>`;
+    }
+  },
+  {
+    code: 'tpr',
+    name: 'Profile',
+    description: 'A name, role, blurb, and a row of links.',
+    slots: [
+      { name: 'name', kind: 'inline', description: 'The h1' },
+      { name: 'role', kind: 'inline', description: 'Role or tagline' },
+      { name: 'blurb', kind: 'inline', description: 'A short bio' }
+    ],
+    repeat: {
+      name: 'link',
+      fields: [{ name: 'link', kind: 'inline', description: 'A markdown link' }],
+      description: 'Every remaining slot becomes a link.'
+    },
+    example: 'tpr.cp~Ada Lovelace~Mathematician~Wrote the first algorithm.~[Notes](https://example.dev)',
+    render: (s) => {
+      const links = groups(s, 3, 1);
+      return `
+      <section class="mp-profile">
+        ${el('h1', 'mp-title', s[0] ?? '')}
+        ${el('p', 'mp-role', s[1] ?? '')}
+        ${el('p', 'mp-blurb', s[2] ?? '')}
+        ${links.length ? `<nav class="mp-inline-links">${links.map((g) => inline(g[0])).join('')}</nav>` : ''}
+      </section>`;
+    }
+  },
+  {
+    code: 'tev',
+    name: 'Event',
+    description: 'Title, when, where, details, and a link.',
+    slots: [
+      { name: 'title', kind: 'inline', description: 'The h1' },
+      { name: 'when', kind: 'inline', description: 'Date and time, as free text' },
+      { name: 'where', kind: 'inline', description: 'Location, as free text' },
+      { name: 'details', kind: 'block', description: 'Markdown details' },
+      { name: 'link', kind: 'inline', description: 'A markdown link, e.g. tickets' }
+    ],
+    example: 'tev.cb~Release party~Fri 7pm~The Old Bakery~Bring cake.~[RSVP](https://example.dev)',
+    render: (s) => `
+      <section class="mp-event">
+        ${el('h1', 'mp-title', s[0] ?? '')}
+        <dl class="mp-meta">
+          ${(s[1] ?? '').trim() ? `<div><dt>When</dt><dd>${inline(s[1])}</dd></div>` : ''}
+          ${(s[2] ?? '').trim() ? `<div><dt>Where</dt><dd>${inline(s[2])}</dd></div>` : ''}
+        </dl>
+        ${(s[3] ?? '').trim() ? `<div class="mp-prose">${block(s[3])}</div>` : ''}
+        ${(s[4] ?? '').trim() ? `<p class="mp-cta">${inline(s[4])}</p>` : ''}
+      </section>`
+  },
+  {
+    code: 'tfq',
+    name: 'FAQ',
+    description: 'A title followed by question and answer pairs.',
+    slots: [{ name: 'title', kind: 'inline', description: 'The h1' }],
+    repeat: {
+      name: 'pair',
+      fields: [
+        { name: 'question', kind: 'inline', description: 'The question' },
+        { name: 'answer', kind: 'inline', description: 'The answer' }
+      ],
+      description: 'Remaining slots are read in pairs: question, answer, question, answer…'
+    },
+    example: 'tfq.cl~Questions~Is it free?~Yes.~Where is it stored?~Nowhere, it is all in the URL.',
+    render: (s) => {
+      const pairs = groups(s, 1, 2);
+      return `
+      <section class="mp-faq">
+        ${el('h1', 'mp-title', s[0] ?? '')}
+        ${pairs.length ? `<dl class="mp-qa">${pairs.map((g) => `<div><dt>${inline(g[0])}</dt><dd>${inline(g[1])}</dd></div>`).join('')}</dl>` : ''}
+      </section>`;
+    }
+  },
+  {
+    code: 'tnt',
+    name: 'Notice',
+    description: 'A single status banner: info, warn, ok, or err.',
+    slots: [
+      { name: 'kind', kind: 'enum', description: 'Banner style', values: NOTICE_KINDS },
+      { name: 'title', kind: 'inline', description: 'The h1' },
+      { name: 'body', kind: 'inline', description: 'Supporting line' }
+    ],
+    example: 'tnt.cl~warn~Maintenance Sunday~Back by 09:00.',
+    render: (s) => {
+      const kind = NOTICE_KINDS.includes((s[0] ?? '').trim()) ? (s[0] ?? '').trim() : 'info';
+      return `
+      <section class="mp-notice mp-notice--${kind}">
+        ${el('h1', 'mp-title', s[1] ?? '')}
+        ${el('p', 'mp-lede', s[2] ?? '')}
+      </section>`;
+    }
+  }
+];
+
+// ---------------------------------------------------------------------------
+// Parsing
+// ---------------------------------------------------------------------------
+
+export interface Spec {
+  template: TemplateDef;
+  theme: ThemeDef;
+  width: WidthDef | null;
+  accent: AccentDef;
+  flags: string[];
+  slots: string[];
+}
+
+export class SpecError extends Error {
+  constructor(message: string, readonly detail?: string) {
+    super(message);
+  }
+}
+
+const byCode = <T extends { code: string }>(list: T[], code: string): T | undefined =>
+  list.find((x) => x.code === code);
+
+/**
+ * Extracts the RAW (still percent-encoded) value of `p` from a full request URL.
+ *
+ * Splitting before decoding is what makes the grammar unambiguous: %7E survives as
+ * a literal tilde distinct from the ~ delimiter, ~~ is unambiguously an empty slot,
+ * and `+` stays a plus instead of silently becoming a space.
+ */
+function rawParam(requestUrl: string, name: string): string | null {
+  const q = requestUrl.indexOf('?');
+  if (q < 0) return null;
+  const query = requestUrl.slice(q + 1);
+  for (const pair of query.split('&')) {
+    if (pair === name) return '';
+    if (pair.startsWith(name + '=')) return pair.slice(name.length + 1);
+  }
+  return null;
+}
+
+function decodeSlot(raw: string): string {
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    throw new SpecError(
+      'That link contains a broken percent-escape.',
+      `Could not decode "${raw.slice(0, 40)}". Every % must be followed by two hex digits.`
+    );
+  }
+}
+
+export function parseSpec(requestUrl: string): Spec {
+  const raw = rawParam(requestUrl, 'p');
+  if (raw === null || raw === '') {
+    throw new SpecError('This link has no page in it.', 'Expected a "p" parameter, e.g. ?p=thp.cd~Hello~World');
+  }
+
+  const q = requestUrl.indexOf('?');
+  const queryLength = q < 0 ? 0 : requestUrl.length - q - 1;
+  if (queryLength > LIMITS.maxQueryLength) {
+    throw new SpecError(
+      'This page is too long for a URL.',
+      `The link is ${queryLength} characters; the limit is ${LIMITS.maxQueryLength}, which keeps it QR-encodable.`
+    );
+  }
+
+  const pieces = raw.split('~');
+  const head = decodeSlot(pieces[0]);
+  const slots = pieces.slice(1).map(decodeSlot);
+
+  if (slots.length > LIMITS.maxSlots) {
+    throw new SpecError(
+      'Too many slots.',
+      `Found ${slots.length}; the limit is ${LIMITS.maxSlots}.`
+    );
+  }
+
+  let template = TEMPLATES[0];
+  let theme = THEMES[0];
+  let width: WidthDef | null = null;
+  let accent: AccentDef | null = null;
+  const flags: string[] = [];
+
+  for (const code of head.split('.').filter(Boolean)) {
+    const t = byCode(TEMPLATES, code);
+    const c = byCode(THEMES, code);
+    const w = byCode(WIDTHS, code);
+    if (t) { template = t; continue; }
+    if (c) { theme = c; continue; }
+    if (w) { width = w; continue; }
+    if (code.startsWith('a')) {
+      const a = byCode(ACCENTS, code.slice(1));
+      if (!a) {
+        throw new SpecError(
+          `Unknown accent "${code}".`,
+          `Accents are: ${ACCENTS.map((x) => 'a' + x.code).join(', ')}.`
+        );
+      }
+      accent = a;
+      continue;
+    }
+    if (code.startsWith('x')) {
+      for (const ch of code.slice(1)) {
+        if (!FLAGS.some((f) => f.code === ch)) {
+          throw new SpecError(
+            `Unknown flag "x${ch}".`,
+            `Flags are: ${FLAGS.map((f) => 'x' + f.code).join(', ')}.`
+          );
+        }
+        flags.push(ch);
+      }
+      continue;
+    }
+    throw new SpecError(
+      `Unknown code "${code}".`,
+      `Templates: ${TEMPLATES.map((x) => x.code).join(', ')}. Themes: ${THEMES.map((x) => x.code).join(', ')}.`
+    );
+  }
+
+  const limit = (kind: string) => (kind === 'block' ? LIMITS.maxBlockSlot : LIMITS.maxInlineSlot);
+  slots.forEach((value, i) => {
+    const def = template.slots[i] ?? template.repeat?.fields[(i - template.slots.length) % (template.repeat?.fields.length || 1)];
+    const max = limit(def?.kind ?? 'inline');
+    if (value.length > max) {
+      throw new SpecError(
+        `Slot ${i + 1}${def ? ` (${def.name})` : ''} is too long.`,
+        `It is ${value.length} characters; the limit is ${max}.`
+      );
+    }
+  });
+
+  if (!template.repeat && slots.length > template.slots.length) {
+    // Lenient: extra slots on a fixed template are ignored rather than rejected,
+    // so a hand-trimmed URL still renders.
+    slots.length = template.slots.length;
+  }
+
+  return {
+    template,
+    theme,
+    width,
+    accent: accent ?? byCode(ACCENTS, theme.defaultAccent) ?? ACCENTS[0],
+    flags,
+    slots
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+
+export interface RenderedPage {
+  html: string;
+  bodyClass: string;
+  title: string;
+  description: string;
+}
+
+/** Plain-text reduction of a slot, for <title> and OG tags. */
+function plain(s: string, max = 200): string {
+  const text = (s ?? '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[*_`#>~]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.length > max ? text.slice(0, max - 1) + '…' : text;
+}
+
+export function renderPage(spec: Spec): RenderedPage {
+  const html = spec.template.render(spec.slots);
+  if (Buffer.byteLength(html, 'utf8') > LIMITS.maxRenderedBytes) {
+    throw new SpecError('That page renders to too much HTML.', 'Shorten the content and try again.');
+  }
+
+  // Accent and width are emitted as classes, not an inline style attribute: the
+  // route's CSP sets style-src 'self', which blocks inline styles. Both are fixed
+  // sets, so a class per value works and keeps the CSP strict.
+  const classes = [
+    'micropage-page',
+    `micropage-page--${spec.theme.code}`,
+    `micropage-page--a${spec.accent.code}`,
+    ...(spec.width ? [`micropage-page--${spec.width.code}`] : []),
+    ...spec.flags.map((f) => `micropage-page--x${f}`)
+  ];
+
+  return {
+    html,
+    bodyClass: classes.join(' '),
+    title: plain(spec.slots[0] ?? '', 80) || spec.template.name,
+    description: plain(spec.slots[1] ?? '', 160)
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Machine-readable description (drives /micropage/agents and the docs page)
+// ---------------------------------------------------------------------------
+
+export function describeRegistry(origin: string) {
+  return {
+    version: 1,
+    summary: 'Renders a complete webpage from a single URL parameter. Nothing is stored server-side.',
+    grammar: {
+      shape: '/micropage?p=<head>~<slot>~<slot>...',
+      head: 'Dot-separated codes. Namespaced by first letter: t=template, c=theme, w=width, a=accent, x=flags. Order does not matter.',
+      slots: 'Everything after the first ~ is slot content, in the order the template declares.',
+      rules: [
+        'Percent-encode content before putting it in the URL. The separator ~ is literal; a tilde inside content must be written %7E.',
+        'An empty slot is written as two consecutive tildes.',
+        'Do NOT leave a literal + in content: some clients read it as a space. Write %2B.',
+        'A literal # ends the URL and is never sent to the server. Always write %23.',
+        'Slot content is markdown-lite: **bold**, _italic_, `code`, and [label](https://url) links.',
+        'Only http, https, mailto and tel links are kept; anything else renders as plain text.'
+      ]
+    },
+    limits: LIMITS,
+    templates: TEMPLATES.map((t) => ({
+      code: t.code,
+      name: t.name,
+      description: t.description,
+      slots: t.slots.map(({ name, kind, description, values }) => ({ name, kind, description, values })),
+      repeat: t.repeat
+        ? { name: t.repeat.name, description: t.repeat.description, fields: t.repeat.fields.map((f) => f.name) }
+        : null,
+      example: `${origin}/micropage?p=${encodeURIComponent(t.example).replace(/%7E/g, '~')}`
+    })),
+    themes: THEMES.map(({ code, name, description }) => ({ code, name, description })),
+    widths: WIDTHS.map(({ code, name }) => ({ code, name })),
+    accents: ACCENTS.map(({ code, name, hex }) => ({ code: 'a' + code, name, hex })),
+    flags: FLAGS.map(({ code, name, description }) => ({ code: 'x' + code, name, description }))
+  };
+}
