@@ -23,7 +23,7 @@
     document.addEventListener('htmx:afterSwap', function(e) { renderQRCodes(e.detail.target); });
   </script>
 </head>
-<body>
+<body class="note-md-page">
   <main>
     <h1><%= note.data.title || 'Note' %></h1>
     <div class="markdown-content">

@@ -563,25 +563,80 @@ label {
   margin: 1rem 0;
 }
 
+/* Rendered markdown gets a reading-width page, not the narrow tool column */
+body.note-md-page {
+  max-width: 900px;
+}
+
 .markdown-content {
   background: #fff;
-  padding: 1rem;
+  padding: 2rem 2.5rem;
   border: 1px solid #eee;
   border-radius: 4px;
-  line-height: 1.6;
+  line-height: 1.7;
+  font-size: 1.05rem;
+  overflow-wrap: break-word;
+}
+
+.markdown-content > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-content > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content p {
+  margin: 0 0 1rem;
 }
 
 .markdown-content h1,
 .markdown-content h2,
-.markdown-content h3 {
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  line-height: 1.3;
+  color: #222;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
 }
 
-.markdown-content h1:first-child,
-.markdown-content h2:first-child,
-.markdown-content h3:first-child {
-  margin-top: 0;
+.markdown-content h1 {
+  font-size: 1.9rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #eee;
+}
+
+.markdown-content h2 {
+  font-size: 1.45rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #eee;
+}
+
+.markdown-content h3 {
+  font-size: 1.2rem;
+}
+
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  font-size: 1rem;
+}
+
+.markdown-content hr {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 2rem 0;
+}
+
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-content a {
+  color: #0366d6;
 }
 
 .markdown-content pre {
@@ -612,19 +667,43 @@ label {
 
 .markdown-content ul,
 .markdown-content ol {
-  padding-left: 1.5rem;
+  padding-left: 1.75rem;
+  margin: 0 0 1rem;
 }
 
+.markdown-content li + li {
+  margin-top: 0.25rem;
+}
+
+.markdown-content li > ul,
+.markdown-content li > ol {
+  margin: 0.25rem 0 0;
+}
+
+/* display:block lets a wide table scroll instead of stretching the page */
 .markdown-content table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
-  width: 100%;
+  margin: 0 0 1rem;
 }
 
 .markdown-content th,
 .markdown-content td {
   border: 1px solid #ddd;
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   text-align: left;
+}
+
+.markdown-content th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+.markdown-content tbody tr:nth-child(even) {
+  background: #fcfcfc;
 }
 
 /* File sharing */
@@ -944,6 +1023,11 @@ select {
 
   h2 {
     margin-top: 1.25rem;
+  }
+
+  .markdown-content {
+    padding: 1.25rem 1rem;
+    font-size: 1rem;
   }
 
   /* Flex rows wrap */
