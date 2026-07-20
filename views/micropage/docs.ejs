@@ -46,7 +46,7 @@
     <h2>Try one</h2>
     <ul>
       <% registry.templates.forEach(function (t) { %>
-      <li><a href="<%= t.example %>"><%= t.name %></a></li>
+      <li><a href="<%= t.example %>"><%= t.name %></a> &middot; <a href="/micropage/new?t=<%= t.code %>">build one</a></li>
       <% }); %>
     </ul>
 

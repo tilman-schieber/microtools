@@ -70,15 +70,39 @@
     templateHint.textContent = template.description;
     slotBox.textContent = '';
 
-    function addRow(name, kind) {
+    function addRow(name, kind, description, values) {
       const row = document.createElement('div');
       row.className = 'micropage-slot-row';
       const label = document.createElement('label');
       label.textContent = name;
-      const field = document.createElement(kind === 'block' ? 'textarea' : 'input');
-      if (kind === 'block') field.rows = 4; else field.type = 'text';
+
+      let field;
+      if (kind === 'enum' && values && values.length) {
+        // The registry publishes the allowed values, so offer them rather than
+        // making someone guess that "warn" is spelled exactly that way.
+        field = document.createElement('select');
+        values.forEach(function (v) {
+          const option = document.createElement('option');
+          option.value = v;
+          option.textContent = v;
+          field.appendChild(option);
+        });
+        field.addEventListener('change', update);
+      } else if (kind === 'block') {
+        field = document.createElement('textarea');
+        field.rows = 4;
+        field.addEventListener('input', update);
+      } else {
+        field = document.createElement('input');
+        field.type = 'text';
+        field.addEventListener('input', update);
+      }
+
+      if (description) {
+        field.title = description;
+        label.title = description;
+      }
       field.dataset.slot = name;
-      field.addEventListener('input', update);
       label.setAttribute('for', 'mp-slot-' + slotBox.children.length);
       field.id = 'mp-slot-' + slotBox.children.length;
       row.appendChild(label);
@@ -86,11 +110,13 @@
       slotBox.appendChild(row);
     }
 
-    template.slots.forEach(function (s) { addRow(s.name, s.kind); });
+    template.slots.forEach(function (s) { addRow(s.name, s.kind, s.description, s.values); });
 
     if (template.repeat) {
       for (let i = 0; i < repeatCount; i++) {
-        template.repeat.fields.forEach(function (f) { addRow(f + ' ' + (i + 1), 'inline'); });
+        template.repeat.fields.forEach(function (f) {
+          addRow(f + ' ' + (i + 1), 'inline', template.repeat.description);
+        });
       }
       addItemBtn.hidden = false;
       addItemBtn.textContent = 'Add another ' + template.repeat.name;
@@ -141,6 +167,12 @@
 
       fillSelect(templateSelect, registry.templates);
       fillSelect(themeSelect, registry.themes);
+
+      // ?t=<code> preselects a template, so the docs can deep-link into the builder
+      const wanted = new URLSearchParams(window.location.search).get('t');
+      if (wanted && registry.templates.some(function (t) { return t.code === wanted; })) {
+        templateSelect.value = wanted;
+      }
 
       const auto = document.createElement('option');
       auto.value = '';
