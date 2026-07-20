@@ -234,6 +234,9 @@
   if (countdownEnabled) {
     countdownPanel.hidden = false;
     layout.classList.add(showClock ? 'clock-layout--split' : 'clock-layout--countdown-only');
+    if (type === 'digital') {
+      layout.classList.add('clock-layout--stacked');
+    }
   } else {
     layout.classList.add('clock-layout--clock-only');
   }

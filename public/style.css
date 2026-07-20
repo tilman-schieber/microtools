@@ -1318,6 +1318,10 @@ select {
   gap: clamp(2.75rem, 8vw, 6rem);
 }
 
+.clock-layout--stacked {
+  flex-direction: column;
+}
+
 .clock-layout--countdown-only {
   justify-content: center;
 }
