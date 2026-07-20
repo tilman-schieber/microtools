@@ -16,6 +16,12 @@ async function buildAll() {
     "archiver",
     "ejs",
     "marked",
+    // Markdown rendering deps: bundled so a deploy that only builds (no
+    // npm install) still boots
+    "marked-highlight",
+    "marked-katex-extension",
+    "katex",
+    "highlight.js",
   ];
 
   const externals = allDeps.filter((dep) => !bundleAllowlist.includes(dep));
