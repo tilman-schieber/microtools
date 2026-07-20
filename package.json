@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
     "build": "tsx script/build.ts",
+    "test:safety": "tsx script/test-markdown-safety.ts",
     "start": "NODE_ENV=production node dist/index.mjs"
   },
   "dependencies": {

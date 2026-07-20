@@ -14,6 +14,7 @@ import { markedHighlight } from 'marked-highlight';
 import markedKatex from 'marked-katex-extension';
 import hljs from 'highlight.js';
 import archiver from 'archiver';
+import { safeUrlRenderer } from './safeMarkdown';
 
 // Sanitize markdown: escape raw HTML instead of passing it through
 function escapeHtml(s: string): string {
@@ -23,7 +24,9 @@ marked.use({
   renderer: {
     html(token: { text: string }) {
       return escapeHtml(token.text);
-    }
+    },
+    // marked does not sanitize URLs or escape image alt text; see server/safeMarkdown.ts
+    ...safeUrlRenderer
   }
 });
 
