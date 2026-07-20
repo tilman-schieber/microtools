@@ -49,6 +49,12 @@ async function buildAll() {
   const qrMinified = await transform(qrSrc, { minify: true });
   await writeFile("public/qrcode.min.js", qrMinified.code);
   console.log(`  public/qrcode.min.js (${(qrMinified.code.length / 1024).toFixed(1)}kb from ${(qrSrc.length / 1024).toFixed(1)}kb)`);
+
+  // Highlighting runs server-side, so only the theme stylesheet ships to the client
+  const hlSrc = await readFile("node_modules/highlight.js/styles/github.css", "utf-8");
+  const hlMinified = await transform(hlSrc, { loader: "css", minify: true });
+  await writeFile("public/highlight.min.css", hlMinified.code);
+  console.log(`  public/highlight.min.css (${(hlMinified.code.length / 1024).toFixed(1)}kb from ${(hlSrc.length / 1024).toFixed(1)}kb)`);
 }
 
 buildAll().catch((err) => {

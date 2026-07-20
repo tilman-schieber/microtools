@@ -10,6 +10,9 @@ import fastifyFormbody from '@fastify/formbody';
 import fastifyMultipart from '@fastify/multipart';
 import ejs from 'ejs';
 import { marked } from 'marked';
+import { markedHighlight } from 'marked-highlight';
+import markedKatex from 'marked-katex-extension';
+import hljs from 'highlight.js';
 import archiver from 'archiver';
 
 // Sanitize markdown: escape raw HTML instead of passing it through
@@ -23,6 +26,25 @@ marked.use({
     }
   }
 });
+
+// Syntax highlighting: server-side, so the client needs only the theme CSS
+marked.use(markedHighlight({
+  emptyLangClass: 'hljs',
+  langPrefix: 'hljs language-',
+  highlight(code: string, lang: string) {
+    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+    return hljs.highlight(code, { language }).value;
+  }
+}));
+
+// Math: $inline$ and $$display$$. MathML output needs no fonts, CSS or client JS.
+// throwOnError keeps a stray $ in a note from breaking the whole page. Standard
+// delimiter rules (no nonStandard) require the $ to hug the expression, so prose
+// prices like "$5 and $10" are not swallowed as math.
+marked.use(markedKatex({
+  output: 'mathml',
+  throwOnError: false
+}));
 import './db';
 import * as objectStore from './objectStore';
 
@@ -140,11 +162,18 @@ async function start() {
     const host = request.headers.host;
     const noteUrl = `${protocol}://${host}/notes/${note.id}`;
 
+    const mdUrl = `${noteUrl}/md`;
+    const safeNoteUrl = escapeHtml(noteUrl);
+    const safeMdUrl = escapeHtml(mdUrl);
+
     return reply.type('text/html').send(`
       <p>Note created! Share this link:</p>
-      <p><a href="${noteUrl}">${noteUrl}</a></p>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('${noteUrl}');this.textContent='Copied!'">Copy link</button>
-      <div class="qrcode" data-url="${noteUrl}"></div>
+      <p><a href="${safeNoteUrl}">${safeNoteUrl}</a></p>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent='Copied!'" data-url="${safeNoteUrl}">Copy link</button>
+      <p class="note-md-hint">Or share the formatted <a href="${safeMdUrl}">Markdown view</a>:</p>
+      <p><a href="${safeMdUrl}">${safeMdUrl}</a></p>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent='Copied!'" data-url="${safeMdUrl}">Copy Markdown link</button>
+      <div class="qrcode" data-url="${safeNoteUrl}"></div>
     `);
   });
 

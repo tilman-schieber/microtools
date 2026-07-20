@@ -17,8 +17,12 @@
     "better-sqlite3": "^12.11.1",
     "ejs": "^4.0.1",
     "fastify": "^5.7.2",
+    "highlight.js": "^11.11.1",
     "htmx.org": "1.9.10",
+    "katex": "^0.17.0",
     "marked": "^17.0.1",
+    "marked-highlight": "^2.2.4",
+    "marked-katex-extension": "^5.1.10",
     "qrcode-generator": "1.4.4"
   },
   "devDependencies": {

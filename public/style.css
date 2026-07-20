@@ -658,6 +658,37 @@ body.note-md-page {
   padding: 0;
 }
 
+/* Highlighted blocks bring their own background from the hljs theme */
+.markdown-content pre:has(> code.hljs) {
+  background: none;
+  padding: 0;
+}
+
+.markdown-content pre > code.hljs {
+  display: block;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid #eee;
+  overflow-x: auto;
+}
+
+/* Math (KaTeX MathML output) */
+.markdown-content math {
+  font-size: 1.05em;
+}
+
+.markdown-content p:has(> math[display="block"]),
+.markdown-content math[display="block"] {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.markdown-content math[display="block"] {
+  display: block;
+  margin: 1.25rem 0;
+  text-align: center;
+}
+
 .markdown-content blockquote {
   border-left: 4px solid #ddd;
   margin-left: 0;
