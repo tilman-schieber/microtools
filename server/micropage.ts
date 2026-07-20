@@ -185,11 +185,37 @@ export interface TemplateDef {
   render: (slots: string[]) => string;
 }
 
-const NOTICE_KINDS = ['info', 'warn', 'ok', 'err'];
-
 /** Emits an element only when the slot has content, so empty slots vanish rather than render blank. */
 function el(tag: string, cls: string, content: string): string {
   return content.trim() ? `<${tag} class="${cls}">${inline(content)}</${tag}>` : '';
+}
+
+/** Widest bucket the sign stylesheet defines; longer text simply renders smaller. */
+export const SIGN_MAX_WIDTH = 44;
+
+/**
+ * Rough advance width of a string, in em, for a bold sans face.
+ *
+ * The sign scales its text to fill the page, which needs the text's width — but
+ * the render page runs no JavaScript (script-src 'none'), so nothing can measure
+ * it in the browser. A character count alone is poor for a proportional font
+ * ("WWW" against "iii"), so characters are weighted into rough classes.
+ */
+export function estimateEmWidth(text: string): number {
+  let width = 0;
+  for (const ch of text) {
+    if (ch === ' ') width += 0.30;
+    else if ("iljtfrI!|.,:;'()[]".includes(ch)) width += 0.34;
+    else if ('mwMW@%'.includes(ch)) width += 0.95;
+    else if (ch >= 'A' && ch <= 'Z') width += 0.68;
+    else width += 0.56;
+  }
+  return Math.max(width, 1);
+}
+
+/** Bucketed to an integer so it can be a CSS class: the CSP forbids inline styles. */
+function signWidthBucket(text: string): number {
+  return Math.min(SIGN_MAX_WIDTH, Math.max(1, Math.ceil(estimateEmWidth(text))));
 }
 
 export const TEMPLATES: TemplateDef[] = [
@@ -249,21 +275,24 @@ export const TEMPLATES: TemplateDef[] = [
       </section>`
   },
   {
-    code: 'tnt',
-    name: 'Notice',
-    description: 'A single status banner: info, warn, ok, or err.',
+    code: 'tsg',
+    name: 'Sign',
+    description: 'One line of text scaled to fill the page. For printing and taping to a door.',
     slots: [
-      { name: 'kind', kind: 'enum', description: 'Banner style', values: NOTICE_KINDS },
-      { name: 'title', kind: 'inline', description: 'The h1' },
-      { name: 'body', kind: 'inline', description: 'Supporting line' }
+      { name: 'text', kind: 'inline', description: 'The single line, kept short' },
+      { name: 'note', kind: 'inline', description: 'Smaller line beneath' }
     ],
-    example: 'tnt.cl~warn~Maintenance Sunday~Back by 09:00.',
+    example: 'tsg.cl.alob~BACK IN 10 MIN~Back by 14:30',
     render: (s) => {
-      const kind = NOTICE_KINDS.includes((s[0] ?? '').trim()) ? (s[0] ?? '').trim() : 'info';
+      const text = (s[0] ?? '').trim();
+      const note = s[1] ?? '';
+      if (!text) {
+        return `<section class="mp-sign"><p class="mp-lede">Add a line of text for the sign.</p></section>`;
+      }
       return `
-      <section class="mp-notice mp-notice--${kind}">
-        ${el('h1', 'mp-title', s[1] ?? '')}
-        ${el('p', 'mp-lede', s[2] ?? '')}
+      <section class="mp-sign">
+        <div class="mp-sign-text mp-sign-text--w${signWidthBucket(text)}">${inline(text)}</div>
+        ${el('p', 'mp-sign-note', note)}
       </section>`;
     }
   },
@@ -491,6 +520,7 @@ export function renderPage(spec: Spec): RenderedPage {
   // sets, so a class per value works and keeps the CSP strict.
   const classes = [
     'micropage-page',
+    `micropage-page--${spec.template.code}`,
     `micropage-page--${spec.theme.code}`,
     `micropage-page--a${spec.accent.code}`,
     ...(spec.width ? [`micropage-page--${spec.width.code}`] : []),
@@ -511,21 +541,42 @@ export function renderPage(spec: Spec): RenderedPage {
 
 export function describeRegistry(origin: string) {
   return {
-    version: 1,
-    summary: 'Renders a complete webpage from a single URL parameter. Nothing is stored server-side.',
+    version: 2,
+    summary:
+      'Builds a complete, styled webpage out of one URL parameter. Nothing is stored: ' +
+      'the URL is the document, so the link is the only artefact and it can be shared, ' +
+      'bookmarked or edited by hand. Pages carry no JavaScript.',
+    howToUse:
+      'Pick a template, then supply its slots in order. Compose the URL as ' +
+      '/micropage?p=<template>.<theme>[.<width>][.a<accent>][.x<flags>]~<slot1>~<slot2>. ' +
+      'Percent-encode each slot separately, then join with literal ~ characters. ' +
+      'Read the encoding rules below before generating a link by hand: three of them ' +
+      'silently corrupt content rather than erroring.',
     grammar: {
       shape: '/micropage?p=<head>~<slot>~<slot>...',
-      head: 'Dot-separated codes. Namespaced by first letter: t=template, c=theme, w=width, a=accent, x=flags. Order does not matter.',
-      slots: 'Everything after the first ~ is slot content, in the order the template declares.',
+      head:
+        'Dot-separated codes, namespaced by first letter: t=template, c=theme, w=width, ' +
+        'a=accent, x=flags. Order does not matter. Only the template code is required; ' +
+        'everything else falls back to a default.',
+      slots:
+        'Everything after the first ~ is slot content, positionally matched to the slots ' +
+        'the chosen template declares. Extra slots are ignored; missing ones are omitted ' +
+        'from the page rather than rendered blank.',
       rules: [
-        'Percent-encode content before putting it in the URL. The separator ~ is literal; a tilde inside content must be written %7E.',
-        'An empty slot is written as two consecutive tildes.',
-        'Do NOT leave a literal + in content: some clients read it as a space. Write %2B.',
-        'A literal # ends the URL and is never sent to the server. Always write %23.',
-        'Slot content is markdown-lite: **bold**, _italic_, `code`, and [label](https://url) links.',
-        'Only http, https, mailto and tel links are kept; anything else renders as plain text.'
+        'Percent-encode each slot. The ~ between slots must stay literal; a tilde INSIDE content must be written %7E, or it will be read as a slot separator.',
+        'An empty slot is two consecutive tildes.',
+        'Never leave a literal + in content: write %2B. Some clients decode a bare + as a space, so "C++" silently becomes "C  ".',
+        'Never leave a literal # in content: write %23. Everything after a # is a URL fragment, is never sent to the server, and is lost with no error.',
+        'Slot content is markdown-lite: **bold**, _italic_, `code`, [label](https://url) links, and line breaks. The Article body slot also takes headings, lists, quotes and code blocks.',
+        'Only http, https, mailto and tel links survive; any other scheme renders as plain text. Raw HTML is escaped, never rendered.',
+        'Keep the whole link under the length limit below. It is set so every page stays QR-encodable.'
       ]
     },
+    notes: [
+      'Slot order for a given template is fixed permanently, because a shared link has no stored record to migrate.',
+      'The Sign template scales its text to fill the page, so it works best with a handful of words.',
+      'The QR template renders the code server-side as inline SVG, always dark on white so it scans on any theme.'
+    ],
     limits: LIMITS,
     templates: TEMPLATES.map((t) => ({
       code: t.code,

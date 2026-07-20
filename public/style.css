@@ -1647,9 +1647,6 @@ select {
   margin-right: auto;
 }
 
-/* The notice panel already carries the accent on its edge */
-.mp-notice .mp-title::after { display: none; }
-
 .mp-title {
   font-family: var(--mp-heading-font);
   font-size: calc(clamp(1.9rem, 5.5vw, 3rem) * var(--mp-scale));
@@ -1754,17 +1751,83 @@ select {
 }
 .micropage-page--cb .mp-cta a { border-radius: 0; }
 
-/* -- Notice -- */
-.mp-notice {
-  border-left: 5px solid var(--mp-accent);
-  padding: 1.25rem 1.5rem;
-  background: var(--mp-panel);
-  border-radius: 4px;
+/* -- Sign -- */
+/* Text is scaled to fill the page. The width bucket comes from the server because
+   the render page runs no JavaScript and so cannot measure text itself. */
+.micropage-page--tsg .mp-canvas { max-width: none; padding-left: 1.5rem; padding-right: 1.5rem; }
+
+.mp-sign {
+  min-height: calc(100vh - 6rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
-.micropage-page--xc .mp-notice { border-left: none; border-top: 5px solid var(--mp-accent); }
-.mp-notice--warn { --mp-accent: #E1BC29; }
-.mp-notice--ok   { --mp-accent: #3fa66a; }
-.mp-notice--err  { --mp-accent: #E15554; }
+
+.mp-sign-text {
+  --sign-w: 12;
+  font-weight: 800;
+  line-height: 1.03;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: var(--mp-fg);
+  border-top: 0.14em solid var(--mp-accent);
+  border-bottom: 0.14em solid var(--mp-accent);
+  padding: 0.12em 0;
+  font-size: min(calc((100vw - 3.5rem) / var(--sign-w)), 58vh);
+}
+
+.mp-sign-note {
+  margin: 1.75rem 0 0;
+  color: var(--mp-muted);
+  font-size: clamp(1rem, 2.6vw, 1.75rem);
+}
+
+.mp-sign-text--w1 { --sign-w: 1; }
+.mp-sign-text--w2 { --sign-w: 2; }
+.mp-sign-text--w3 { --sign-w: 3; }
+.mp-sign-text--w4 { --sign-w: 4; }
+.mp-sign-text--w5 { --sign-w: 5; }
+.mp-sign-text--w6 { --sign-w: 6; }
+.mp-sign-text--w7 { --sign-w: 7; }
+.mp-sign-text--w8 { --sign-w: 8; }
+.mp-sign-text--w9 { --sign-w: 9; }
+.mp-sign-text--w10 { --sign-w: 10; }
+.mp-sign-text--w11 { --sign-w: 11; }
+.mp-sign-text--w12 { --sign-w: 12; }
+.mp-sign-text--w13 { --sign-w: 13; }
+.mp-sign-text--w14 { --sign-w: 14; }
+.mp-sign-text--w15 { --sign-w: 15; }
+.mp-sign-text--w16 { --sign-w: 16; }
+.mp-sign-text--w17 { --sign-w: 17; }
+.mp-sign-text--w18 { --sign-w: 18; }
+.mp-sign-text--w19 { --sign-w: 19; }
+.mp-sign-text--w20 { --sign-w: 20; }
+.mp-sign-text--w21 { --sign-w: 21; }
+.mp-sign-text--w22 { --sign-w: 22; }
+.mp-sign-text--w23 { --sign-w: 23; }
+.mp-sign-text--w24 { --sign-w: 24; }
+.mp-sign-text--w25 { --sign-w: 25; }
+.mp-sign-text--w26 { --sign-w: 26; }
+.mp-sign-text--w27 { --sign-w: 27; }
+.mp-sign-text--w28 { --sign-w: 28; }
+.mp-sign-text--w29 { --sign-w: 29; }
+.mp-sign-text--w30 { --sign-w: 30; }
+.mp-sign-text--w31 { --sign-w: 31; }
+.mp-sign-text--w32 { --sign-w: 32; }
+.mp-sign-text--w33 { --sign-w: 33; }
+.mp-sign-text--w34 { --sign-w: 34; }
+.mp-sign-text--w35 { --sign-w: 35; }
+.mp-sign-text--w36 { --sign-w: 36; }
+.mp-sign-text--w37 { --sign-w: 37; }
+.mp-sign-text--w38 { --sign-w: 38; }
+.mp-sign-text--w39 { --sign-w: 39; }
+.mp-sign-text--w40 { --sign-w: 40; }
+.mp-sign-text--w41 { --sign-w: 41; }
+.mp-sign-text--w42 { --sign-w: 42; }
+.mp-sign-text--w43 { --sign-w: 43; }
+.mp-sign-text--w44 { --sign-w: 44; }
 
 /* -- QR code -- */
 .mp-qr { text-align: center; }

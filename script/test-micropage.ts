@@ -1,4 +1,4 @@
-import { parseSpec, renderPage, describeRegistry, TEMPLATES, SpecError, LIMITS } from '../server/micropage';
+import { parseSpec, renderPage, describeRegistry, TEMPLATES, SpecError, LIMITS, estimateEmWidth, SIGN_MAX_WIDTH } from '../server/micropage';
 
 let failed = 0;
 const fail = (what: string, detail: string) => { console.log(`FAIL ${what}\n     ${detail}`); failed++; };
@@ -141,11 +141,41 @@ mustThrow('query too long', 'p=thp~' + 'x'.repeat(LIMITS.maxQueryLength + 50), /
   }
 }
 
-// --- the template set is exactly the four kept plus QR ---------------------
+// --- Sign template ---------------------------------------------------------
+
+{
+  const r = renderPage(parse('p=tsg~' + encodeURIComponent('BACK IN 10 MIN') + '~' + encodeURIComponent('Back by 14:30')));
+  if (!/mp-sign-text--w\d+/.test(r.html)) fail('sign emits a width bucket', r.html);
+  if (!r.html.includes('BACK IN 10 MIN')) fail('sign shows its text', r.html);
+  if (!r.html.includes('Back by 14:30')) fail('sign shows its note', r.html);
+}
+{
+  // Wide and narrow strings of equal length must land in different buckets
+  const wide = estimateEmWidth('WWWWWW');
+  const narrow = estimateEmWidth('iiiiii');
+  if (!(wide > narrow * 2)) fail('width estimate distinguishes glyph widths', `${wide} vs ${narrow}`);
+}
+{
+  // Very long text clamps to the widest bucket the stylesheet defines
+  const r = renderPage(parse('p=tsg~' + encodeURIComponent('W'.repeat(200))));
+  const m = r.html.match(/mp-sign-text--w(\d+)/);
+  if (!m || Number(m[1]) > SIGN_MAX_WIDTH) fail('sign clamps to max bucket', String(m && m[1]));
+}
+{
+  const r = renderPage(parse('p=tsg~'));
+  if (r.html.includes('mp-sign-text')) fail('empty sign should prompt, not render an empty bar', r.html);
+}
+{
+  // The template code reaches the body class so the shell can adapt
+  const r = renderPage(parse('p=tsg~Hi'));
+  if (!r.bodyClass.includes('micropage-page--tsg')) fail('template body class', r.bodyClass);
+}
+
+// --- the template set is exactly what we kept ------------------------------
 
 {
   const codes = TEMPLATES.map((t) => t.code).sort().join(' ');
-  if (codes !== 'tar tev thp tnt tqr') fail('template set', codes);
+  if (codes !== 'tar tev thp tqr tsg') fail('template set', codes);
 }
 
 // --- every template's documented example must actually render --------------
