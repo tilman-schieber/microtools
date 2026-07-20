@@ -11,7 +11,8 @@
  */
 
 import { Marked } from 'marked';
-import { safeUrlRenderer, escapeAttr } from './safeMarkdown';
+import qrcode from 'qrcode-generator';
+import { safeUrlRenderer, escapeAttr, safeUrl } from './safeMarkdown';
 
 // ---------------------------------------------------------------------------
 // Markdown instance
@@ -175,34 +176,16 @@ export interface SlotDef {
   values?: string[];
 }
 
-export interface RepeatDef {
-  name: string;
-  /** One entry per field in each repetition; length 2 means slots come in pairs. */
-  fields: SlotDef[];
-  description: string;
-}
-
 export interface TemplateDef {
   code: string;
   name: string;
   description: string;
   slots: SlotDef[];
-  repeat?: RepeatDef;
   example: string;
   render: (slots: string[]) => string;
 }
 
 const NOTICE_KINDS = ['info', 'warn', 'ok', 'err'];
-
-/** Renders trailing slots in groups of `size`, dropping incomplete trailing groups. */
-function groups(slots: string[], from: number, size: number): string[][] {
-  const out: string[][] = [];
-  for (let i = from; i + size - 1 < slots.length; i += size) {
-    const group = slots.slice(i, i + size);
-    if (group.some((v) => v.trim() !== '')) out.push(group);
-  }
-  return out;
-}
 
 /** Emits an element only when the slot has content, so empty slots vanish rather than render blank. */
 function el(tag: string, cls: string, content: string): string {
@@ -243,76 +226,6 @@ export const TEMPLATES: TemplateDef[] = [
       </article>`
   },
   {
-    code: 'tls',
-    name: 'List',
-    description: 'A title followed by any number of list items.',
-    slots: [{ name: 'title', kind: 'inline', description: 'The h1' }],
-    repeat: {
-      name: 'item',
-      fields: [{ name: 'item', kind: 'inline', description: 'One list item' }],
-      description: 'Every remaining slot becomes a list item.'
-    },
-    example: 'tls.cm~Packing list~Passport~Charger~Headphones',
-    render: (s) => {
-      const items = groups(s, 1, 1);
-      return `
-      <section class="mp-list">
-        ${el('h1', 'mp-title', s[0] ?? '')}
-        ${items.length ? `<ul class="mp-items">${items.map((g) => `<li>${inline(g[0])}</li>`).join('')}</ul>` : ''}
-      </section>`;
-    }
-  },
-  {
-    code: 'tlk',
-    name: 'Links',
-    description: 'A link-in-bio page. Each item is a markdown link.',
-    slots: [
-      { name: 'title', kind: 'inline', description: 'The h1' },
-      { name: 'blurb', kind: 'inline', description: 'One line under the title' }
-    ],
-    repeat: {
-      name: 'link',
-      fields: [{ name: 'link', kind: 'inline', description: 'A markdown link, e.g. [Docs](https://x.dev)' }],
-      description: 'Every remaining slot becomes a link button.'
-    },
-    example: 'tlk.cd.alil~Tilman~Things I maintain~[Microtools](https://example.dev)',
-    render: (s) => {
-      const links = groups(s, 2, 1);
-      return `
-      <section class="mp-links">
-        ${el('h1', 'mp-title', s[0] ?? '')}
-        ${el('p', 'mp-lede', s[1] ?? '')}
-        ${links.length ? `<nav class="mp-linklist">${links.map((g) => `<div class="mp-linkrow">${inline(g[0])}</div>`).join('')}</nav>` : ''}
-      </section>`;
-    }
-  },
-  {
-    code: 'tpr',
-    name: 'Profile',
-    description: 'A name, role, blurb, and a row of links.',
-    slots: [
-      { name: 'name', kind: 'inline', description: 'The h1' },
-      { name: 'role', kind: 'inline', description: 'Role or tagline' },
-      { name: 'blurb', kind: 'inline', description: 'A short bio' }
-    ],
-    repeat: {
-      name: 'link',
-      fields: [{ name: 'link', kind: 'inline', description: 'A markdown link' }],
-      description: 'Every remaining slot becomes a link.'
-    },
-    example: 'tpr.cp~Ada Lovelace~Mathematician~Wrote the first algorithm.~[Notes](https://example.dev)',
-    render: (s) => {
-      const links = groups(s, 3, 1);
-      return `
-      <section class="mp-profile">
-        ${el('h1', 'mp-title', s[0] ?? '')}
-        ${el('p', 'mp-role', s[1] ?? '')}
-        ${el('p', 'mp-blurb', s[2] ?? '')}
-        ${links.length ? `<nav class="mp-inline-links">${links.map((g) => inline(g[0])).join('')}</nav>` : ''}
-      </section>`;
-    }
-  },
-  {
     code: 'tev',
     name: 'Event',
     description: 'Title, when, where, details, and a link.',
@@ -336,29 +249,6 @@ export const TEMPLATES: TemplateDef[] = [
       </section>`
   },
   {
-    code: 'tfq',
-    name: 'FAQ',
-    description: 'A title followed by question and answer pairs.',
-    slots: [{ name: 'title', kind: 'inline', description: 'The h1' }],
-    repeat: {
-      name: 'pair',
-      fields: [
-        { name: 'question', kind: 'inline', description: 'The question' },
-        { name: 'answer', kind: 'inline', description: 'The answer' }
-      ],
-      description: 'Remaining slots are read in pairs: question, answer, question, answer…'
-    },
-    example: 'tfq.cl~Questions~Is it free?~Yes.~Where is it stored?~Nowhere, it is all in the URL.',
-    render: (s) => {
-      const pairs = groups(s, 1, 2);
-      return `
-      <section class="mp-faq">
-        ${el('h1', 'mp-title', s[0] ?? '')}
-        ${pairs.length ? `<dl class="mp-qa">${pairs.map((g) => `<div><dt>${inline(g[0])}</dt><dd>${inline(g[1])}</dd></div>`).join('')}</dl>` : ''}
-      </section>`;
-    }
-  },
-  {
     code: 'tnt',
     name: 'Notice',
     description: 'A single status banner: info, warn, ok, or err.',
@@ -374,6 +264,48 @@ export const TEMPLATES: TemplateDef[] = [
       <section class="mp-notice mp-notice--${kind}">
         ${el('h1', 'mp-title', s[1] ?? '')}
         ${el('p', 'mp-lede', s[2] ?? '')}
+      </section>`;
+    }
+  },
+  {
+    code: 'tqr',
+    name: 'QR code',
+    description: 'A title above a large scannable QR code of a link.',
+    slots: [
+      { name: 'title', kind: 'inline', description: 'Shown above the code' },
+      { name: 'link', kind: 'inline', description: 'The URL the code points to' }
+    ],
+    example: 'tqr.cl.apru~Scan to open~https://example.dev',
+    render: (s) => {
+      const title = s[0] ?? '';
+      const target = (s[1] ?? '').trim();
+      if (!target) {
+        return `<section class="mp-qr">${el('h1', 'mp-title', title)}
+          <p class="mp-lede">Add a link to generate a code.</p></section>`;
+      }
+      // Rendered server-side: the page's CSP sets script-src 'none', so the
+      // client-side QR library used elsewhere in the app cannot run here.
+      let svg: string;
+      try {
+        const qr = qrcode(0, 'M');
+        qr.addData(target);
+        qr.make();
+        svg = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+      } catch {
+        throw new SpecError(
+          'That link is too long to fit in a QR code.',
+          `A QR code holds roughly 1200 characters at this error-correction level; yours is ${target.length}.`
+        );
+      }
+      const safe = safeUrl(target);
+      const caption = safe
+        ? `<a class="mp-qr-target" href="${escapeAttr(safe)}" rel="nofollow ugc noopener noreferrer">${escapeAttr(target)}</a>`
+        : `<span class="mp-qr-target">${escapeAttr(target)}</span>`;
+      return `
+      <section class="mp-qr">
+        ${el('h1', 'mp-title', title)}
+        <div class="mp-qr-frame">${svg}</div>
+        <p class="mp-qr-caption">${caption}</p>
       </section>`;
     }
   }
@@ -500,7 +432,7 @@ export function parseSpec(requestUrl: string): Spec {
 
   const limit = (kind: string) => (kind === 'block' ? LIMITS.maxBlockSlot : LIMITS.maxInlineSlot);
   slots.forEach((value, i) => {
-    const def = template.slots[i] ?? template.repeat?.fields[(i - template.slots.length) % (template.repeat?.fields.length || 1)];
+    const def = template.slots[i];
     const max = limit(def?.kind ?? 'inline');
     if (value.length > max) {
       throw new SpecError(
@@ -510,9 +442,9 @@ export function parseSpec(requestUrl: string): Spec {
     }
   });
 
-  if (!template.repeat && slots.length > template.slots.length) {
-    // Lenient: extra slots on a fixed template are ignored rather than rejected,
-    // so a hand-trimmed URL still renders.
+  if (slots.length > template.slots.length) {
+    // Lenient: extra slots are ignored rather than rejected, so a hand-trimmed
+    // URL still renders.
     slots.length = template.slots.length;
   }
 
@@ -600,9 +532,6 @@ export function describeRegistry(origin: string) {
       name: t.name,
       description: t.description,
       slots: t.slots.map(({ name, kind, description, values }) => ({ name, kind, description, values })),
-      repeat: t.repeat
-        ? { name: t.repeat.name, description: t.repeat.description, fields: t.repeat.fields.map((f) => f.name) }
-        : null,
       example: `${origin}/micropage?p=${encodeURIComponent(t.example).replace(/%7E/g, '~')}`
     })),
     themes: THEMES.map(({ code, name, description }) => ({ code, name, description })),

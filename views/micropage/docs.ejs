@@ -35,8 +35,7 @@
           <td><code><%= t.code %></code></td>
           <td><%= t.name %><br><span class="hint"><%= t.description %></span></td>
           <td>
-            <%= t.slots.map(function (s) { return s.name; }).join(', ') %><% if (t.repeat) { %><%= t.slots.length ? ', ' : '' %>then <%= t.repeat.fields.join(' + ') %> repeating<% } %>
-            <% if (t.repeat) { %><br><span class="hint"><%= t.repeat.description %></span><% } %>
+            <%= t.slots.map(function (s) { return s.name; }).join(', ') %>
           </td>
         </tr>
         <% }); %>

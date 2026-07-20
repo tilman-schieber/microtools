@@ -22,6 +22,7 @@ async function buildAll() {
     "marked-katex-extension",
     "katex",
     "highlight.js",
+    "qrcode-generator",
   ];
 
   const externals = allDeps.filter((dep) => !bundleAllowlist.includes(dep));

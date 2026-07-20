@@ -15,8 +15,8 @@ function parse(query: string) {
   if (s.slots[0] !== 'a~b') fail('%7E decodes to literal tilde', JSON.stringify(s.slots[0]));
 }
 {
-  // tls repeats, so no slot is truncated and the empty middle survives
-  const s = parse('p=tls~a~~c');
+  // tev has five slots, so an empty middle one survives rather than being truncated
+  const s = parse('p=tev~a~~c');
   if (s.slots.length !== 3 || s.slots[1] !== '') fail('~~ is an empty slot', JSON.stringify(s.slots));
 }
 {
@@ -73,7 +73,7 @@ mustThrow('unknown code', 'p=zzz~H', /unknown code/i);
 mustThrow('unknown accent', 'p=thp.aXX~H', /unknown accent/i);
 mustThrow('unknown flag', 'p=thp.xz~H', /unknown flag/i);
 mustThrow('broken escape', 'p=thp~%ZZ', /percent-escape/i);
-mustThrow('too many slots', 'p=tls~' + Array(LIMITS.maxSlots + 3).fill('x').join('~'), /too many slots/i);
+mustThrow('too many slots', 'p=tev~' + Array(LIMITS.maxSlots + 3).fill('x').join('~'), /too many slots/i);
 mustThrow('slot too long', 'p=thp~' + 'x'.repeat(LIMITS.maxInlineSlot + 1), /too long/i);
 mustThrow('query too long', 'p=thp~' + 'x'.repeat(LIMITS.maxQueryLength + 50), /too long for a URL/i);
 
@@ -112,23 +112,40 @@ mustThrow('query too long', 'p=thp~' + 'x'.repeat(LIMITS.maxQueryLength + 50), /
   if (r.html.includes('<math')) fail('KaTeX leaked into micropage', r.html);
   if (!r.html.includes('$5')) fail('dollar amounts survive', r.html);
 }
+
+// --- QR template -----------------------------------------------------------
+
 {
-  // Repeating slots
-  const r = renderPage(parse('p=tls~Title~one~two~three'));
-  const items = (r.html.match(/<li>/g) ?? []).length;
-  if (items !== 3) fail('list repeats', `expected 3 items, got ${items}`);
+  const r = renderPage(parse('p=tqr~' + encodeURIComponent('Scan me') + '~' + encodeURIComponent('https://example.dev')));
+  if (!r.html.includes('<svg')) fail('qr renders inline svg', r.html.slice(0, 200));
+  if (!r.html.includes('viewBox')) fail('qr svg is scalable', r.html.slice(0, 200));
+  if (!r.html.includes('Scan me')) fail('qr shows the title', r.html.slice(0, 200));
+  if (!/href="https:\/\/example\.dev"/.test(r.html)) fail('qr caption links the target', r.html);
 }
 {
-  // Tuple repeats read in pairs
-  const r = renderPage(parse('p=tfq~FAQ~Q1~A1~Q2~A2'));
-  const dts = (r.html.match(/<dt>/g) ?? []).length;
-  if (dts !== 2) fail('faq pairs', `expected 2 pairs, got ${dts}`);
+  // No link yet: prompt rather than an empty frame
+  const r = renderPage(parse('p=tqr~' + encodeURIComponent('Title only')));
+  if (r.html.includes('<svg')) fail('qr with no link should not render a code', r.html);
 }
 {
-  // A dangling half-pair is dropped rather than rendering an empty answer
-  const r = renderPage(parse('p=tfq~FAQ~Q1~A1~Q2'));
-  const dts = (r.html.match(/<dt>/g) ?? []).length;
-  if (dts !== 1) fail('faq drops incomplete pair', `expected 1 pair, got ${dts}`);
+  // A javascript: target must not become a clickable caption
+  const r = renderPage(parse('p=tqr~T~' + encodeURIComponent('javascript:alert(1)')));
+  if (/href="\s*javascript:/i.test(r.html)) fail('qr caption rejects javascript:', r.html);
+}
+{
+  // Too much data for a QR code is a clear error, not a crash
+  try {
+    renderPage(parse('p=tqr~T~' + 'x'.repeat(590)));
+  } catch (e) {
+    if (!(e instanceof SpecError)) fail('oversized qr', `wrong error: ${e}`);
+  }
+}
+
+// --- the template set is exactly the four kept plus QR ---------------------
+
+{
+  const codes = TEMPLATES.map((t) => t.code).sort().join(' ');
+  if (codes !== 'tar tev thp tnt tqr') fail('template set', codes);
 }
 
 // --- every template's documented example must actually render --------------
@@ -152,7 +169,6 @@ for (const t of TEMPLATES) {
     const d = doc.templates.find((x) => x.code === t.code);
     if (!d) { fail('agents missing template', t.code); continue; }
     if (d.slots.length !== t.slots.length) fail(`agents slots for ${t.code}`, `${d.slots.length} vs ${t.slots.length}`);
-    if (!!d.repeat !== !!t.repeat) fail(`agents repeat flag for ${t.code}`, String(d.repeat));
   }
   if (!JSON.stringify(doc).includes('%2B')) fail('agents documents the + rule', 'no mention of %2B');
 }

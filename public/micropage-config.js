@@ -10,7 +10,6 @@
   const flagC = document.getElementById('mp-flag-c');
   const flagB = document.getElementById('mp-flag-b');
   const slotBox = document.getElementById('mp-slots');
-  const addItemBtn = document.getElementById('mp-add-item');
   const linkOutput = document.getElementById('mp-link');
   const copyBtn = document.getElementById('mp-copy');
   const openLink = document.getElementById('mp-open');
@@ -21,7 +20,22 @@
 
   let registry = null;
   let accent = null;
-  let repeatCount = 2;
+
+  /**
+   * Slots that mean the same thing across templates, so switching template keeps
+   * what you have typed instead of throwing it away.
+   */
+  const SYNONYMS = [
+    ['heading', 'title'],
+    ['body', 'details']
+  ];
+
+  function synonymsOf(name) {
+    for (const group of SYNONYMS) {
+      if (group.indexOf(name) !== -1) return group;
+    }
+    return [name];
+  }
 
   function setError(message) {
     error.hidden = !message;
@@ -67,6 +81,13 @@
 
   function renderSlotInputs() {
     const template = currentTemplate();
+
+    // Snapshot the current values before the inputs are torn down
+    const previous = {};
+    slotBox.querySelectorAll('[data-slot]').forEach(function (field) {
+      previous[field.dataset.slot] = field.value;
+    });
+
     templateHint.textContent = template.description;
     slotBox.textContent = '';
 
@@ -112,17 +133,22 @@
 
     template.slots.forEach(function (s) { addRow(s.name, s.kind, s.description, s.values); });
 
-    if (template.repeat) {
-      for (let i = 0; i < repeatCount; i++) {
-        template.repeat.fields.forEach(function (f) {
-          addRow(f + ' ' + (i + 1), 'inline', template.repeat.description);
-        });
+    // Restore anything the previous template had under the same or an equivalent name
+    slotBox.querySelectorAll('[data-slot]').forEach(function (field) {
+      const candidates = synonymsOf(field.dataset.slot);
+      for (const key of candidates) {
+        if (previous[key] !== undefined && previous[key] !== '') {
+          if (field.tagName === 'SELECT') {
+            if (Array.prototype.some.call(field.options, function (o) { return o.value === previous[key]; })) {
+              field.value = previous[key];
+            }
+          } else {
+            field.value = previous[key];
+          }
+          return;
+        }
       }
-      addItemBtn.hidden = false;
-      addItemBtn.textContent = 'Add another ' + template.repeat.name;
-    } else {
-      addItemBtn.hidden = true;
-    }
+    });
   }
 
   function update() {
@@ -160,7 +186,8 @@
     });
   }
 
-  fetch('/micropage/agents')
+  // no-store: the palette and template list must never come from a stale cache
+  fetch('/micropage/agents', { cache: 'no-store' })
     .then(function (r) { return r.json(); })
     .then(function (data) {
       registry = data;
@@ -206,7 +233,6 @@
     });
 
   templateSelect.addEventListener('change', function () {
-    repeatCount = 2;
     renderSlotInputs();
     update();
   });
@@ -215,15 +241,6 @@
     el.addEventListener('change', update);
   });
 
-  addItemBtn.addEventListener('click', function () {
-    repeatCount++;
-    const values = slotValues();
-    renderSlotInputs();
-    slotBox.querySelectorAll('[data-slot]').forEach(function (el, i) {
-      if (values[i] !== undefined) el.value = values[i];
-    });
-    update();
-  });
 
   copyBtn.addEventListener('click', async function () {
     try {

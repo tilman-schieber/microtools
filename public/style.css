@@ -1629,6 +1629,27 @@ select {
 }
 
 /* -- Shared type -- */
+/* An accent rule under the title, so the accent is visible on every template
+   rather than only the ones that happen to have a button or a border. */
+.mp-title::after {
+  content: '';
+  display: block;
+  width: 3.25rem;
+  height: 4px;
+  margin-top: 0.9rem;
+  background: var(--mp-accent);
+  border-radius: 2px;
+}
+
+.micropage-page--xc .mp-title::after,
+.mp-qr .mp-title::after {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* The notice panel already carries the accent on its edge */
+.mp-notice .mp-title::after { display: none; }
+
 .mp-title {
   font-family: var(--mp-heading-font);
   font-size: calc(clamp(1.9rem, 5.5vw, 3rem) * var(--mp-scale));
@@ -1637,27 +1658,21 @@ select {
   color: var(--mp-fg);
 }
 
-.mp-lede,
-.mp-blurb {
+.mp-lede {
   font-size: calc(1.1rem * var(--mp-scale));
   line-height: 1.6;
   color: var(--mp-muted);
   margin: 0 0 1rem;
 }
 
-.mp-role {
-  font-size: calc(1rem * var(--mp-scale));
-  color: var(--mp-link);
-  margin: 0 0 0.75rem;
-  font-weight: 600;
-}
-
 .micropage-page--cb .mp-title {
   text-transform: uppercase;
   letter-spacing: -0.02em;
-  border-bottom: 6px solid var(--mp-rule);
+  border-bottom: 6px solid var(--mp-accent);
   padding-bottom: 0.4rem;
 }
+
+.micropage-page--cb .mp-title::after { display: none; }
 
 .mp-canvas a {
   color: var(--mp-link);
@@ -1673,7 +1688,10 @@ select {
   line-height: 1.25;
   margin: 1.75rem 0 0.6rem;
 }
-.mp-prose h2 { font-size: calc(1.4rem * var(--mp-scale)); }
+.mp-prose h2 {
+  font-size: calc(1.4rem * var(--mp-scale));
+  color: var(--mp-link);
+}
 .mp-prose h3 { font-size: calc(1.15rem * var(--mp-scale)); }
 .mp-prose p { margin: 0 0 1rem; }
 .mp-prose ul,
@@ -1699,62 +1717,10 @@ select {
 .mp-prose pre code { background: none; padding: 0; }
 .mp-prose img { max-width: 100%; height: auto; }
 
-/* -- List -- */
-.mp-items {
-  list-style: none;
-  padding: 0;
-  margin: 1.5rem 0 0;
-}
-.mp-items li {
-  padding: 0.7rem 0;
-  border-bottom: 1px solid var(--mp-rule);
-  font-size: calc(1.05rem * var(--mp-scale));
-}
-.mp-items li::before {
-  content: '';
-  display: inline-block;
-  width: 0.5rem;
-  height: 0.5rem;
-  margin-right: 0.75rem;
-  background: var(--mp-accent);
-  border-radius: 50%;
-  vertical-align: middle;
-}
-.micropage-page--xc .mp-items li::before { display: none; }
-
-/* -- Links / link-in-bio -- */
-.mp-linklist {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 2rem;
-}
-.mp-linkrow a {
-  display: block;
-  padding: 0.9rem 1.2rem;
-  border: 2px solid var(--mp-link);
-  border-radius: 8px;
-  text-align: center;
-  text-decoration: none;
-  font-weight: 600;
-  color: var(--mp-link);
-}
-.mp-linkrow a:hover {
-  background: var(--mp-accent);
-  color: var(--mp-on-accent);
-}
-.micropage-page--cb .mp-linkrow a { border-radius: 0; border-width: 3px; }
-
-.mp-inline-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1.25rem;
-}
-.micropage-page--xc .mp-inline-links { justify-content: center; }
-
 /* -- Event -- */
 .mp-meta {
+  border-left: 3px solid var(--mp-accent);
+  padding-left: 1rem;
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
@@ -1768,7 +1734,7 @@ select {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--mp-muted);
+  color: var(--mp-link);
   margin-bottom: 0.2rem;
 }
 .mp-meta dd {
@@ -1788,23 +1754,6 @@ select {
 }
 .micropage-page--cb .mp-cta a { border-radius: 0; }
 
-/* -- FAQ -- */
-.mp-qa { margin: 1.5rem 0 0; }
-.mp-qa > div {
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--mp-rule);
-}
-.mp-qa dt {
-  font-weight: 700;
-  font-size: calc(1.05rem * var(--mp-scale));
-  margin-bottom: 0.35rem;
-}
-.mp-qa dd {
-  margin: 0;
-  color: var(--mp-muted);
-  line-height: 1.6;
-}
-
 /* -- Notice -- */
 .mp-notice {
   border-left: 5px solid var(--mp-accent);
@@ -1816,6 +1765,35 @@ select {
 .mp-notice--warn { --mp-accent: #E1BC29; }
 .mp-notice--ok   { --mp-accent: #3fa66a; }
 .mp-notice--err  { --mp-accent: #E15554; }
+
+/* -- QR code -- */
+.mp-qr { text-align: center; }
+
+.mp-qr-frame {
+  /* Always white with dark modules: a themed QR on a dark page will not scan */
+  background: #ffffff;
+  border: 5px solid var(--mp-accent);
+  border-radius: 10px;
+  padding: clamp(0.75rem, 2vw, 1.25rem);
+  width: min(68vmin, 460px);
+  max-width: 100%;
+  margin: 2rem auto 1rem;
+}
+
+.micropage-page--cb .mp-qr-frame { border-radius: 0; border-width: 6px; }
+
+.mp-qr-frame svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.mp-qr-caption {
+  margin: 0;
+  font-size: 0.95rem;
+  word-break: break-all;
+  color: var(--mp-muted);
+}
 
 /* -- Error page -- */
 .micropage-error-message {

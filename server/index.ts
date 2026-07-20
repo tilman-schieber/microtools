@@ -178,7 +178,10 @@ async function start() {
   fastify.get('/micropage/agents', async (request, reply) => {
     return reply
       .type('application/json; charset=utf-8')
-      .header('Cache-Control', 'public, max-age=3600')
+      // no-cache, not max-age: the builder reads its template and palette lists from
+      // here, so a cached copy silently shows a stale palette after any change. The
+      // payload is small, and no-cache still permits a 304.
+      .header('Cache-Control', 'no-cache')
       .send(JSON.stringify(micropage.describeRegistry(requestOrigin(request)), null, 2));
   });
 
@@ -208,7 +211,9 @@ async function start() {
     try {
       const spec = micropage.parseSpec(request.raw.url || '');
       const page = micropage.renderPage(spec);
-      return reply.header('Cache-Control', 'public, max-age=3600').view('micropage/show', { page });
+      // A page is a pure function of its URL, so it is cacheable — but a short window
+      // bounds how long an old render survives a template or stylesheet change.
+      return reply.header('Cache-Control', 'public, max-age=300').view('micropage/show', { page });
     } catch (err) {
       if (err instanceof micropage.SpecError) {
         return reply.status(400).view('micropage/error', {
