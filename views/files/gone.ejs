@@ -3,7 +3,6 @@
     <h1>Files Not Found</h1>
     <p>This file share has expired, been deleted, or never existed.</p>
     <p><a href="/files/new">Share new files</a></p>
-    <p><a href="/">Back to home</a></p>
   </main>
 ` %>
-<%- include('../layout', { content, title }) %>
+<%- include('../layout', { content, title, crumb: 'Files' }) %>

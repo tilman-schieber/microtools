@@ -1,5 +1,5 @@
 import { build as esbuild, transform } from "esbuild";
-import { rm, readFile, copyFile, writeFile } from "fs/promises";
+import { rm, readFile, copyFile, writeFile, mkdir } from "fs/promises";
 
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
@@ -56,6 +56,14 @@ async function buildAll() {
   const qrMinified = await transform(qrSrc, { minify: true });
   await writeFile("public/qrcode.min.js", qrMinified.code);
   console.log(`  public/qrcode.min.js (${(qrMinified.code.length / 1024).toFixed(1)}kb from ${(qrSrc.length / 1024).toFixed(1)}kb)`);
+
+  // Body font, served locally so no page phones out to a font CDN
+  await mkdir("public/fonts", { recursive: true });
+  for (const weight of ["400", "500", "600"]) {
+    const name = `ibm-plex-sans-latin-${weight}-normal.woff2`;
+    await copyFile(`node_modules/@fontsource/ibm-plex-sans/files/${name}`, `public/fonts/${name}`);
+    console.log(`  public/fonts/${name}`);
+  }
 
   // Highlighting runs server-side, so only the theme stylesheet ships to the client
   const hlSrc = await readFile("node_modules/highlight.js/styles/github.css", "utf-8");

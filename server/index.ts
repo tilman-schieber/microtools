@@ -134,8 +134,13 @@ async function start() {
   // Home page
   fastify.get('/', async (request, reply) => {
     return reply.view('index', {
-      title: 'Micro Tools'
+      title: 'Microtools'
     });
+  });
+
+  // Unknown routes get the styled page rather than Fastify's JSON body
+  fastify.setNotFoundHandler(async (request, reply) => {
+    return reply.status(404).view('404', { title: 'Not found' });
   });
 
   // Passwords: Generator page

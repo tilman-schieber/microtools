@@ -1,63 +1,46 @@
-<% const content = `
+<%
+const tools = [
+  { href: '/notes/new', name: 'Note Sharing', desc: 'Create and share plain text or Markdown notes',
+    icon: '<path d="M5 3h8l4 4v14H5z"/><path d="M13 3v4h4"/><path d="M8 12h8M8 16h8"/>' },
+  { href: '/polls/new', name: 'Date Poll', desc: 'Find a time that works for everyone',
+    icon: '<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/>' },
+  { href: '/expenses/new', name: 'Expense Share', desc: 'Split costs in a group and settle up',
+    icon: '<circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/>' },
+  { href: '/secrets/new', name: 'One-Time Secret', desc: 'Encrypted in your browser, gone after one view',
+    icon: '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>' },
+  { href: '/files/new', name: 'File Share', desc: 'Upload files and share them by link, with an expiry',
+    icon: '<path d="M3 6h6l2 2h10v12H3z"/>' },
+  { href: '/passwords/new', name: 'Password Generator', desc: 'Strong passwords and passphrases, generated locally',
+    icon: '<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M17 6l2.5 2.5M14 9l2.5 2.5"/>' },
+  { href: '/clock/new', name: 'Clock', desc: 'Digital, Swiss railway, or countdown displays from a URL',
+    icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>' },
+  { href: '/bring/new', name: 'Potluck Planner', desc: 'Coordinate who brings what',
+    icon: '<path d="M3 17h18M5 17a7 7 0 0 1 14 0"/><path d="M12 8v2"/>' },
+  { href: '/micropage/new', name: 'Micropage', desc: 'A whole page that lives entirely in its own link',
+    icon: '<path d="M10 14a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1"/><path d="M14 10a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1"/>' },
+];
+
+const rows = tools.map(t => `
+      <li>
+        <a href="${t.href}" class="tool-row">
+          <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${t.icon}</svg>
+          <span class="tool-text">
+            <span class="tool-name">${t.name}</span>
+            <span class="tool-desc">${t.desc}</span>
+          </span>
+          <svg class="tool-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </a>
+      </li>`).join('');
+
+const content = `
   <main class="landing">
-    <h1>Micro Tools</h1>
-    <p class="tagline">Simple, link-based tools. No accounts needed.</p>
-    
-    <div class="tools-grid">
-      <a href="/notes/new" class="tool-card">
-        <span class="tool-icon">&#128221;</span>
-        <h2>Note Sharing</h2>
-        <p>Create and share notes instantly via a link</p>
-      </a>
-      
-      <a href="/polls/new" class="tool-card">
-        <span class="tool-icon">&#128197;</span>
-        <h2>Date Poll</h2>
-        <p>Schedule meetings with Doodle-style voting</p>
-      </a>
-      
-      <a href="/expenses/new" class="tool-card">
-        <span class="tool-icon">&#128176;</span>
-        <h2>Expense Share</h2>
-        <p>Split costs easily with friends or groups</p>
-      </a>
-      
-      <a href="/secrets/new" class="tool-card">
-        <span class="tool-icon">&#128274;</span>
-        <h2>One-Time Secret</h2>
-        <p>Share sensitive info that self-destructs after viewing</p>
-      </a>
-      
-      <a href="/files/new" class="tool-card">
-        <span class="tool-icon">&#128193;</span>
-        <h2>File Share</h2>
-        <p>Upload and share files with a simple link</p>
-      </a>
-
-      <a href="/passwords/new" class="tool-card">
-        <span class="tool-icon">&#128273;</span>
-        <h2>Password Generator</h2>
-        <p>Create strong passwords and XKCD-style passphrases locally</p>
-      </a>
-
-      <a href="/clock/new" class="tool-card">
-        <span class="tool-icon">&#128338;</span>
-        <h2>Clock</h2>
-        <p>Create parameter-based digital, analogue, and countdown clock links</p>
-      </a>
-        
-      <a href="/bring/new" class="tool-card">
-        <span class="tool-icon">&#127869;</span>
-        <h2>Potluck Planner</h2>
-        <p>Coordinate who brings what to parties</p>
-      </a>
-
-      <a href="/micropage/new" class="tool-card">
-        <span class="tool-icon">&#128196;</span>
-        <h2>Micropage</h2>
-        <p>Build a whole page that lives entirely in its own link</p>
-      </a>
+    <div class="landing-hero">
+      <h1>Simple, link-based tools.</h1>
+      <p>Create something and share the link. Nothing to sign up for, nothing tracked.</p>
     </div>
+    <ul class="tool-list">${rows}
+    </ul>
+    <p class="landing-footer">Open source. Runs on your own server.</p>
   </main>
 ` %>
 <%- include('layout', { content, title, bodyClass: 'landing-page' }) %>

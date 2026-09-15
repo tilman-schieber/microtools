@@ -21,7 +21,6 @@
     </form>
     
     <div id="result"></div>
-    <p><a href="/">Back to home</a></p>
   </main>
 
   <script>
@@ -77,4 +76,4 @@
     });
   </script>
 ` %>
-<%- include('../layout', { content, title }) %>
+<%- include('../layout', { content, title, crumb: 'Files' }) %>

@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title %></title>
-  <link rel="stylesheet" href="/public/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
+  <%- include('../_head', { title: title }) %>
 </head>
 <body class="note-md-page">
+  <%- include('../_header', { crumb: 'Micropage docs' }) %>
   <main>
     <h1>Micropage</h1>
     <p class="tagline"><%= registry.summary %></p>
@@ -92,7 +89,7 @@
       templates, slot order, limits, and a working example link per template.
     </p>
 
-    <p><a href="/micropage/new">Open the builder</a> &middot; <a href="/">Back to home</a></p>
+    <p><a href="/micropage/new">Open the builder</a></p>
   </main>
 </body>
 </html>

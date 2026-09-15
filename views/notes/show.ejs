@@ -1,29 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= note.data.title || 'Note' %></title>
-  <link rel="stylesheet" href="/public/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
-  <script src="/public/htmx.min.js"></script>
-  <script src="/public/qrcode.min.js"></script>
-  <script>
-    function renderQRCodes(root) {
-      (root || document).querySelectorAll('.qrcode[data-url]').forEach(function(el) {
-        if (el.dataset.rendered) return;
-        var qr = qrcode(0, 'M');
-        qr.addData(el.dataset.url);
-        qr.make();
-        el.innerHTML = qr.createSvgTag(3, 0);
-        el.dataset.rendered = '1';
-      });
-    }
-    document.addEventListener('DOMContentLoaded', function() { renderQRCodes(); });
-    document.addEventListener('htmx:afterSwap', function(e) { renderQRCodes(e.detail.target); });
-  </script>
+  <%- include('../_head', { title: note.data.title || 'Note' }) %>
 </head>
 <body>
+  <%- include('../_header', { crumb: 'Note' }) %>
   <main>
     <h1><%= note.data.title || 'Note' %></h1>
     <div id="note-container">
@@ -34,7 +15,6 @@
       </div>
       <button hx-delete="/notes/<%= note.id %>" hx-target="#note-container" hx-swap="innerHTML" hx-confirm="Delete this note?">Delete Note</button>
     </div>
-    <p><a href="/">Back to home</a></p>
   </main>
 </body>
 </html>

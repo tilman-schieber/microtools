@@ -1,8 +1,8 @@
 <% const content = `
   <main>
-    <h1>Not Found</h1>
+    <h1>Not found</h1>
     <p>The page you're looking for doesn't exist or has been removed.</p>
-    <p><a href="/">Back to home</a></p>
+    <p><a href="/">Back to the tools</a></p>
   </main>
 ` %>
-<%- include('layout', { content, title: 'Not Found' }) %>
+<%- include('layout', { content, title: 'Not found', crumb: 'Not found' }) %>

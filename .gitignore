@@ -5,3 +5,4 @@ data
 *.tar.gz
 public/htmx.min.js
 public/qrcode.min.js
+public/fonts

@@ -51,9 +51,9 @@
       <iframe id="mp-preview" class="micropage-preview" title="Micropage preview"></iframe>
     </section>
 
-    <p><a href="/micropage/docs">Docs</a> &middot; <a href="/">Back to home</a></p>
+    <p><a href="/micropage/docs">Read the docs</a></p>
   </main>
 
   <script src="/public/micropage-config.js"></script>
 ` %>
-<%- include('../layout', { content, title }) %>
+<%- include('../layout', { content, title, crumb: 'Micropage' }) %>

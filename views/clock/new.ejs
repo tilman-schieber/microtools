@@ -67,9 +67,8 @@
       <p id="clock-config-error" class="error" hidden></p>
     </section>
 
-    <p><a href="/">Back to home</a></p>
   </main>
 
   <script src="/public/clock-config.js"></script>
 ` %>
-<%- include('../layout', { content, title }) %>
+<%- include('../layout', { content, title, crumb: 'Clock' }) %>

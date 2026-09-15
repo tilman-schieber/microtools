@@ -50,7 +50,7 @@ npm run start        # Runs the production bundle
 
 ## Vendored client-side dependencies
 
-The build script copies [htmx](https://htmx.org/) and [qrcode-generator](https://github.com/nicokoenig/qrcode-generator) from `node_modules` into `public/` so they are served locally instead of from CDNs. These generated files are gitignored — run `npm run build` after cloning to produce them.
+The build script copies [htmx](https://htmx.org/), [qrcode-generator](https://github.com/nicokoenig/qrcode-generator), and the [IBM Plex Sans](https://github.com/IBM/plex) font files (via `@fontsource/ibm-plex-sans`) from `node_modules` into `public/` so they are served locally instead of from CDNs. These generated files are gitignored — run `npm run build` after cloning to produce them.
 
 ## Environment variables
 
@@ -68,6 +68,8 @@ microtools/
 │   ├── db.ts             # SQLite setup and schema
 │   └── objectStore.ts    # Generic CRUD for JSON objects in SQLite
 ├── views/
+│   ├── _head.ejs         # Shared <head> contents (styles, htmx, QR rendering)
+│   ├── _header.ejs       # Site header: wordmark plus a per-tool breadcrumb
 │   ├── layout.ejs        # Shared HTML shell (used by creation forms)
 │   ├── index.ejs         # Landing page
 │   ├── 404.ejs           # Not-found page
