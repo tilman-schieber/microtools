@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= lang %>">
 <head>
   <%- include('../_head', { title: title }) %>
 </head>
 <body class="note-md-page">
-  <%- include('../_header', { crumb: 'Micropage docs' }) %>
+  <%- include('../_header', { crumb: t('crumb.micropageDocs') }) %>
   <main>
     <h1>Micropage</h1>
     <p class="tagline"><%= registry.summary %></p>
@@ -74,6 +74,12 @@
     <p>
       Flags:
       <% registry.flags.forEach(function (f, i) { %><code><%= f.code %></code> <%= f.description %><%= i < registry.flags.length - 1 ? ' · ' : '' %><% }); %>
+    </p>
+
+    <p>
+      Languages:
+      <% registry.languages.forEach(function (l, i) { %><code><%= l.code %></code> <%= l.name %><%= i < registry.languages.length - 1 ? ' · ' : '' %><% }); %>
+      — sets the fixed words a template adds (When, Where, Password) and the page's <code>lang</code>. Your own text is never translated. Default <code>len</code>.
     </p>
 
     <h2>Limits</h2>

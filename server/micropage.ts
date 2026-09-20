@@ -13,6 +13,10 @@
 import { Marked } from 'marked';
 import qrcode from 'qrcode-generator';
 import { safeUrlRenderer, escapeAttr, safeUrl } from './safeMarkdown';
+import { i18n, isLang, LANGS, DEFAULT_LANG, type Lang } from './i18n';
+
+/** Looks up one of the page's fixed words (mp.* keys) in the PAGE's language. */
+type Words = (key: string) => string;
 
 // ---------------------------------------------------------------------------
 // Markdown instance
@@ -182,7 +186,7 @@ export interface TemplateDef {
   description: string;
   slots: SlotDef[];
   example: string;
-  render: (slots: string[]) => string;
+  render: (slots: string[], w: Words) => string;
 }
 
 /** Emits an element only when the slot has content, so empty slots vanish rather than render blank. */
@@ -261,7 +265,7 @@ export const TEMPLATES: TemplateDef[] = [
       { name: 'body', kind: 'block', description: 'Markdown: headings, lists, quotes, code' }
     ],
     example: 'tar.cp.wm~On Small Tools~Why a URL is enough~## First\\n\\nSome **prose**.',
-    render: (s) => `
+    render: (s, w) => `
       <article class="mp-article">
         ${el('h1', 'mp-title', s[0] ?? '')}
         ${el('p', 'mp-lede', s[1] ?? '')}
@@ -280,12 +284,12 @@ export const TEMPLATES: TemplateDef[] = [
       { name: 'link', kind: 'inline', description: 'A markdown link, e.g. tickets' }
     ],
     example: 'tev.cb~Release party~Fri 7pm~The Old Bakery~Bring cake.~[RSVP](https://example.dev)',
-    render: (s) => `
+    render: (s, w) => `
       <section class="mp-event">
         ${el('h1', 'mp-title', s[0] ?? '')}
         <dl class="mp-meta">
-          ${(s[1] ?? '').trim() ? `<div><dt>When</dt><dd>${inline(s[1])}</dd></div>` : ''}
-          ${(s[2] ?? '').trim() ? `<div><dt>Where</dt><dd>${inline(s[2])}</dd></div>` : ''}
+          ${(s[1] ?? '').trim() ? `<div><dt>${w('mp.when')}</dt><dd>${inline(s[1])}</dd></div>` : ''}
+          ${(s[2] ?? '').trim() ? `<div><dt>${w('mp.where')}</dt><dd>${inline(s[2])}</dd></div>` : ''}
         </dl>
         ${(s[3] ?? '').trim() ? `<div class="mp-prose">${block(s[3])}</div>` : ''}
         ${(s[4] ?? '').trim() ? `<p class="mp-cta">${inline(s[4])}</p>` : ''}
@@ -300,11 +304,11 @@ export const TEMPLATES: TemplateDef[] = [
       { name: 'note', kind: 'inline', description: 'Smaller line beneath' }
     ],
     example: 'tsg.cl.alob~BACK IN 10 MIN~Back by 14:30',
-    render: (s) => {
+    render: (s, w) => {
       const text = (s[0] ?? '').trim();
       const note = s[1] ?? '';
       if (!text) {
-        return `<section class="mp-sign"><p class="mp-lede">Add a line of text for the sign.</p></section>`;
+        return `<section class="mp-sign"><p class="mp-lede">${w('mp.signEmpty')}</p></section>`;
       }
       return `
       <section class="mp-sign">
@@ -323,7 +327,7 @@ export const TEMPLATES: TemplateDef[] = [
       { name: 'security', kind: 'enum', description: 'Encryption', values: WIFI_SECURITY }
     ],
     example: 'twf.cl.asky~Guest WiFi~hunter2hunter2~WPA',
-    render: (s) => {
+    render: (s, w) => {
       const ssid = (s[0] ?? '').trim();
       const password = (s[1] ?? '').trim();
       const chosen = (s[2] ?? '').trim();
@@ -331,7 +335,7 @@ export const TEMPLATES: TemplateDef[] = [
 
       if (!ssid) {
         return `<section class="mp-wifi">${wifiIcon()}
-          <p class="mp-lede">Add a network name to generate a join code.</p></section>`;
+          <p class="mp-lede">${w('mp.wifiEmpty')}</p></section>`;
       }
 
       const type = security === 'none' ? 'nopass' : security;
@@ -351,10 +355,10 @@ export const TEMPLATES: TemplateDef[] = [
       }
 
       const rows = [
-        `<div><dt>Network</dt><dd class="mp-wifi-value">${escapeAttr(ssid)}</dd></div>`,
+        `<div><dt>${w('mp.network')}</dt><dd class="mp-wifi-value">${escapeAttr(ssid)}</dd></div>`,
         type === 'nopass'
-          ? `<div><dt>Password</dt><dd class="mp-wifi-value">None — open network</dd></div>`
-          : `<div><dt>Password</dt><dd class="mp-wifi-value">${escapeAttr(password)}</dd></div>`
+          ? `<div><dt>${w('mp.password')}</dt><dd class="mp-wifi-value">${w('mp.openNetwork')}</dd></div>`
+          : `<div><dt>${w('mp.password')}</dt><dd class="mp-wifi-value">${escapeAttr(password)}</dd></div>`
       ].join('');
 
       return `
@@ -362,7 +366,7 @@ export const TEMPLATES: TemplateDef[] = [
         ${wifiIcon()}
         <h1 class="mp-title">${inline(ssid)}</h1>
         <div class="mp-qr-frame">${svg}</div>
-        <p class="mp-wifi-hint">Point a camera at the code to join</p>
+        <p class="mp-wifi-hint">${w('mp.scanToJoin')}</p>
         <dl class="mp-wifi-details">${rows}</dl>
       </section>`;
     }
@@ -376,12 +380,12 @@ export const TEMPLATES: TemplateDef[] = [
       { name: 'link', kind: 'inline', description: 'The URL the code points to' }
     ],
     example: 'tqr.cl.apru~Scan to open~https://example.dev',
-    render: (s) => {
+    render: (s, w) => {
       const title = s[0] ?? '';
       const target = (s[1] ?? '').trim();
       if (!target) {
         return `<section class="mp-qr">${el('h1', 'mp-title', title)}
-          <p class="mp-lede">Add a link to generate a code.</p></section>`;
+          <p class="mp-lede">${w('mp.qrEmpty')}</p></section>`;
       }
       // Rendered server-side: the page's CSP sets script-src 'none', so the
       // client-side QR library used elsewhere in the app cannot run here.
@@ -421,6 +425,8 @@ export interface Spec {
   width: WidthDef | null;
   accent: AccentDef;
   flags: string[];
+  /** Language of the page's fixed words. Part of the URL, not the viewer's choice. */
+  lang: Lang;
   slots: string[];
 }
 
@@ -493,6 +499,7 @@ export function parseSpec(requestUrl: string): Spec {
   let width: WidthDef | null = null;
   let accent: AccentDef | null = null;
   const flags: string[] = [];
+  let lang: Lang = DEFAULT_LANG;
 
   for (const code of head.split('.').filter(Boolean)) {
     const t = byCode(TEMPLATES, code);
@@ -501,6 +508,17 @@ export function parseSpec(requestUrl: string): Spec {
     if (t) { template = t; continue; }
     if (c) { theme = c; continue; }
     if (w) { width = w; continue; }
+    if (code.startsWith('l')) {
+      const l = code.slice(1);
+      if (!isLang(l)) {
+        throw new SpecError(
+          `Unknown language "${code}".`,
+          `Languages are: ${LANGS.map((x) => 'l' + x).join(', ')}.`
+        );
+      }
+      lang = l;
+      continue;
+    }
     if (code.startsWith('a')) {
       const a = byCode(ACCENTS, code.slice(1));
       if (!a) {
@@ -554,6 +572,7 @@ export function parseSpec(requestUrl: string): Spec {
     width,
     accent: accent ?? byCode(ACCENTS, theme.defaultAccent) ?? ACCENTS[0],
     flags,
+    lang,
     slots
   };
 }
@@ -564,6 +583,7 @@ export function parseSpec(requestUrl: string): Spec {
 
 export interface RenderedPage {
   html: string;
+  lang: Lang;
   bodyClass: string;
   title: string;
   description: string;
@@ -581,7 +601,7 @@ function plain(s: string, max = 200): string {
 }
 
 export function renderPage(spec: Spec): RenderedPage {
-  const html = spec.template.render(spec.slots);
+  const html = spec.template.render(spec.slots, i18n(spec.lang).t);
   if (Buffer.byteLength(html, 'utf8') > LIMITS.maxRenderedBytes) {
     throw new SpecError('That page renders to too much HTML.', 'Shorten the content and try again.');
   }
@@ -600,6 +620,7 @@ export function renderPage(spec: Spec): RenderedPage {
 
   return {
     html,
+    lang: spec.lang,
     bodyClass: classes.join(' '),
     title: plain(spec.slots[0] ?? '', 80) || spec.template.name,
     description: plain(spec.slots[1] ?? '', 160)
@@ -619,14 +640,14 @@ export function describeRegistry(origin: string) {
       'bookmarked or edited by hand. Pages carry no JavaScript.',
     howToUse:
       'Pick a template, then supply its slots in order. Compose the URL as ' +
-      '/micropage?p=<template>.<theme>[.<width>][.a<accent>][.x<flags>]~<slot1>~<slot2>. ' +
+      '/micropage?p=<template>.<theme>[.<width>][.a<accent>][.x<flags>][.l<language>]~<slot1>~<slot2>. ' +
       'Percent-encode each slot separately, then join with literal ~ characters. ' +
       'Read the encoding rules below before generating a link by hand: three of them ' +
       'silently corrupt content rather than erroring.',
     grammar: {
       shape: '/micropage?p=<head>~<slot>~<slot>...',
       head:
-        'Dot-separated codes, namespaced by first letter: t=template, c=theme, w=width, ' +
+        'Dot-separated codes, namespaced by first letter: t=template, c=theme, w=width, l=language, ' +
         'a=accent, x=flags. Order does not matter. Only the template code is required; ' +
         'everything else falls back to a default.',
       slots:
@@ -659,6 +680,9 @@ export function describeRegistry(origin: string) {
     themes: THEMES.map(({ code, name, description }) => ({ code, name, description })),
     widths: WIDTHS.map(({ code, name }) => ({ code, name })),
     accents: ACCENTS.map(({ code, name, hex, on }) => ({ code: 'a' + code, name, hex, textOn: on })),
-    flags: FLAGS.map(({ code, name, description }) => ({ code: 'x' + code, name, description }))
+    flags: FLAGS.map(({ code, name, description }) => ({ code: 'x' + code, name, description })),
+    // The page's own language: it sets the fixed words a template adds (When, Where,
+    // Password …) and <html lang>. Slot content is never translated. Default: len.
+    languages: LANGS.map((code) => ({ code: 'l' + code, name: code === 'de' ? 'Deutsch' : 'English' }))
   };
 }

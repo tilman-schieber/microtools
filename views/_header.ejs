@@ -4,4 +4,10 @@
   <span class="site-sep" aria-hidden="true">/</span>
   <span class="site-crumb"><%= crumb %></span>
   <% } %>
+  <%# No switcher where a reload would destroy data (a one-time secret is consumed by viewing it) %>
+  <% if (!(typeof noLangSwitch !== 'undefined' && noLangSwitch)) { %>
+  <nav class="lang-switch" aria-label="<%- t('lang.switch') %>">
+    <% langLinks.forEach(function (l, i) { %><% if (i) { %><span aria-hidden="true">·</span><% } %><% if (l.current) { %><span class="lang-current" aria-current="true"><%= l.label %></span><% } else { %><a href="<%= l.href %>" hreflang="<%= l.code %>" rel="nofollow"><%= l.label %></a><% } %><% }); %>
+  </nav>
+  <% } %>
 </header>

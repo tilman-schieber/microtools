@@ -3,24 +3,24 @@ const fileList = share.data.files || [];
 const isSingle = fileList.length === 1;
 %>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= lang %>">
 <head>
   <%- include('../_head', { title: title }) %>
 </head>
 <body>
-  <%- include('../_header', { crumb: 'Files' }) %>
+  <%- include('../_header', { crumb: t('crumb.files') }) %>
   <main>
-    <h1>Shared Files</h1>
+    <h1><%- t('files.show.title') %></h1>
     <% if (isSingle) { %>
       <div class="file-download">
-        <p>Download your file:</p>
+        <p><%- t('files.show.downloadYour') %></p>
         <a href="/files/<%= share.id %>/download/<%= encodeURIComponent(fileList[0].name) %>" class="download-btn">
           <%= fileList[0].name %> (<%= fileList[0].sizeFormatted %>)
         </a>
       </div>
     <% } else { %>
       <div class="file-listing">
-        <p><%= fileList.length %> files shared:</p>
+        <p><%- tn('files.shared', fileList.length) %></p>
         <ul class="file-list">
           <% fileList.forEach(file => { %>
             <li>
@@ -29,22 +29,22 @@ const isSingle = fileList.length === 1;
             </li>
           <% }); %>
         </ul>
-        <a href="/files/<%= share.id %>/zip" class="download-btn">Download All as ZIP</a>
+        <a href="/files/<%= share.id %>/zip" class="download-btn"><%- t('files.show.downloadZip') %></a>
       </div>
     <% } %>
 
     <% if (share.expires_at) { %>
-      <p class="hint">Expires on <%= new Date(share.expires_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+      <p class="hint"><%- t('files.show.expiresOn', { date: fmtDate(share.expires_at, 'long') }) %></p>
     <% } %>
 
     <div class="share-link">
-      <p>Share this link:</p>
+      <p><%- t('common.shareThisLink') %></p>
       <p><a href="<%= shareUrl %>"><%= shareUrl %></a></p>
       <div class="qrcode" data-url="<%= shareUrl %>"></div>
     </div>
 
     <div class="file-actions">
-      <button hx-delete="/files/<%= share.id %>" hx-target="#delete-result" hx-swap="innerHTML" hx-confirm="Delete all shared files?">Delete Share</button>
+      <button hx-delete="/files/<%= share.id %>" hx-target="#delete-result" hx-swap="innerHTML" hx-confirm="<%- t('files.show.deleteConfirm') %>"><%- t('files.show.delete') %></button>
       <div id="delete-result"></div>
     </div>
 

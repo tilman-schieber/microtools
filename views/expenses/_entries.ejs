@@ -66,18 +66,18 @@ function simplifyDebts(balances) {
 const balances = calculateBalances();
 const settlements = simplifyDebts(balances);
 %>
-<h2>Expenses</h2>
+<h2><%- t('expenses.heading') %></h2>
 <% if (entries.length === 0) { %>
-  <p>No expenses recorded yet.</p>
+  <p><%- t('expenses.none') %></p>
 <% } else { %>
   <div class="overflow-x-auto">
   <table class="expense-table">
     <thead>
       <tr>
-        <th>Description</th>
-        <th>Amount</th>
-        <th>Paid By</th>
-        <th>Split Between</th>
+        <th><%- t('expenses.th.description') %></th>
+        <th><%- t('expenses.th.amount') %></th>
+        <th><%- t('expenses.th.paidBy') %></th>
+        <th><%- t('expenses.th.splitBetween') %></th>
         <th></th>
       </tr>
     </thead>
@@ -85,7 +85,7 @@ const settlements = simplifyDebts(balances);
       <% for (let i = 0; i < entries.length; i++) { %>
         <tr>
           <td><%= entries[i].description %></td>
-          <td><%= currency %><%= entries[i].amount.toFixed(2) %></td>
+          <td><%= fmtMoney(entries[i].amount, currency) %></td>
           <td><%= entries[i].paid_by %></td>
           <td><%= entries[i].split_between.join(', ') %></td>
           <td>
@@ -93,9 +93,9 @@ const settlements = simplifyDebts(balances);
               hx-delete="/e/<%= expense.id %>/entries/<%= i %>?token=<%= token %>" 
               hx-target="#expense-container" 
               hx-swap="innerHTML"
-              hx-confirm="Delete this expense?"
+              hx-confirm="<%- t('expenses.deleteConfirm') %>"
               class="delete-btn"
-            >Delete</button>
+            ><%- t('common.delete') %></button>
           </td>
         </tr>
       <% } %>
@@ -104,28 +104,28 @@ const settlements = simplifyDebts(balances);
   </div>
 <% } %>
 
-<h2>Balances</h2>
+<h2><%- t('expenses.balances') %></h2>
 <% if (settlements.length === 0) { %>
-  <p>All settled up!</p>
+  <p><%- t('expenses.settled') %></p>
 <% } else { %>
   <ul class="settlements">
     <% settlements.forEach(s => { %>
-      <li><strong><%= s.from %></strong> owes <strong><%= s.to %></strong> <%= currency %><%= s.amount %></li>
+      <li><%- t('expenses.owes', { from: s.from, to: s.to, amount: fmtMoney(Number(s.amount), currency) }) %></li>
     <% }); %>
   </ul>
 <% } %>
 
-<h3>Add Expense</h3>
+<h3><%- t('expenses.add') %></h3>
 <form hx-post="/e/<%= expense.id %>/entries?token=<%= token %>" hx-target="#expense-container" hx-swap="innerHTML">
-  <label for="description">Description</label>
-  <input type="text" name="description" id="description" placeholder="e.g., Dinner" required>
+  <label for="description"><%- t('expenses.th.description') %></label>
+  <input type="text" name="description" id="description" placeholder="<%- t('expenses.descPlaceholder') %>" required>
   
-  <label for="amount">Amount</label>
+  <label for="amount"><%- t('expenses.th.amount') %></label>
   <input type="number" name="amount" id="amount" step="0.01" min="0.01" placeholder="0.00" required>
   
-  <p><strong>Paid by:</strong> <%= currentParticipant %></p>
+  <p><%- t('expenses.paidByLine', { name: currentParticipant }) %></p>
   
-  <label>Split between:</label>
+  <label><%- t('expenses.splitLabel') %></label>
   <div class="split-checkboxes">
     <% participants.forEach(p => { %>
       <label class="checkbox-label">
@@ -135,7 +135,7 @@ const settlements = simplifyDebts(balances);
     <% }); %>
   </div>
   
-  <button type="submit">Add Expense</button>
+  <button type="submit"><%- t('expenses.add') %></button>
 </form>
 
-<p><a href="/e/<%= expense.id %>">View summary page</a></p>
+<p><a href="/e/<%= expense.id %>"><%- t('expenses.viewSummary') %></a></p>

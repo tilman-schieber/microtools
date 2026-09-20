@@ -1,16 +1,16 @@
 <% const content = `
   <main>
-    <h1>Create a Note</h1>
+    <h1>${t('notes.new.title')}</h1>
     <form hx-post="/notes" hx-target="#result" hx-swap="innerHTML">
-      <label for="note-title">Title (optional)</label>
-      <input type="text" name="title" id="note-title" placeholder="Give your note a title...">
+      <label for="note-title">${t('notes.new.titleLabel')}</label>
+      <input type="text" name="title" id="note-title" placeholder="${t('notes.new.titlePlaceholder')}">
       
-      <label for="note-text">Content</label>
-      <textarea name="text" id="note-text" rows="8" placeholder="Enter your note here... (Markdown supported)" required></textarea>
+      <label for="note-text">${t('notes.new.contentLabel')}</label>
+      <textarea name="text" id="note-text" rows="8" placeholder="${t('notes.new.contentPlaceholder')}" required></textarea>
       
-      <button type="submit">Create Note</button>
+      <button type="submit">${t('notes.new.submit')}</button>
     </form>
     <div id="result"></div>
   </main>
 ` %>
-<%- include('../layout', { content, title, crumb: 'Note' }) %>
+<%- include('../layout', { content, title, crumb: t('crumb.note') }) %>

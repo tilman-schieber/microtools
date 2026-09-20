@@ -6,6 +6,7 @@
   const templateHint = document.getElementById('mp-template-hint');
   const themeSelect = document.getElementById('mp-theme');
   const widthSelect = document.getElementById('mp-width');
+  const langSelect = document.getElementById('mp-lang');
   const accentBox = document.getElementById('mp-accents');
   const flagC = document.getElementById('mp-flag-c');
   const flagB = document.getElementById('mp-flag-b');
@@ -61,6 +62,9 @@
     if (accent) codes.push('a' + accent);
     const flags = (flagC.checked ? 'c' : '') + (flagB.checked ? 'b' : '');
     if (flags) codes.push('x' + flags);
+    // The page's own language, for its fixed words (When, Password …). English is
+    // the default and stays out of the link, so existing links never change.
+    if (langSelect && langSelect.value !== 'en') codes.push('l' + langSelect.value);
     return codes.join('.');
   }
 
@@ -88,14 +92,15 @@
       previous[field.dataset.slot] = field.value;
     });
 
-    templateHint.textContent = template.description;
+    templateHint.textContent = T['mpDesc.' + template.code] || template.description;
     slotBox.textContent = '';
 
     function addRow(name, kind, description, values) {
       const row = document.createElement('div');
       row.className = 'micropage-slot-row';
       const label = document.createElement('label');
-      label.textContent = name;
+      // Labels are translated for display only; data-slot keeps the registry name
+      label.textContent = T['mpSlot.' + name] || name;
 
       let field;
       if (kind === 'enum' && values && values.length) {
@@ -157,7 +162,7 @@
 
     const tooLong = url.length > registry.limits.maxQueryLength;
     setError(tooLong
-      ? 'This link is ' + url.length + ' characters, over the ' + registry.limits.maxQueryLength + ' limit. Shorten the content.'
+      ? tf('mpTooLong', { len: url.length, max: registry.limits.maxQueryLength })
       : '');
 
     if (tooLong) {
@@ -169,7 +174,7 @@
     openLink.hidden = false;
     openLink.href = url;
     preview.src = url;
-    meta.textContent = url.length + ' characters. The link updates as you type.';
+    meta.textContent = tf('mpMeta', { len: url.length });
 
     qr.dataset.url = url;
     delete qr.dataset.rendered;
@@ -181,7 +186,7 @@
     items.forEach(function (item) {
       const option = document.createElement('option');
       option.value = item.code;
-      option.textContent = item[labelKey || 'name'];
+      option.textContent = T['mpName.' + item.code] || item[labelKey || 'name'];
       select.appendChild(option);
     });
   }
@@ -203,7 +208,7 @@
 
       const auto = document.createElement('option');
       auto.value = '';
-      auto.textContent = 'Default';
+      auto.textContent = T.mpDefault;
       widthSelect.appendChild(auto);
       fillSelect(widthSelect, registry.widths);
 
@@ -229,7 +234,7 @@
       update();
     })
     .catch(function () {
-      setError('Could not load the template list. Reload the page to try again.');
+      setError(T.mpLoadFailed);
     });
 
   templateSelect.addEventListener('change', function () {
@@ -237,7 +242,7 @@
     update();
   });
 
-  [themeSelect, widthSelect, flagC, flagB].forEach(function (el) {
+  [themeSelect, widthSelect, langSelect, flagC, flagB].forEach(function (el) {
     el.addEventListener('change', update);
   });
 
@@ -245,10 +250,10 @@
   copyBtn.addEventListener('click', async function () {
     try {
       await navigator.clipboard.writeText(linkOutput.value);
-      copyBtn.textContent = 'Copied!';
-      setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1200);
+      copyBtn.textContent = T.copied;
+      setTimeout(function () { copyBtn.textContent = T.copy; }, 1200);
     } catch {
-      setError('Copying failed in this browser.');
+      setError(T.copyFailed);
     }
   });
 })();

@@ -68,42 +68,42 @@ const balances = calculateBalances();
 const settlements = simplifyDebts(balances);
 %>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= lang %>">
 <head>
   <%- include('../_head', { title: expenseTitle }) %>
 </head>
 <body>
-  <%- include('../_header', { crumb: 'Expenses' }) %>
+  <%- include('../_header', { crumb: t('crumb.expenses') }) %>
   <main>
     <h1><%= expenseTitle %></h1>
-    <p class="hint">Read-only summary view</p>
+    <p class="hint"><%- t('expenses.readOnly') %></p>
 
-    <h2>Participants</h2>
+    <h2><%- t('expenses.participants') %></h2>
     <ul>
       <% participants.forEach(p => { %>
         <li><%= p.name %></li>
       <% }); %>
     </ul>
 
-    <h2>Expenses</h2>
+    <h2><%- t('expenses.heading') %></h2>
     <% if (entries.length === 0) { %>
-      <p>No expenses recorded yet.</p>
+      <p><%- t('expenses.none') %></p>
     <% } else { %>
       <div class="overflow-x-auto">
       <table class="expense-table">
         <thead>
           <tr>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Paid By</th>
-            <th>Split Between</th>
+            <th><%- t('expenses.th.description') %></th>
+            <th><%- t('expenses.th.amount') %></th>
+            <th><%- t('expenses.th.paidBy') %></th>
+            <th><%- t('expenses.th.splitBetween') %></th>
           </tr>
         </thead>
         <tbody>
           <% entries.forEach(e => { %>
             <tr>
               <td><%= e.description %></td>
-              <td><%= currency %><%= e.amount.toFixed(2) %></td>
+              <td><%= fmtMoney(e.amount, currency) %></td>
               <td><%= e.paid_by %></td>
               <td><%= e.split_between.join(', ') %></td>
             </tr>
@@ -113,13 +113,13 @@ const settlements = simplifyDebts(balances);
       </div>
     <% } %>
 
-    <h2>Balances</h2>
+    <h2><%- t('expenses.balances') %></h2>
     <% if (settlements.length === 0) { %>
-      <p>All settled up!</p>
+      <p><%- t('expenses.settled') %></p>
     <% } else { %>
       <ul class="settlements">
         <% settlements.forEach(s => { %>
-          <li><strong><%= s.from %></strong> owes <strong><%= s.to %></strong> <%= currency %><%= s.amount %></li>
+          <li><%- t('expenses.owes', { from: s.from, to: s.to, amount: fmtMoney(Number(s.amount), currency) }) %></li>
         <% }); %>
       </ul>
     <% } %>

@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= lang %>">
 <head>
   <%- include('../_head', { title: bringlist.data.title }) %>
 </head>
 <body>
-  <%- include('../_header', { crumb: 'Potluck' }) %>
+  <%- include('../_header', { crumb: t('crumb.potluck') }) %>
   <main>
     <h1><%= bringlist.data.title %></h1>
-    <p class="hint">Claim items you'll bring, or add something extra!</p>
+    <p class="hint"><%- t('bring.show.hint') %></p>
 
     <div id="bringlist-content">
       <%- include('_list', { bringlist }) %>

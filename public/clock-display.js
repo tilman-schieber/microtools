@@ -187,7 +187,7 @@
   }
 
   if (!allowedTypes.has(type)) {
-    setError('Invalid clock type.');
+    setError(T.clockInvalidType);
     return;
   }
 
@@ -200,7 +200,7 @@
   const startedAt = parseInteger('started');
 
   if (!showClock && !countdownEnabled) {
-    setError('Nothing configured to display.');
+    setError(T.clockNothing);
     return;
   }
 
@@ -209,7 +209,7 @@
   let countdownStartsAt = null;
   if (countdownEnabled) {
     if (durationSeconds === null || startedAt === null || durationSeconds <= 0) {
-      setError('Countdown parameters are missing or invalid.');
+      setError(T.clockBadCountdown);
       return;
     }
     countdownTotalDuration = durationSeconds * 1000;

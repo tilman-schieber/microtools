@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= lang %>">
 <head>
-  <%- include('../_head', { title: note.data.title || 'Note' }) %>
+  <%- include('../_head', { title: note.data.title || t('notes.fallbackTitle') }) %>
 </head>
 <body>
-  <%- include('../_header', { crumb: 'Note' }) %>
+  <%- include('../_header', { crumb: t('crumb.note') }) %>
   <main>
-    <h1><%= note.data.title || 'Note' %></h1>
+    <h1><%= note.data.title || t('notes.fallbackTitle') %></h1>
     <div id="note-container">
       <pre class="note-text"><%= note.data.text || '' %></pre>
       <div class="note-links">
-        <a href="/notes/<%= note.id %>/raw">View raw</a>
-        <a href="/notes/<%= note.id %>/md">View as Markdown</a>
+        <a href="/notes/<%= note.id %>/raw"><%- t('notes.show.raw') %></a>
+        <a href="/notes/<%= note.id %>/md"><%- t('notes.show.md') %></a>
       </div>
-      <button hx-delete="/notes/<%= note.id %>" hx-target="#note-container" hx-swap="innerHTML" hx-confirm="Delete this note?">Delete Note</button>
+      <button hx-delete="/notes/<%= note.id %>" hx-target="#note-container" hx-swap="innerHTML" hx-confirm="<%- t('notes.show.deleteConfirm') %>"><%- t('notes.show.delete') %></button>
     </div>
   </main>
 </body>

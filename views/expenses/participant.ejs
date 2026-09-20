@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= lang %>">
 <head>
   <%- include('../_head', { title: expense.data.title + ' - ' + currentParticipant }) %>
 </head>
 <body>
-  <%- include('../_header', { crumb: 'Expenses' }) %>
+  <%- include('../_header', { crumb: t('crumb.expenses') }) %>
   <main>
     <h1><%= expense.data.title %></h1>
-    <p>You are: <strong><%= currentParticipant %></strong></p>
+    <p><%- t('expenses.youAre', { name: currentParticipant }) %></p>
     
     <div id="expense-container">
       <%- include('_entries', { expense, currentParticipant, token }) %>

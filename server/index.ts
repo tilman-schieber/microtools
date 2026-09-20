@@ -16,11 +16,14 @@ import hljs from 'highlight.js';
 import archiver from 'archiver';
 import { safeUrlRenderer } from './safeMarkdown';
 import * as micropage from './micropage';
+import { i18n, resolveLang, isLang, langCookie, clientStrings, escapeHtml, LANGS, type I18n } from './i18n';
+
+declare module 'fastify' {
+  interface FastifyRequest { i18n: I18n }
+  interface FastifyReply { locals?: object }
+}
 
 // Sanitize markdown: escape raw HTML instead of passing it through
-function escapeHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
 marked.use({
   renderer: {
     html(token: { text: string }) {
@@ -131,6 +134,47 @@ async function start() {
     prefix: '/public/'
   });
 
+  // Language. Every request gets an i18n object; every view gets t() and friends
+  // through reply.locals, so no route has to pass them along.
+  fastify.decorateRequest('i18n', null as unknown as I18n);
+  fastify.addHook('onRequest', async (request, reply) => {
+    if (request.url.startsWith('/public/')) return;
+
+    // An explicit ?lang= is a choice: remember it, then redirect to the clean URL
+    // so the parameter does not end up in links people copy from the address bar.
+    const url = new URL(request.url, 'http://x');
+    const chosen = url.searchParams.get('lang');
+    if (request.method === 'GET' && isLang(chosen)) {
+      url.searchParams.delete('lang');
+      return reply.header('Set-Cookie', langCookie(chosen)).redirect(url.pathname + url.search, 302);
+    }
+
+    const lang = resolveLang(request.headers);
+    const tr = i18n(lang);
+    request.i18n = tr;
+
+    // Switcher links: the current URL plus ?lang=
+    const join = url.search ? '&' : '?';
+    const langLinks = LANGS.map((code) => ({
+      code,
+      label: code.toUpperCase(),
+      current: code === lang,
+      href: url.pathname + url.search + join + 'lang=' + code
+    }));
+
+    reply.locals = {
+      t: tr.t, tn: tr.tn, fmtDate: tr.fmtDate, fmtMoney: tr.fmtMoney,
+      lang, langLinks, clientT: clientStrings(lang)
+    };
+
+    // A rendered micropage is a pure function of its URL and is cached as such;
+    // everything else depends on who is looking.
+    if (!request.url.startsWith('/micropage?')) reply.header('Vary', 'Accept-Language, Cookie');
+  });
+
+  const errorP = (tr: I18n, key: string, params?: Record<string, string | number>) => `<p class="error">${tr.t(key, params)}</p>`;
+  const plainP = (tr: I18n, key: string) => `<p>${tr.t(key)}</p>`;
+
   // Home page
   fastify.get('/', async (request, reply) => {
     return reply.view('index', {
@@ -140,27 +184,27 @@ async function start() {
 
   // Unknown routes get the styled page rather than Fastify's JSON body
   fastify.setNotFoundHandler(async (request, reply) => {
-    return reply.status(404).view('404', { title: 'Not found' });
+    return reply.status(404).view('404', { title: request.i18n.t('notFound.title') });
   });
 
   // Passwords: Generator page
   fastify.get('/passwords/new', async (request, reply) => {
     return reply.view('passwords/new', {
-      title: 'Password Generator'
+      title: request.i18n.t('passwords.title')
     });
   });
 
   // Clock: Configuration page
   fastify.get('/clock/new', async (request, reply) => {
     return reply.view('clock/new', {
-      title: 'Clock'
+      title: request.i18n.t('clock.title')
     });
   });
 
   // Clock: Display page configured entirely by URL params
   fastify.get('/clock', async (request, reply) => {
     return reply.view('clock/show', {
-      title: 'Clock'
+      title: request.i18n.t('clock.title')
     });
   });
 
@@ -168,7 +212,7 @@ async function start() {
 
   // Builder
   fastify.get('/micropage/new', async (request, reply) => {
-    return reply.view('micropage/new', { title: 'Micropage' });
+    return reply.view('micropage/new', { title: request.i18n.t('micropage.title') });
   });
 
   // Human documentation, generated from the same registry as /agents
@@ -222,7 +266,7 @@ async function start() {
     } catch (err) {
       if (err instanceof micropage.SpecError) {
         return reply.status(400).view('micropage/error', {
-          title: 'Micropage',
+          title: request.i18n.t('micropage.title'),
           message: err.message,
           detail: err.detail || ''
         });
@@ -234,7 +278,7 @@ async function start() {
   // Notes: Create form page
   fastify.get('/notes/new', async (request, reply) => {
     return reply.view('notes/new', {
-      title: 'Create a Note'
+      title: request.i18n.t('notes.new.title')
     });
   });
 
@@ -245,7 +289,7 @@ async function start() {
     const title = (body.title || '').trim();
 
     if (!text.trim()) {
-      return reply.type('text/html').send('<p class="error">Please enter some text.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'notes.err.empty'));
     }
 
     const noteData: { text: string; title?: string } = { text: text.trim() };
@@ -258,19 +302,7 @@ async function start() {
     const host = request.headers.host;
     const noteUrl = `${protocol}://${host}/notes/${note.id}`;
 
-    const mdUrl = `${noteUrl}/md`;
-    const safeNoteUrl = escapeHtml(noteUrl);
-    const safeMdUrl = escapeHtml(mdUrl);
-
-    return reply.type('text/html').send(`
-      <p>Note created! Share this link:</p>
-      <p><a href="${safeNoteUrl}">${safeNoteUrl}</a></p>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent='Copied!'" data-url="${safeNoteUrl}">Copy link</button>
-      <p class="note-md-hint">Or share the formatted <a href="${safeMdUrl}">Markdown view</a>:</p>
-      <p><a href="${safeMdUrl}">${safeMdUrl}</a></p>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent='Copied!'" data-url="${safeMdUrl}">Copy Markdown link</button>
-      <div class="qrcode" data-url="${safeNoteUrl}"></div>
-    `);
+    return reply.view('_created', { heading: request.i18n.t('notes.created'), url: noteUrl, md: `${noteUrl}/md` });
   });
 
   // Notes: View note page
@@ -279,11 +311,11 @@ async function start() {
     const note = objectStore.get(params.id);
 
     if (!note) {
-      return reply.status(404).view('404', { title: 'Not Found' });
+      return reply.status(404).view('404', { title: request.i18n.t('notFound.title') });
     }
 
     return reply.view('notes/show', {
-      title: 'View Note',
+      title: request.i18n.t('notes.fallbackTitle'),
       note
     });
   });
@@ -307,14 +339,14 @@ async function start() {
     const note = objectStore.get(params.id);
 
     if (!note) {
-      return reply.status(404).view('404', { title: 'Not Found' });
+      return reply.status(404).view('404', { title: request.i18n.t('notFound.title') });
     }
 
     const data = note.data as { text: string; title?: string };
     const renderedMarkdown = marked(data.text);
 
     return reply.view('notes/md', {
-      title: data.title || 'Note',
+      title: data.title || request.i18n.t('notes.fallbackTitle'),
       note,
       renderedMarkdown
     });
@@ -326,16 +358,16 @@ async function start() {
     const deleted = objectStore.remove(params.id);
 
     if (!deleted) {
-      return reply.type('text/html').send('<p>Note not found.</p>');
+      return reply.type('text/html').send(plainP(request.i18n, 'notes.notFound'));
     }
 
-    return reply.type('text/html').send('<p>Note deleted.</p><p><a href="/notes/new">Create another note</a></p>');
+    return reply.type('text/html').send(`<p>${request.i18n.t('notes.deleted')}</p><p><a href="/notes/new">${request.i18n.t('notes.createAnother')}</a></p>`);
   });
 
   // Secrets: Create form page
   fastify.get('/secrets/new', async (request, reply) => {
     return reply.view('secrets/new', {
-      title: 'Create a One-Time Secret'
+      title: request.i18n.t('secrets.new.title')
     });
   });
 
@@ -345,7 +377,7 @@ async function start() {
     const ciphertext = body.ciphertext || '';
 
     if (!ciphertext.trim()) {
-      return reply.type('text/html').send('<p class="error">No ciphertext provided.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'secrets.err.noCiphertext'));
     }
 
     const secret = objectStore.create('secret', { ciphertext: ciphertext.trim() });
@@ -361,7 +393,7 @@ async function start() {
 
     if (!secret) {
       return reply.view('secrets/gone', {
-        title: 'Secret Not Found'
+        title: request.i18n.t('secrets.gone.title')
       });
     }
 
@@ -372,7 +404,7 @@ async function start() {
     objectStore.remove(params.id);
 
     return reply.view('secrets/show', {
-      title: 'One-Time Secret',
+      title: request.i18n.t('secrets.show.title'),
       ciphertext
     });
   });
@@ -380,7 +412,7 @@ async function start() {
   // Files: Create form page
   fastify.get('/files/new', async (request, reply) => {
     return reply.view('files/new', {
-      title: 'Share Files'
+      title: request.i18n.t('files.new.title')
     });
   });
 
@@ -421,7 +453,7 @@ async function start() {
       if (uploadedFiles.length === 0) {
         // Clean up empty directory
         fs.rmdirSync(shareDir);
-        return reply.type('text/html').send('<p class="error">No files uploaded.</p>');
+        return reply.type('text/html').send(errorP(request.i18n, 'files.err.none'));
       }
       
       // Store metadata in objectStore with expiration
@@ -432,20 +464,17 @@ async function start() {
       const host = request.headers.host;
       const shareUrl = `${protocol}://${host}/files/${shareId}`;
       
-      const expiryLabel = expiryDays === 1 ? '1 day' : `${expiryDays} days`;
-      return reply.type('text/html').send(`
-        <p>Files uploaded! Share this link:</p>
-        <p><a href="${shareUrl}">${shareUrl}</a></p>
-        <button class="copy-btn" onclick="navigator.clipboard.writeText('${shareUrl}');this.textContent='Copied!'">Copy link</button>
-        <div class="qrcode" data-url="${shareUrl}"></div>
-        <p class="hint">Expires in ${expiryLabel}.</p>
-      `);
+      return reply.view('_created', {
+        heading: request.i18n.t('files.created'),
+        url: shareUrl,
+        hint: request.i18n.tn('files.expiresIn', expiryDays)
+      });
     } catch (err) {
       // Clean up on error
       if (fs.existsSync(shareDir)) {
         fs.rmSync(shareDir, { recursive: true, force: true });
       }
-      return reply.type('text/html').send(`<p class="error">Upload failed: ${(err as Error).message}</p>`);
+      return reply.type('text/html').send(errorP(request.i18n, 'files.err.upload', { message: (err as Error).message }));
     }
   });
 
@@ -456,7 +485,7 @@ async function start() {
 
     if (!share) {
       cleanupShareDir(params.id);
-      return reply.view('files/gone', { title: 'Files Not Found' });
+      return reply.view('files/gone', { title: request.i18n.t('files.gone.title') });
     }
 
     const protocol = request.headers['x-forwarded-proto'] || 'http';
@@ -464,7 +493,7 @@ async function start() {
     const shareUrl = `${protocol}://${host}/files/${params.id}`;
 
     return reply.view('files/show', {
-      title: 'Shared Files',
+      title: request.i18n.t('files.show.title'),
       share,
       shareUrl
     });
@@ -536,7 +565,7 @@ async function start() {
 
     if (!share) {
       cleanupShareDir(params.id);
-      return reply.type('text/html').send('<p>Share not found.</p>');
+      return reply.type('text/html').send(plainP(request.i18n, 'files.notFound'));
     }
 
     // Delete files from filesystem
@@ -548,13 +577,13 @@ async function start() {
     // Delete from objectStore
     objectStore.remove(params.id);
 
-    return reply.type('text/html').send('<p>Files deleted.</p><p><a href="/files/new">Share more files</a></p>');
+    return reply.type('text/html').send(`<p>${request.i18n.t('files.deleted')}</p><p><a href="/files/new">${request.i18n.t('files.shareMore')}</a></p>`);
   });
 
   // Polls: Create form page
   fastify.get('/polls/new', async (request, reply) => {
     return reply.view('polls/new', {
-      title: 'Create a Date Poll'
+      title: request.i18n.t('polls.new.title')
     });
   });
 
@@ -570,11 +599,11 @@ async function start() {
     const times = Array.isArray(timesRaw) ? timesRaw : (timesRaw ? [timesRaw] : []);
 
     if (!title.trim()) {
-      return reply.type('text/html').send('<p class="error">Please enter a title.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'common.err.title'));
     }
 
     if (dates.length === 0 || dates.length !== times.length) {
-      return reply.type('text/html').send('<p class="error">Please add at least one date/time.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'polls.err.slots'));
     }
 
     const slots = dates.map((date, i) => ({ date, time: times[i] }));
@@ -589,12 +618,7 @@ async function start() {
     const host = request.headers.host;
     const pollUrl = `${protocol}://${host}/polls/${poll.id}`;
 
-    return reply.type('text/html').send(`
-      <p>Poll created! Share this link:</p>
-      <p><a href="${pollUrl}">${pollUrl}</a></p>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('${pollUrl}');this.textContent='Copied!'">Copy link</button>
-      <div class="qrcode" data-url="${pollUrl}"></div>
-    `);
+    return reply.view('_created', { heading: request.i18n.t('polls.created'), url: pollUrl });
   });
 
   // Polls: View poll page
@@ -603,12 +627,12 @@ async function start() {
     const poll = objectStore.get(params.id);
 
     if (!poll) {
-      return reply.status(404).view('404', { title: 'Not Found' });
+      return reply.status(404).view('404', { title: request.i18n.t('notFound.title') });
     }
 
     const pollData = poll.data as { title: string };
     return reply.view('polls/show', {
-      title: pollData.title || 'Date Poll',
+      title: pollData.title || request.i18n.t('polls.fallbackTitle'),
       poll
     });
   });
@@ -620,7 +644,7 @@ async function start() {
     
     const poll = objectStore.get(params.id);
     if (!poll) {
-      return reply.type('text/html').send('<p>Poll not found.</p>');
+      return reply.type('text/html').send(plainP(request.i18n, 'polls.notFound'));
     }
 
     const name = (body.name || '').trim();
@@ -628,7 +652,7 @@ async function start() {
     const votes = Array.isArray(votesRaw) ? votesRaw : (votesRaw ? [votesRaw] : []);
 
     if (!name) {
-      return reply.type('text/html').send('<p class="error">Please enter your name.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'polls.err.name'));
     }
 
     const data = poll.data as { title: string; slots: Array<{date: string; time: string}>; responses: Array<{name: string; votes: string[]}> };
@@ -644,7 +668,7 @@ async function start() {
   // Expenses: Create form page
   fastify.get('/expenses/new', async (request, reply) => {
     return reply.view('expenses/new', {
-      title: 'Create Expense Share'
+      title: request.i18n.t('expenses.new.title')
     });
   });
 
@@ -660,11 +684,11 @@ async function start() {
       : (participantsRaw ? [participantsRaw.trim()].filter(n => n) : []);
 
     if (!title) {
-      return reply.type('text/html').send('<p class="error">Please enter a title.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'common.err.title'));
     }
 
     if (participantNames.length < 2) {
-      return reply.type('text/html').send('<p class="error">Please add at least 2 participants.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'expenses.err.participants'));
     }
 
     // Generate tokens for each participant
@@ -684,26 +708,8 @@ async function start() {
     const host = request.headers.host;
     const summaryUrl = `${protocol}://${host}/e/${expense.id}`;
 
-    let html = `
-      <p>Expense share created!</p>
-      <p><strong>Summary link:</strong> <a href="${summaryUrl}">${summaryUrl}</a></p>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('${summaryUrl}');this.textContent='Copied!'">Copy link</button>
-      <div class="qrcode" data-url="${summaryUrl}"></div>
-      <h3>Participant Links</h3>
-      <ul>
-    `;
-    
-    for (const p of participants) {
-      const pUrl = `${protocol}://${host}/e/${expense.id}/p/${p.token}`;
-      html += `<li><strong>${escapeHtml(p.name)}:</strong> <a href="${pUrl}">${pUrl}</a>
-        <button class="copy-btn" onclick="navigator.clipboard.writeText('${pUrl}');this.textContent='Copied!'">Copy</button>
-        <button class="qr-toggle-btn" onclick="var d=this.nextElementSibling;d.style.display=d.style.display==='none'?'block':'none';if(d.style.display!=='none')renderQRCodes(d);">QR</button>
-        <div class="qrcode" data-url="${pUrl}" style="display:none"></div></li>`;
-    }
-    
-    html += '</ul>';
-
-    return reply.type('text/html').send(html);
+    const links = participants.map((p) => ({ name: p.name, url: `${protocol}://${host}/e/${expense.id}/p/${p.token}` }));
+    return reply.view('expenses/_created', { summaryUrl, links });
   });
 
   // Expenses: Summary page (read-only)
@@ -712,7 +718,7 @@ async function start() {
     const expense = objectStore.get(params.id);
 
     if (!expense || expense.type !== 'expense') {
-      return reply.status(404).view('404', { title: 'Not Found' });
+      return reply.status(404).view('404', { title: request.i18n.t('notFound.title') });
     }
 
     return reply.view('expenses/show', {
@@ -727,14 +733,14 @@ async function start() {
     const expense = objectStore.get(params.id);
 
     if (!expense || expense.type !== 'expense') {
-      return reply.status(404).view('404', { title: 'Not Found' });
+      return reply.status(404).view('404', { title: request.i18n.t('notFound.title') });
     }
 
     const data = expense.data as { title: string; participants: Array<{name: string; token: string}>; entries: unknown[] };
     const participant = data.participants.find(p => p.token === params.token);
 
     if (!participant) {
-      return reply.status(403).type('text/html').send('<p>Invalid participant token.</p>');
+      return reply.status(403).type('text/html').send(plainP(request.i18n, 'expenses.invalidToken'));
     }
 
     return reply.view('expenses/participant', {
@@ -753,7 +759,7 @@ async function start() {
     
     const expense = objectStore.get(params.id);
     if (!expense || expense.type !== 'expense') {
-      return reply.type('text/html').send('<p>Expense share not found.</p>');
+      return reply.type('text/html').send(plainP(request.i18n, 'expenses.notFound'));
     }
 
     const data = expense.data as { 
@@ -764,7 +770,7 @@ async function start() {
     
     const participant = data.participants.find(p => p.token === query.token);
     if (!participant) {
-      return reply.status(403).type('text/html').send('<p>Invalid participant token.</p>');
+      return reply.status(403).type('text/html').send(plainP(request.i18n, 'expenses.invalidToken'));
     }
 
     const description = (body.description || '').trim();
@@ -773,15 +779,15 @@ async function start() {
     const split_between = Array.isArray(splitRaw) ? splitRaw : (splitRaw ? [splitRaw] : []);
 
     if (!description) {
-      return reply.type('text/html').send('<p class="error">Please enter a description.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'expenses.err.description'));
     }
 
     if (amount <= 0) {
-      return reply.type('text/html').send('<p class="error">Please enter a valid amount.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'expenses.err.amount'));
     }
 
     if (split_between.length === 0) {
-      return reply.type('text/html').send('<p class="error">Please select at least one person to split with.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'expenses.err.split'));
     }
 
     data.entries.push({
@@ -808,7 +814,7 @@ async function start() {
     
     const expense = objectStore.get(params.id);
     if (!expense || expense.type !== 'expense') {
-      return reply.type('text/html').send('<p>Expense share not found.</p>');
+      return reply.type('text/html').send(plainP(request.i18n, 'expenses.notFound'));
     }
 
     const data = expense.data as { 
@@ -819,7 +825,7 @@ async function start() {
     
     const participant = data.participants.find(p => p.token === query.token);
     if (!participant) {
-      return reply.status(403).type('text/html').send('<p>Invalid participant token.</p>');
+      return reply.status(403).type('text/html').send(plainP(request.i18n, 'expenses.invalidToken'));
     }
 
     const idx = parseInt(params.idx);
@@ -840,7 +846,7 @@ async function start() {
 
   // Bring List: New list form
   fastify.get('/bring/new', async (request, reply) => {
-    return reply.view('bring/new', { title: 'Create Potluck List' });
+    return reply.view('bring/new', { title: request.i18n.t('bring.new.title') });
   });
 
   // Bring List: Create new list (returns HTML fragment for HTMX)
@@ -855,7 +861,7 @@ async function start() {
     const amounts = Array.isArray(amountsRaw) ? amountsRaw : (amountsRaw ? [amountsRaw] : []);
 
     if (!title) {
-      return reply.type('text/html').send('<p class="error">Please enter a title.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'common.err.title'));
     }
 
     const needed = items
@@ -867,7 +873,7 @@ async function start() {
       .filter(n => n.item);
 
     if (needed.length === 0) {
-      return reply.type('text/html').send('<p class="error">Please add at least one item.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'bring.err.items'));
     }
 
     const bringlist = objectStore.create('bringlist', {
@@ -880,13 +886,10 @@ async function start() {
     const host = request.headers.host;
     const url = `${protocol}://${host}/b/${bringlist.id}`;
 
-    return reply.type('text/html').send(`
-      <p>Potluck list created!</p>
-      <p><strong>Share this link:</strong></p>
-      <p><a href="${url}">${url}</a></p>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('${url}');this.textContent='Copied!'">Copy link</button>
-      <div class="qrcode" data-url="${url}"></div>
-    `);
+    return reply.view('_created', {
+      heading: `${request.i18n.t('bring.created')} <strong>${request.i18n.t('common.shareThisLink')}</strong>`,
+      url
+    });
   });
 
   // Bring List: View list
@@ -895,7 +898,7 @@ async function start() {
     const bringlist = objectStore.get(id);
 
     if (!bringlist || bringlist.type !== 'bringlist') {
-      return reply.status(404).view('404', { title: 'Not Found' });
+      return reply.status(404).view('404', { title: request.i18n.t('notFound.title') });
     }
 
     const data = bringlist.data as { title: string; needed: any[]; custom: any[] };
@@ -913,12 +916,12 @@ async function start() {
     const amount = parseInt(body.amount || '1', 10);
 
     if (!name || amount < 1) {
-      return reply.type('text/html').send('<p class="error">Please enter your name and amount.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'bring.err.nameAmount'));
     }
 
     const bringlist = objectStore.get(id);
     if (!bringlist || bringlist.type !== 'bringlist') {
-      return reply.status(404).type('text/html').send('<p class="error">List not found.</p>');
+      return reply.status(404).type('text/html').send(errorP(request.i18n, 'bring.notFound'));
     }
 
     const data = bringlist.data as { title: string; needed: any[]; custom: any[] };
@@ -926,7 +929,7 @@ async function start() {
     const needed = data.needed || [];
     
     if (index < 0 || index >= needed.length) {
-      return reply.status(400).type('text/html').send('<p class="error">Invalid item.</p>');
+      return reply.status(400).type('text/html').send(errorP(request.i18n, 'bring.err.invalidItem'));
     }
 
     const item = needed[index];
@@ -934,7 +937,7 @@ async function start() {
     const remaining = item.amount_needed - totalClaimed;
 
     if (amount > remaining) {
-      return reply.type('text/html').send(`<p class="error">Only ${remaining} remaining.</p>`);
+      return reply.type('text/html').send(errorP(request.i18n, 'bring.err.remaining', { n: remaining }));
     }
 
     if (!item.claims) item.claims = [];
@@ -954,7 +957,7 @@ async function start() {
 
     const bringlist = objectStore.get(id);
     if (!bringlist || bringlist.type !== 'bringlist') {
-      return reply.status(404).type('text/html').send('<p class="error">List not found.</p>');
+      return reply.status(404).type('text/html').send(errorP(request.i18n, 'bring.notFound'));
     }
 
     const data = bringlist.data as { title: string; needed: any[]; custom: any[] };
@@ -963,18 +966,18 @@ async function start() {
     const needed = data.needed || [];
 
     if (itemIndex < 0 || itemIndex >= needed.length) {
-      return reply.status(400).type('text/html').send('<p class="error">Invalid item.</p>');
+      return reply.status(400).type('text/html').send(errorP(request.i18n, 'bring.err.invalidItem'));
     }
 
     const item = needed[itemIndex];
     const claims = item.claims || [];
 
     if (claimIndex < 0 || claimIndex >= claims.length) {
-      return reply.status(400).type('text/html').send('<p class="error">Invalid claim.</p>');
+      return reply.status(400).type('text/html').send(errorP(request.i18n, 'bring.err.invalidClaim'));
     }
 
     if (!token || claims[claimIndex].token !== token) {
-      return reply.status(403).type('text/html').send('<p class="error">Cannot delete this claim.</p>');
+      return reply.status(403).type('text/html').send(errorP(request.i18n, 'bring.err.cannotDeleteClaim'));
     }
 
     claims.splice(claimIndex, 1);
@@ -992,12 +995,12 @@ async function start() {
     const amount = parseInt(body.amount || '1', 10);
 
     if (!name || !item || amount < 1) {
-      return reply.type('text/html').send('<p class="error">Please fill all fields.</p>');
+      return reply.type('text/html').send(errorP(request.i18n, 'bring.err.fillAll'));
     }
 
     const bringlist = objectStore.get(id);
     if (!bringlist || bringlist.type !== 'bringlist') {
-      return reply.status(404).type('text/html').send('<p class="error">List not found.</p>');
+      return reply.status(404).type('text/html').send(errorP(request.i18n, 'bring.notFound'));
     }
 
     const data = bringlist.data as { title: string; needed: any[]; custom: any[] };
@@ -1018,7 +1021,7 @@ async function start() {
 
     const bringlist = objectStore.get(id);
     if (!bringlist || bringlist.type !== 'bringlist') {
-      return reply.status(404).type('text/html').send('<p class="error">List not found.</p>');
+      return reply.status(404).type('text/html').send(errorP(request.i18n, 'bring.notFound'));
     }
 
     const data = bringlist.data as { title: string; needed: any[]; custom: any[] };
@@ -1026,11 +1029,11 @@ async function start() {
     const custom = data.custom || [];
 
     if (index < 0 || index >= custom.length) {
-      return reply.status(400).type('text/html').send('<p class="error">Invalid item.</p>');
+      return reply.status(400).type('text/html').send(errorP(request.i18n, 'bring.err.invalidItem'));
     }
 
     if (!token || custom[index].token !== token) {
-      return reply.status(403).type('text/html').send('<p class="error">Cannot delete this item.</p>');
+      return reply.status(403).type('text/html').send(errorP(request.i18n, 'bring.err.cannotDeleteItem'));
     }
 
     custom.splice(index, 1);

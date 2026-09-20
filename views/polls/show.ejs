@@ -2,12 +2,12 @@
     include the _container.ejs partial, which isn't possible with the template literal pattern.
     The head elements match layout.ejs exactly. %>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= lang %>">
 <head>
   <%- include('../_head', { title: title }) %>
 </head>
 <body>
-  <%- include('../_header', { crumb: 'Date poll' }) %>
+  <%- include('../_header', { crumb: t('crumb.poll') }) %>
   <main>
     <h1><%= poll.data.title %></h1>
     <%- include('_container', { poll }) %>

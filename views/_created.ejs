@@ -1,0 +1,13 @@
+<%# Result panel after creating something: heading, link, copy button, QR code.
+    `url` comes from the Host header, so it is only ever emitted escaped and is
+    read back from data-url rather than spliced into the onclick handler. %>
+<p><%- heading %></p>
+<p><a href="<%= url %>"><%= url %></a></p>
+<button class="copy-btn" data-url="<%= url %>" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent=T.copied"><%- t('common.copyLink') %></button>
+<% if (typeof md !== 'undefined' && md) { %>
+<p class="note-md-hint"><%- t('notes.created.mdHint', { url: md }) %></p>
+<p><a href="<%= md %>"><%= md %></a></p>
+<button class="copy-btn" data-url="<%= md %>" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent=T.copied"><%- t('notes.copyMdLink') %></button>
+<% } %>
+<div class="qrcode" data-url="<%= url %>"></div>
+<% if (typeof hint !== 'undefined' && hint) { %><p class="hint"><%- hint %></p><% } %>

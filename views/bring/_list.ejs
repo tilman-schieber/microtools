@@ -17,9 +17,9 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
       <div class="bring-card-header">
         <span class="bring-card-name"><%= item.item %></span>
         <% if (isComplete) { %>
-          <span class="complete-badge">Complete</span>
+          <span class="complete-badge"><%- t('bring.complete') %></span>
         <% } else { %>
-          <span class="bring-card-count"><%= totalClaimed %> of <%= item.amount_needed %></span>
+          <span class="bring-card-count"><%- t('bring.countOf', { claimed: totalClaimed, needed: item.amount_needed }) %></span>
         <% } %>
       </div>
 
@@ -33,20 +33,20 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
             <span class="bring-claim-chip">
               <%= c.name %>: <%= c.amount %>
               <% if (_lastToken && c.token === _lastToken) { %>
-                <button class="claim-delete-btn" hx-delete="/b/<%= id %>/claim/<%= idx %>/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="Remove your claim?">&times;</button>
+                <button class="claim-delete-btn" hx-delete="/b/<%= id %>/claim/<%= idx %>/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="<%- t('bring.removeClaimConfirm') %>">&times;</button>
               <% } %>
             </span>
           <% }); %>
         </div>
       <% } else { %>
-        <div class="bring-claims bring-claims--empty">No claims yet</div>
+        <div class="bring-claims bring-claims--empty"><%- t('bring.noClaims') %></div>
       <% } %>
 
       <% if (!isComplete) { %>
         <form hx-post="/b/<%= id %>/claim/<%= idx %>" hx-target="#bringlist-content" hx-swap="innerHTML" class="bring-claim-form">
-          <input type="text" name="name" placeholder="Your name" required>
+          <input type="text" name="name" placeholder="<%- t('bring.yourName') %>" required>
           <input type="number" name="amount" min="1" max="<%= remaining %>" value="1" required>
-          <button type="submit">Claim</button>
+          <button type="submit"><%- t('bring.claim') %></button>
         </form>
       <% } %>
     </div>
@@ -56,7 +56,7 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
     <div class="bring-card bring-card--complete bring-card--custom">
       <div class="bring-card-header">
         <span class="bring-card-name"><%= c.item %></span>
-        <span class="complete-badge">Extra</span>
+        <span class="complete-badge"><%- t('bring.extra') %></span>
       </div>
 
       <div class="bring-progress">
@@ -67,7 +67,7 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
         <span class="bring-claim-chip">
           <%= c.name %><% if (c.amount > 1) { %>: <%= c.amount %><% } %>
           <% if (_lastToken && c.token === _lastToken) { %>
-            <button class="claim-delete-btn" hx-delete="/b/<%= id %>/custom/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="Remove this item?">&times;</button>
+            <button class="claim-delete-btn" hx-delete="/b/<%= id %>/custom/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="<%- t('bring.removeItemConfirm') %>">&times;</button>
           <% } %>
         </span>
       </div>
@@ -76,15 +76,15 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
 </div>
 
 <% if (needed.length === 0 && custom.length === 0) { %>
-  <p>No items yet.</p>
+  <p><%- t('bring.noItems') %></p>
 <% } %>
 
-<h3>Bring something extra</h3>
+<h3><%- t('bring.extraHeading') %></h3>
 <form hx-post="/b/<%= id %>/custom" hx-target="#bringlist-content" hx-swap="innerHTML" class="bring-custom-form">
-  <input type="text" name="name" placeholder="Your name" required>
-  <input type="text" name="item" placeholder="Item" required>
+  <input type="text" name="name" placeholder="<%- t('bring.yourName') %>" required>
+  <input type="text" name="item" placeholder="<%- t('bring.item') %>" required>
   <input type="number" name="amount" min="1" value="1" required>
-  <button type="submit">Add</button>
+  <button type="submit"><%- t('bring.add') %></button>
 </form>
 
 <script>

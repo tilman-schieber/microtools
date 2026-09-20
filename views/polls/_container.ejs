@@ -3,8 +3,7 @@ const slots = poll.data.slots || [];
 const responses = poll.data.responses || [];
 
 function formatDate(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  return fmtDate(dateStr, 'short');
 }
 
 function formatTime(timeStr) {
@@ -18,12 +17,12 @@ function getVoteEmoji(vote) {
 }
 %>
 <div id="poll-container">
-  <h2>Responses</h2>
+  <h2><%- t('polls.responses') %></h2>
   <div class="overflow-x-auto">
   <table class="poll-table">
     <thead>
       <tr>
-        <th>Name</th>
+        <th><%- t('polls.name') %></th>
         <% for (let i = 0; i < slots.length; i++) { %>
           <th><%- formatDate(slots[i].date) %><br><%- formatTime(slots[i].time) %></th>
         <% } %>
@@ -31,7 +30,7 @@ function getVoteEmoji(vote) {
     </thead>
     <tbody>
       <% if (responses.length === 0) { %>
-        <tr><td colspan="<%= slots.length + 1 %>">No responses yet</td></tr>
+        <tr><td colspan="<%= slots.length + 1 %>"><%- t('polls.noResponses') %></td></tr>
       <% } else { %>
         <% for (let r = 0; r < responses.length; r++) { %>
           <tr>
@@ -46,12 +45,12 @@ function getVoteEmoji(vote) {
   </table>
   </div>
   
-  <h3>Add Your Response</h3>
+  <h3><%- t('polls.addYours') %></h3>
   <form hx-post="/polls/<%= poll.id %>/responses" hx-target="#poll-container" hx-swap="outerHTML">
-    <label for="name">Your Name</label>
-    <input type="text" name="name" id="name" placeholder="Your name" required>
+    <label for="name"><%- t('polls.yourName') %></label>
+    <input type="text" name="name" id="name" placeholder="<%- t('polls.yourNamePlaceholder') %>" required>
     
-    <p class="hint">Click cells to toggle: ✅ Yes, 🟡 Maybe, ❌ No</p>
+    <p class="hint"><%- t('polls.voteHint') %></p>
     
     <div class="overflow-x-auto">
     <table class="poll-table vote-grid">
@@ -75,7 +74,7 @@ function getVoteEmoji(vote) {
     </table>
     </div>
     
-    <button type="submit">Submit Response</button>
+    <button type="submit"><%- t('polls.submitResponse') %></button>
   </form>
 </div>
 

@@ -1,23 +1,23 @@
 <% const content = `
   <main>
-    <h1>Create Potluck / Party List</h1>
+    <h1>${t('bring.new.title')}</h1>
     <form hx-post="/bring" hx-target="#result" hx-swap="innerHTML">
-      <label for="title">Event Title</label>
-      <input type="text" name="title" id="title" placeholder="e.g., Office Holiday Party" required>
+      <label for="title">${t('bring.new.titleLabel')}</label>
+      <input type="text" name="title" id="title" placeholder="${t('bring.new.titlePlaceholder')}" required>
       
-      <h3>Needed Items</h3>
-      <p class="hint">Add items that someone should bring</p>
+      <h3>${t('bring.new.needed')}</h3>
+      <p class="hint">${t('bring.new.neededHint')}</p>
       <div id="items-container">
         <div class="item-row">
-          <input type="text" name="items[]" placeholder="Item (e.g., Salad)" required>
-          <input type="number" name="amounts[]" placeholder="Amount" min="1" value="1" required>
-          <button type="button" onclick="this.parentElement.remove()">Remove</button>
+          <input type="text" name="items[]" placeholder="${t('bring.new.itemPlaceholder')}" required>
+          <input type="number" name="amounts[]" placeholder="${t('bring.new.amountPlaceholder')}" min="1" value="1" required>
+          <button type="button" onclick="this.parentElement.remove()">${t('common.remove')}</button>
         </div>
       </div>
-      <button type="button" id="add-item">+ Add Item</button>
+      <button type="button" id="add-item">${t('bring.new.addItem')}</button>
       
       <br><br>
-      <button type="submit">Create List</button>
+      <button type="submit">${t('bring.new.submit')}</button>
     </form>
     <div id="result"></div>
   </main>
@@ -27,9 +27,12 @@
       const container = document.getElementById('items-container');
       const row = document.createElement('div');
       row.className = 'item-row';
-      row.innerHTML = '<input type="text" name="items[]" placeholder="Item" required> <input type="number" name="amounts[]" placeholder="Amount" min="1" value="1" required> <button type="button" onclick="this.parentElement.remove()">Remove</button>';
+      row.innerHTML = '<input type="text" name="items[]" required> <input type="number" name="amounts[]" min="1" value="1" required> <button type="button" onclick="this.parentElement.remove()"></button>';
+      row.querySelector('input[type=text]').placeholder = T.itemPlaceholder;
+      row.querySelector('input[type=number]').placeholder = T.amountPlaceholder;
+      row.querySelector('button').textContent = T.remove;
       container.appendChild(row);
     });
   </script>
 ` %>
-<%- include('../layout', { content, title, crumb: 'Potluck' }) %>
+<%- include('../layout', { content, title, crumb: t('crumb.potluck') }) %>

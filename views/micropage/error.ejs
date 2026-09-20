@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= lang %>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,14 +9,14 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
 </head>
 <body>
-  <%- include('../_header', { crumb: 'Micropage' }) %>
+  <%- include('../_header', { crumb: t('crumb.micropage') }) %>
   <main class="micropage-error">
-    <h1>That micropage link did not work</h1>
+    <h1><%- t('micropage.error.title') %></h1>
     <p class="micropage-error-message"><%= message %></p>
     <% if (detail) { %><p class="hint"><%= detail %></p><% } %>
     <p>
-      <a href="/micropage/docs">Read the docs</a> &middot;
-      <a href="/micropage/new">Build a page</a>
+      <a href="/micropage/docs"><%- t('micropage.readDocs') %></a> &middot;
+      <a href="/micropage/new"><%- t('micropage.error.build') %></a>
     </p>
   </main>
 </body>

@@ -1,23 +1,23 @@
 <% const content = `
   <main>
-    <h1>Share Files</h1>
-    <p class="hint">Upload one or more files to get a shareable link.</p>
+    <h1>${t('files.new.title')}</h1>
+    <p class="hint">${t('files.new.hint')}</p>
     
     <form id="file-form" enctype="multipart/form-data">
-      <label for="file-input">Select Files</label>
+      <label for="file-input">${t('files.new.selectLabel')}</label>
       <input type="file" name="files" id="file-input" multiple required>
       
       <div id="file-list" class="file-list"></div>
       
-      <label for="expiry-select">Expires after</label>
+      <label for="expiry-select">${t('files.new.expiresLabel')}</label>
       <select id="expiry-select" name="expiry">
-        <option value="1">1 day</option>
-        <option value="3" selected>3 days</option>
-        <option value="7">7 days</option>
-        <option value="30">30 days</option>
+        <option value="1">${tn('files.option', 1)}</option>
+        <option value="3" selected>${tn('files.option', 3)}</option>
+        <option value="7">${tn('files.option', 7)}</option>
+        <option value="30">${tn('files.option', 30)}</option>
       </select>
       
-      <button type="submit">Upload & Share</button>
+      <button type="submit">${t('files.new.submit')}</button>
     </form>
     
     <div id="result"></div>
@@ -53,7 +53,7 @@
       const files = fileInput.files;
       
       if (files.length === 0) {
-        resultDiv.innerHTML = '<p style="color: red;">Please select at least one file.</p>';
+        resultDiv.innerHTML = '<p class="error"></p>'; resultDiv.firstChild.textContent = T.selectOneFile;
         return;
       }
 
@@ -64,16 +64,16 @@
       }
 
       try {
-        resultDiv.innerHTML = '<p>Uploading...</p>';
+        resultDiv.innerHTML = '<p></p>'; resultDiv.firstChild.textContent = T.uploading;
         const response = await fetch('/files', {
           method: 'POST',
           body: formData
         });
         resultDiv.innerHTML = await response.text();
       } catch (err) {
-        resultDiv.innerHTML = '<p style="color: red;">Upload failed: ' + err.message + '</p>';
+        resultDiv.innerHTML = '<p class="error"></p>'; resultDiv.firstChild.textContent = T.uploadFailed + err.message;
       }
     });
   </script>
 ` %>
-<%- include('../layout', { content, title, crumb: 'Files' }) %>
+<%- include('../layout', { content, title, crumb: t('crumb.files') }) %>

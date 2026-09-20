@@ -252,5 +252,29 @@ for (const t of TEMPLATES) {
   if (!JSON.stringify(doc).includes('%2B')) fail('agents documents the + rule', 'no mention of %2B');
 }
 
+// --- page language ---------------------------------------------------------
+
+{
+  // No code = English, and byte-identical to an explicit len: old links never change
+  const plain = renderPage(parse('p=tev~Fest~Samstag~Garten'));
+  const en = renderPage(parse('p=tev.len~Fest~Samstag~Garten'));
+  const de = renderPage(parse('p=tev.lde~Fest~Samstag~Garten'));
+  if (plain.html !== en.html) fail('len is the default', 'explicit len renders differently');
+  if (plain.lang !== 'en') fail('default page lang', plain.lang);
+  if (!plain.html.includes('<dt>When</dt>')) fail('english fixed words', plain.html.slice(0, 300));
+  if (!de.html.includes('<dt>Wann</dt>') || !de.html.includes('<dt>Wo</dt>')) fail('german fixed words', de.html.slice(0, 300));
+  if (de.lang !== 'de') fail('german page lang', de.lang);
+  // Slot content is the author's and is never touched
+  if (!de.html.includes('Samstag')) fail('slot content survives', de.html.slice(0, 300));
+
+  const wifi = renderPage(parse('p=twf.lde~Gastnetz~geheim~WPA'));
+  if (!wifi.html.includes('Passwort') || !wifi.html.includes('Netzwerk')) fail('german wifi words', wifi.html.slice(0, 400));
+}
+mustThrow('unknown language', 'p=tar.lfr~x', /unknown language/i);
+{
+  const doc = describeRegistry('https://example.dev');
+  if (doc.languages.map((l) => l.code).join(' ') !== 'len lde') fail('agents lists languages', JSON.stringify(doc.languages));
+}
+
 console.log(failed === 0 ? '\nAll micropage checks passed.' : `\n${failed} FAILURES`);
 process.exit(failed === 0 ? 0 : 1);

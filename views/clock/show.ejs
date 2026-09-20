@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= lang %>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %></title>
   <link rel="stylesheet" href="/public/style.css">
+  <%- include('../_t') %>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F527;</text></svg>">
 </head>
 <body class="clock-display-page">
@@ -14,7 +15,7 @@
         <div id="digital-clock" class="digital-clock-display" hidden></div>
 
         <div id="analog-clock" class="analog-clock-panel" hidden>
-          <div id="swiss-clock" class="clock station" aria-label="Swiss railway clock" role="img">
+          <div id="swiss-clock" class="clock station" aria-label="<%- t('clock.ariaSwiss') %>" role="img">
             <div id="hours-container" class="hours-container"><div class="hours"></div></div>
             <div id="minutes-container" class="minutes-container"><div class="minutes"></div></div>
             <div id="seconds-container" class="seconds-container"><div class="seconds"></div></div>

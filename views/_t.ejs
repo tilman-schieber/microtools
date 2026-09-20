@@ -1,0 +1,10 @@
+<script>
+  // Strings for client-side scripts, in the viewer's language (see server/i18n.ts).
+  // tf('mpMeta', { len: 40 }) fills {placeholders}; the result is plain text.
+  window.T = <%- clientT %>;
+  window.tf = function (key, params) {
+    return String(T[key] == null ? key : T[key]).replace(/\{(\w+)\}/g, function (whole, name) {
+      return params && name in params ? params[name] : whole;
+    });
+  };
+</script>

@@ -52,6 +52,20 @@ npm run start        # Runs the production bundle
 
 The build script copies [htmx](https://htmx.org/), [qrcode-generator](https://github.com/nicokoenig/qrcode-generator), and the [IBM Plex Sans](https://github.com/IBM/plex) font files (via `@fontsource/ibm-plex-sans`) from `node_modules` into `public/` so they are served locally instead of from CDNs. These generated files are gitignored — run `npm run build` after cloning to produce them.
 
+## Languages
+
+The interface is available in English and German. The language belongs to the viewer, not to the link, because links get passed on: an explicit `?lang=de` (remembered in a `lang` cookie) wins, then the browser's `Accept-Language`, then English. The switcher in the header uses the same `?lang=` parameter. It is left off the one-time secret view, where a reload would destroy the secret.
+
+Every user-facing string lives in `server/locales/`. Templates and server code call `t('key', params)`; parameters are HTML-escaped inside `t()`, so locale files may contain markup but user input never reaches the page unescaped. Keys under `js.` are sent to the browser as `window.T` for the client-side scripts.
+
+Micropage is the exception: a rendered page is a pure function of its URL, so its language is part of the link (`lde`, default `len`) and sets the fixed words a template adds. Slot content is never translated.
+
+### Adding a language
+
+1. Copy `server/locales/de.ts` to `server/locales/<code>.ts` and translate the values. It is typed against `en.ts`, so `npm run check` fails on any missing or misspelled key.
+2. Register it in `server/i18n.ts`: the `Lang` type, `LANGS`, `TABLES`, `LOCALES`, and `pluralRules`.
+3. Keep established English terms where the language has no natural word of its own.
+
 ## Environment variables
 
 | Variable   | Default | Description          |
@@ -65,6 +79,8 @@ The build script copies [htmx](https://htmx.org/), [qrcode-generator](https://gi
 microtools/
 ├── server/
 │   ├── index.ts          # All routes and application logic
+│   ├── i18n.ts           # Language resolution, t(), date and money formatting
+│   ├── locales/          # en.ts defines the keys, de.ts is typed against it
 │   ├── db.ts             # SQLite setup and schema
 │   └── objectStore.ts    # Generic CRUD for JSON objects in SQLite
 ├── views/

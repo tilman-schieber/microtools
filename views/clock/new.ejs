@@ -1,69 +1,69 @@
 <% const content = `
   <main class="clock-tool">
-    <h1>Clock</h1>
-    <p class="tagline">Configure a clock display and generate a plain URL with parameters instead of a stored share ID.</p>
+    <h1>${t('clock.title')}</h1>
+    <p class="tagline">${t('clock.tagline')}</p>
 
     <form id="clock-config-form" class="clock-config-form">
       <div class="password-options-grid">
         <fieldset class="password-fieldset">
-          <legend>Main clock</legend>
+          <legend>${t('clock.mainClock')}</legend>
 
-          <label for="clock-type">Clock type</label>
+          <label for="clock-type">${t('clock.type')}</label>
           <select id="clock-type" name="clockType">
-            <option value="digital" selected>Digital</option>
-            <option value="analog">Analogue (Swiss railway)</option>
-            <option value="none">None</option>
+            <option value="digital" selected>${t('clock.digital')}</option>
+            <option value="analog">${t('clock.analog')}</option>
+            <option value="none">${t('clock.none')}</option>
           </select>
 
-          <label class="checkbox-option"><input type="checkbox" id="clock-show-seconds" checked> Show seconds</label>
-          <p class="hint">Analogue mode adapts the original <a href="https://github.com/manuelmeister/Swiss-Railway-Clock" target="_blank" rel="noopener noreferrer">Swiss-Railway-Clock source code</a> by Manuel Meister.</p>
+          <label class="checkbox-option"><input type="checkbox" id="clock-show-seconds" checked> ${t('clock.showSeconds')}</label>
+          <p class="hint">${t('clock.credit')}</p>
         </fieldset>
 
         <fieldset class="password-fieldset">
-          <legend>Countdown</legend>
+          <legend>${t('clock.countdown')}</legend>
 
-          <label class="checkbox-option"><input type="checkbox" id="countdown-enabled"> Show countdown</label>
+          <label class="checkbox-option"><input type="checkbox" id="countdown-enabled"> ${t('clock.showCountdown')}</label>
 
           <div class="clock-duration-grid">
             <div class="password-field">
-              <label for="countdown-hours">Hours</label>
+              <label for="countdown-hours">${t('clock.hours')}</label>
               <input type="number" id="countdown-hours" min="0" max="999" value="0">
             </div>
 
             <div class="password-field">
-              <label for="countdown-minutes">Minutes</label>
+              <label for="countdown-minutes">${t('clock.minutes')}</label>
               <input type="number" id="countdown-minutes" min="0" max="59" value="15">
             </div>
 
             <div class="password-field">
-              <label for="countdown-seconds-input">Seconds</label>
+              <label for="countdown-seconds-input">${t('clock.seconds')}</label>
               <input type="number" id="countdown-seconds-input" min="0" max="59" value="0">
             </div>
           </div>
 
           <div class="password-field">
-            <label for="countdown-start">Start time</label>
+            <label for="countdown-start">${t('clock.startTime')}</label>
             <input type="time" id="countdown-start">
           </div>
 
-          <label class="checkbox-option"><input type="checkbox" id="countdown-show-seconds"> Show seconds</label>
-          <label class="checkbox-option"><input type="checkbox" id="countdown-color" checked> Enable warning colors</label>
-          <p class="hint">If no start time is set, the countdown starts immediately. Warning colors switch to yellow, orange, and red during the last 1/3, 1/6, and 1/12 of the countdown.</p>
+          <label class="checkbox-option"><input type="checkbox" id="countdown-show-seconds"> ${t('clock.showSeconds')}</label>
+          <label class="checkbox-option"><input type="checkbox" id="countdown-color" checked> ${t('clock.warnColors')}</label>
+          <p class="hint">${t('clock.countdownHint')}</p>
         </fieldset>
       </div>
 
     </form>
 
     <section class="password-output" id="clock-link-section">
-      <label for="clock-link-output">Clock link</label>
+      <label for="clock-link-output">${t('clock.link')}</label>
       <input type="text" id="clock-link-output" readonly>
 
       <div class="password-actions">
-        <button type="button" id="clock-copy-link-btn" class="copy-btn">Copy</button>
-        <a id="clock-open-link" class="download-btn clock-open-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Open Clock</a>
+        <button type="button" id="clock-copy-link-btn" class="copy-btn">${t('common.copy')}</button>
+        <a id="clock-open-link" class="download-btn clock-open-link" href="#" target="_blank" rel="noopener noreferrer" hidden>${t('clock.open')}</a>
       </div>
 
-      <p id="clock-config-meta" class="hint">The link updates automatically as you change the settings.</p>
+      <p id="clock-config-meta" class="hint">${t('clock.linkHint')}</p>
       <p id="clock-config-error" class="error" hidden></p>
     </section>
 
@@ -71,4 +71,4 @@
 
   <script src="/public/clock-config.js"></script>
 ` %>
-<%- include('../layout', { content, title, crumb: 'Clock' }) %>
+<%- include('../layout', { content, title, crumb: t('crumb.clock') }) %>

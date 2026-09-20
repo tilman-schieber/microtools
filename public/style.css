@@ -110,6 +110,29 @@ body.landing-page {
   color: var(--muted);
 }
 
+.lang-switch {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 13px;
+  color: var(--faint);
+}
+
+.lang-switch a {
+  color: var(--muted);
+}
+
+.lang-switch a:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.lang-current {
+  color: var(--fg);
+  font-weight: 500;
+}
+
 main {
   padding-top: 1.25rem;
 }

@@ -1,8 +1,8 @@
 <% const content = `
   <main>
-    <h1>Files Not Found</h1>
-    <p>This file share has expired, been deleted, or never existed.</p>
-    <p><a href="/files/new">Share new files</a></p>
+    <h1>${t('files.gone.title')}</h1>
+    <p>${t('files.gone.text')}</p>
+    <p><a href="/files/new">${t('files.gone.new')}</a></p>
   </main>
 ` %>
-<%- include('../layout', { content, title, crumb: 'Files' }) %>
+<%- include('../layout', { content, title, crumb: t('crumb.files') }) %>

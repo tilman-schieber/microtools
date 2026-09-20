@@ -64,8 +64,8 @@
       linkOutput.value = '';
       openLink.hidden = true;
       openLink.removeAttribute('href');
-      meta.textContent = 'Choose a clock or enable a countdown.';
-      setError('Choose a clock or enable a countdown.');
+      meta.textContent = T.clockChoose;
+      setError(T.clockChoose);
       return;
     }
 
@@ -84,7 +84,7 @@
         linkOutput.value = '';
         openLink.hidden = true;
         openLink.removeAttribute('href');
-        setError('Countdown duration must be at least one second.');
+        setError(T.clockMinDuration);
         return;
       }
 
@@ -92,7 +92,7 @@
         linkOutput.value = '';
         openLink.hidden = true;
         openLink.removeAttribute('href');
-        setError('Start time is invalid.');
+        setError(T.clockStartInvalid);
         return;
       }
 
@@ -107,25 +107,25 @@
     linkOutput.value = href;
     openLink.href = href;
     openLink.hidden = false;
-    meta.textContent = showCountdown ? 'This link waits until the configured start time, then begins counting down.' : 'This link is fully configured by its query parameters.';
+    meta.textContent = showCountdown ? T.clockWaits : T.clockConfigured;
     setError('');
   }
 
   copyButton.addEventListener('click', async function () {
     if (!linkOutput.value) {
-      setError('There is no valid link to copy yet.');
+      setError(T.clockNoLink);
       return;
     }
 
     try {
       await navigator.clipboard.writeText(linkOutput.value);
       const originalText = copyButton.textContent;
-      copyButton.textContent = 'Copied!';
+      copyButton.textContent = T.copied;
       window.setTimeout(function () {
         copyButton.textContent = originalText;
       }, 1200);
     } catch (_error) {
-      setError('Copying failed in this browser.');
+      setError(T.copyFailed);
     }
   });
 

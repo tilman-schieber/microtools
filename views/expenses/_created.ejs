@@ -1,0 +1,13 @@
+<p><%- t('expenses.created') %></p>
+<p><strong><%- t('expenses.summaryLink') %></strong> <a href="<%= summaryUrl %>"><%= summaryUrl %></a></p>
+<button class="copy-btn" data-url="<%= summaryUrl %>" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent=T.copied"><%- t('common.copyLink') %></button>
+<div class="qrcode" data-url="<%= summaryUrl %>"></div>
+<h3><%- t('expenses.participantLinks') %></h3>
+<ul>
+  <% links.forEach(function (p) { %>
+  <li><strong><%= p.name %>:</strong> <a href="<%= p.url %>"><%= p.url %></a>
+    <button class="copy-btn" data-url="<%= p.url %>" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent=T.copied"><%- t('common.copy') %></button>
+    <button class="qr-toggle-btn" onclick="var d=this.nextElementSibling;d.hidden=!d.hidden;if(!d.hidden)renderQRCodes(d);"><%- t('common.qr') %></button>
+    <div class="qrcode" data-url="<%= p.url %>" hidden></div></li>
+  <% }); %>
+</ul>

@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= lang %>">
 <head>
-  <%- include('../_head', { title: note.data.title || 'Note' }) %>
+  <%- include('../_head', { title: note.data.title || t('notes.fallbackTitle') }) %>
   <link rel="stylesheet" href="/public/highlight.min.css">
 </head>
 <body class="note-md-page">
-  <%- include('../_header', { crumb: 'Note' }) %>
+  <%- include('../_header', { crumb: t('crumb.note') }) %>
   <main>
-    <h1><%= note.data.title || 'Note' %></h1>
+    <h1><%= note.data.title || t('notes.fallbackTitle') %></h1>
     <div class="markdown-content">
       <%- renderedMarkdown %>
     </div>
     <div class="note-links">
-      <a href="/notes/<%= note.id %>">View original</a>
-      <a href="/notes/<%= note.id %>/raw">View raw</a>
+      <a href="/notes/<%= note.id %>"><%- t('notes.show.original') %></a>
+      <a href="/notes/<%= note.id %>/raw"><%- t('notes.show.raw') %></a>
     </div>
   </main>
 </body>

@@ -1,22 +1,22 @@
 <%
 const tools = [
-  { href: '/notes/new', name: 'Note Sharing', desc: 'Create and share plain text or Markdown notes',
+  { href: '/notes/new', name: t('tool.notes.name'), desc: t('tool.notes.desc'),
     icon: '<path d="M5 3h8l4 4v14H5z"/><path d="M13 3v4h4"/><path d="M8 12h8M8 16h8"/>' },
-  { href: '/polls/new', name: 'Date Poll', desc: 'Find a time that works for everyone',
+  { href: '/polls/new', name: t('tool.polls.name'), desc: t('tool.polls.desc'),
     icon: '<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/>' },
-  { href: '/expenses/new', name: 'Expense Share', desc: 'Split costs in a group and settle up',
+  { href: '/expenses/new', name: t('tool.expenses.name'), desc: t('tool.expenses.desc'),
     icon: '<circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/>' },
-  { href: '/secrets/new', name: 'One-Time Secret', desc: 'Encrypted in your browser, gone after one view',
+  { href: '/secrets/new', name: t('tool.secrets.name'), desc: t('tool.secrets.desc'),
     icon: '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>' },
-  { href: '/files/new', name: 'File Share', desc: 'Upload files and share them by link, with an expiry',
+  { href: '/files/new', name: t('tool.files.name'), desc: t('tool.files.desc'),
     icon: '<path d="M3 6h6l2 2h10v12H3z"/>' },
-  { href: '/passwords/new', name: 'Password Generator', desc: 'Strong passwords and passphrases, generated locally',
+  { href: '/passwords/new', name: t('tool.passwords.name'), desc: t('tool.passwords.desc'),
     icon: '<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M17 6l2.5 2.5M14 9l2.5 2.5"/>' },
-  { href: '/clock/new', name: 'Clock', desc: 'Digital, Swiss railway, or countdown displays from a URL',
+  { href: '/clock/new', name: t('tool.clock.name'), desc: t('tool.clock.desc'),
     icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>' },
-  { href: '/bring/new', name: 'Potluck Planner', desc: 'Coordinate who brings what',
+  { href: '/bring/new', name: t('tool.potluck.name'), desc: t('tool.potluck.desc'),
     icon: '<path d="M3 17h18M5 17a7 7 0 0 1 14 0"/><path d="M12 8v2"/>' },
-  { href: '/micropage/new', name: 'Micropage', desc: 'A whole page that lives entirely in its own link',
+  { href: '/micropage/new', name: t('tool.micropage.name'), desc: t('tool.micropage.desc'),
     icon: '<path d="M10 14a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1"/><path d="M14 10a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1"/>' },
 ];
 
@@ -35,12 +35,12 @@ const rows = tools.map(t => `
 const content = `
   <main class="landing">
     <div class="landing-hero">
-      <h1>Simple, link-based tools.</h1>
-      <p>Create something and share the link. Nothing to sign up for, nothing tracked.</p>
+      <h1>${t('landing.title')}</h1>
+      <p>${t('landing.lead')}</p>
     </div>
     <ul class="tool-list">${rows}
     </ul>
-    <p class="landing-footer">Open source. Runs on your own server.</p>
+    <p class="landing-footer">${t('landing.footer')}</p>
   </main>
 ` %>
 <%- include('layout', { content, title, bodyClass: 'landing-page' }) %>

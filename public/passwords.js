@@ -99,20 +99,20 @@
     const sets = buildAlphaSets();
 
     if (!Number.isInteger(length) || length < 8 || length > 64) {
-      return { error: 'Choose a length between 8 and 64 characters.' };
+      return { error: T.pwLength };
     }
 
     if (sets.length === 0) {
-      return { error: 'Select at least one character set.' };
+      return { error: T.pwSelectSet };
     }
 
     if (requireEach && length < sets.length) {
-      return { error: 'Length must be at least as large as the number of selected character sets.' };
+      return { error: T.pwLengthSets };
     }
 
     const pool = Array.from(new Set(sets.join('').split('')));
     if (unique && length > pool.length) {
-      return { error: 'No-repeat mode needs a larger character pool or a shorter password length.' };
+      return { error: T.pwNoRepeat };
     }
 
     const passwordChars = [];
@@ -125,7 +125,7 @@
       }
 
       if (candidates.length === 0) {
-        throw new Error('Unable to satisfy the current alphanumeric options.');
+        throw new Error(T.pwUnable);
       }
 
       const chosen = pickOne(candidates);
@@ -151,14 +151,14 @@
     const entropy = length * Math.log2(pool.length);
     const selectedLabels = [];
 
-    if (document.getElementById('alpha-lowercase').checked) selectedLabels.push('lowercase');
-    if (document.getElementById('alpha-uppercase').checked) selectedLabels.push('uppercase');
-    if (document.getElementById('alpha-digits').checked) selectedLabels.push('numbers');
-    if (document.getElementById('alpha-symbols').checked) selectedLabels.push('symbols');
+    if (document.getElementById('alpha-lowercase').checked) selectedLabels.push(T.pwSetLower);
+    if (document.getElementById('alpha-uppercase').checked) selectedLabels.push(T.pwSetUpper);
+    if (document.getElementById('alpha-digits').checked) selectedLabels.push(T.pwSetDigits);
+    if (document.getElementById('alpha-symbols').checked) selectedLabels.push(T.pwSetSymbols);
 
     return {
       value: shuffled,
-      meta: 'Approx. ' + formatBits(entropy) + ' bits from ' + pool.length + ' possible characters (' + selectedLabels.join(', ') + ').'
+      meta: tf('pwMetaAlpha', { bits: formatBits(entropy), n: pool.length, sets: selectedLabels.join(', ') })
     };
   }
 
@@ -171,15 +171,15 @@
     const words = wordLists[language] || [];
 
     if (!Number.isInteger(wordCount) || wordCount < 3 || wordCount > 8) {
-      return { error: 'Choose between 3 and 8 words.' };
+      return { error: T.pwWordCount };
     }
 
     if (words.length === 0) {
-      return { error: 'Word list unavailable.' };
+      return { error: T.pwNoList };
     }
 
     if (unique && wordCount > words.length) {
-      return { error: 'Word count is larger than the available word list.' };
+      return { error: T.pwTooManyWords };
     }
 
     const chosen = [];
@@ -196,11 +196,11 @@
     }
 
     const entropy = wordCount * Math.log2(words.length);
-    const label = language === 'de' ? 'German' : 'English';
-    let metaText = 'Approx. ' + formatBits(entropy) + ' bits from ' + words.length + ' ' + label + ' words.';
+    const label = language === 'de' ? T.pwLangDe : T.pwLangEn;
+    let metaText = tf('pwMetaXkcd', { bits: formatBits(entropy), n: words.length, language: label });
 
     if (wordCount < 5) {
-      metaText += ' Use 5 or 6 words for a stronger passphrase.';
+      metaText += T.pwStronger;
     }
 
     return {
@@ -258,12 +258,12 @@
     try {
       await navigator.clipboard.writeText(generatedPassword.value);
       const originalText = copyButton.textContent;
-      copyButton.textContent = 'Copied!';
+      copyButton.textContent = T.copied;
       window.setTimeout(function () {
         copyButton.textContent = originalText;
       }, 1200);
     } catch (_error) {
-      setResult(generatedPassword.value, meta.textContent, 'Copying failed in this browser.');
+      setResult(generatedPassword.value, meta.textContent, T.copyFailed);
     }
   });
 
