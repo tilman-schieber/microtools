@@ -16,7 +16,7 @@ import hljs from 'highlight.js';
 import archiver from 'archiver';
 import { safeUrlRenderer } from './safeMarkdown';
 import * as micropage from './micropage';
-import { i18n, resolveLang, isLang, langCookie, clientStrings, escapeHtml, LANGS, type I18n } from './i18n';
+import { i18n, resolveLang, isLang, langCookie, clientStrings, escapeHtml, plainText, LANGS, type I18n } from './i18n';
 
 declare module 'fastify' {
   interface FastifyRequest { i18n: I18n }
@@ -163,7 +163,7 @@ async function start() {
     }));
 
     reply.locals = {
-      t: tr.t, tn: tr.tn, fmtDate: tr.fmtDate, fmtMoney: tr.fmtMoney,
+      t: tr.t, tn: tr.tn, fmtDate: tr.fmtDate, fmtMoney: tr.fmtMoney, plain: plainText,
       lang, langLinks, clientT: clientStrings(lang)
     };
 
@@ -215,15 +215,23 @@ async function start() {
     return reply.view('micropage/new', { title: request.i18n.t('micropage.title') });
   });
 
-  // Human documentation, generated from the same registry as /agents
+  // Documentation: the reference for people and agents alike, in the viewer's
+  // language. The Markdown twin serves scripts and agents that prefer plain text.
   fastify.get('/micropage/docs', async (request, reply) => {
     return reply.view('micropage/docs', {
-      title: 'Micropage docs',
-      registry: micropage.describeRegistry(requestOrigin(request))
+      title: request.i18n.t('crumb.micropageDocs'),
+      registry: micropage.localizedRegistry(requestOrigin(request), request.i18n)
     });
   });
 
-  // Machine-readable description, for agents composing micropage URLs
+  fastify.get('/micropage/docs.md', async (request, reply) => {
+    return reply.type('text/markdown; charset=utf-8').view('micropage/docs-md', {
+      origin: requestOrigin(request),
+      registry: micropage.localizedRegistry(requestOrigin(request), request.i18n)
+    });
+  });
+
+  // The builder's data source: template, theme and colour lists plus limits
   fastify.get('/micropage/agents', async (request, reply) => {
     return reply
       .type('application/json; charset=utf-8')

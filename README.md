@@ -60,6 +60,8 @@ Every user-facing string lives in `server/locales/`. Templates and server code c
 
 Micropage is the exception: a rendered page is a pure function of its URL, so its language is part of the link (`lde`, default `len`) and sets the fixed words a template adds. Slot content is never translated.
 
+The Micropage documentation at `/micropage/docs` is the reference for people and agents alike and follows the viewer's language; `/micropage/docs.md` is the same content as plain Markdown. `/micropage/agents` is the builder's data source (templates, colours, limits as JSON), not a separate API.
+
 ### Adding a language
 
 1. Copy `server/locales/de.ts` to `server/locales/<code>.ts` and translate the values. It is typed against `en.ts`, so `npm run check` fails on any missing or misspelled key.

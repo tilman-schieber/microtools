@@ -35,6 +35,15 @@ export function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+/** A translated string as plain text: links become "text (url)", tags go, entities decode. */
+export function plainText(html: string): string {
+  return html
+    .replace(/<a href="([^"]*)">([^<]*)<\/a>/g, (m, href: string, text: string) => (text === href ? href : `${text} (${href})`))
+    .replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&mdash;/g, '—').replace(/&middot;/g, '·').replace(/&amp;/g, '&');
+}
+
 function lookup(lang: Lang, key: string): string {
   // A missing translation falls back to English; a missing key shows itself
   // loudly in development but never crashes a page.
@@ -53,6 +62,8 @@ export interface I18n {
   locale: string;
   /** Translated string, parameters HTML-escaped. Safe to emit unescaped. */
   t: (key: Key | string, params?: Params) => string;
+  /** Translation when the key exists in this or the default language, else `fallback` (unescaped, trusted). */
+  tOr: (key: string, fallback: string) => string;
   /** Plural-aware: picks `<key>.one` / `<key>.other` and passes {n}. */
   tn: (key: string, n: number, params?: Params) => string;
   fmtDate: (value: string | number | Date, style?: 'short' | 'long') => string;
@@ -72,6 +83,7 @@ function build(lang: Lang): I18n {
     lang,
     locale,
     t,
+    tOr: (key, fallback) => TABLES[lang][key] ?? TABLES[DEFAULT_LANG][key] ?? fallback,
     tn: (key, n, params) => t(`${key}.${pluralRules[lang].select(n) === 'one' ? 'one' : 'other'}`, { ...params, n }),
     fmtDate: (value, style = 'short') => {
       // A bare YYYY-MM-DD is a calendar day, not an instant: pin it to local

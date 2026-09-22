@@ -217,8 +217,8 @@
         swatch.type = 'button';
         swatch.className = 'micropage-swatch';
         swatch.style.background = a.hex;
-        swatch.title = a.name;
-        swatch.setAttribute('aria-label', a.name);
+        swatch.title = T['mpName.' + a.code.slice(1)] || a.name;
+        swatch.setAttribute('aria-label', swatch.title);
         swatch.setAttribute('aria-pressed', 'false');
         swatch.addEventListener('click', function () {
           accent = accent === a.code.slice(1) ? null : a.code.slice(1);

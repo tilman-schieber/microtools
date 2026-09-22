@@ -1,0 +1,71 @@
+<%# Plain-Markdown twin of docs.ejs, for agents and scripts. Output is text, not
+    HTML, so everything is emitted unescaped and t() strings go through plain(). -%>
+# <%- plain(t('docs.title')) %>
+
+<%- plain(t('docs.summary')) %>
+
+<%- plain(t('docs.howToUse')) %>
+
+## <%- plain(t('docs.shapeHeading')) %>
+
+    <%- registry.grammar.shape %>
+
+<%- plain(t('docs.head')) %>
+
+<%- plain(t('docs.slots')) %>
+
+## <%- plain(t('docs.rulesHeading')) %>
+
+<% [1, 2, 3, 4, 5, 6, 7].forEach(function (i) { -%>
+- <%- plain(t('docs.rule' + i)) %>
+<% }); -%>
+
+## <%- plain(t('docs.templatesHeading')) %>
+
+<% registry.templates.forEach(function (tpl) { -%>
+### `<%- tpl.code %>` <%- tpl.name %>
+
+<%- tpl.description %>
+
+<% tpl.slots.forEach(function (s, i) { -%>
+<%- i + 1 %>. `<%- s.name %>` (<%- s.kind %><%- s.values ? ': ' + s.values.join(' | ') : '' %>): <%- s.description %>
+<% }); -%>
+
+<%- plain(t('docs.tryHeading')) %>: <%- tpl.example %>
+
+<% }); -%>
+## <%- plain(t('docs.themesHeading')) %>
+
+<% registry.themes.forEach(function (c) { -%>
+- `<%- c.code %>` <%- c.name %>: <%- c.description %>
+<% }); -%>
+
+## <%- plain(t('docs.accentsHeading')) %>
+
+<% registry.accents.forEach(function (a) { -%>
+- `<%- a.code %>` <%- a.name %> `<%- a.hex %>`
+<% }); -%>
+
+## <%- plain(t('docs.optionsHeading')) %>
+
+<%- plain(t('docs.widths')) %> <% registry.widths.forEach(function (w, i) { %><%- i ? ' · ' : '' %>`<%- w.code %>` <%- w.name %><% }); %>
+
+<%- plain(t('docs.flags')) %> <% registry.flags.forEach(function (f, i) { %><%- i ? ' · ' : '' %>`<%- f.code %>` <%- f.description %><% }); %>
+
+<%- plain(t('docs.languages')) %> <% registry.languages.forEach(function (l, i) { %><%- i ? ' · ' : '' %>`<%- l.code %>` <%- l.name %><% }); %> — <%- plain(t('docs.languagesNote')) %>
+
+## <%- plain(t('docs.notesHeading')) %>
+
+<% [1, 2, 3].forEach(function (i) { -%>
+- <%- plain(t('docs.note' + i)) %>
+<% }); -%>
+
+## <%- plain(t('docs.limitsHeading')) %>
+
+- <%- plain(t('docs.limitLink', { n: registry.limits.maxQueryLength })) %>
+- <%- plain(t('docs.limitSlots', { n: registry.limits.maxSlots })) %>
+- <%- plain(t('docs.limitSlot', { inline: registry.limits.maxInlineSlot, block: registry.limits.maxBlockSlot })) %>
+
+## <%- plain(t('docs.agentsHeading')) %>
+
+<%- plain(t('docs.agentsTextMd', { origin })) %>

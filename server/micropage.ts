@@ -13,7 +13,7 @@
 import { Marked } from 'marked';
 import qrcode from 'qrcode-generator';
 import { safeUrlRenderer, escapeAttr, safeUrl } from './safeMarkdown';
-import { i18n, isLang, LANGS, DEFAULT_LANG, type Lang } from './i18n';
+import { i18n, isLang, plainText, LANGS, DEFAULT_LANG, type Lang, type I18n } from './i18n';
 
 /** Looks up one of the page's fixed words (mp.* keys) in the PAGE's language. */
 type Words = (key: string) => string;
@@ -628,47 +628,24 @@ export function renderPage(spec: Spec): RenderedPage {
 }
 
 // ---------------------------------------------------------------------------
-// Machine-readable description (drives /micropage/agents and the docs page)
+// Registry description: the builder's data source (/micropage/agents) and the docs
 // ---------------------------------------------------------------------------
 
 export function describeRegistry(origin: string) {
+  // English prose lives in the locale file, so the docs page, its Markdown twin
+  // and this JSON never drift apart.
+  const en = (key: string) => plainText(i18n(DEFAULT_LANG).t(key));
   return {
     version: 2,
-    summary:
-      'Builds a complete, styled webpage out of one URL parameter. Nothing is stored: ' +
-      'the URL is the document, so the link is the only artefact and it can be shared, ' +
-      'bookmarked or edited by hand. Pages carry no JavaScript.',
-    howToUse:
-      'Pick a template, then supply its slots in order. Compose the URL as ' +
-      '/micropage?p=<template>.<theme>[.<width>][.a<accent>][.x<flags>][.l<language>]~<slot1>~<slot2>. ' +
-      'Percent-encode each slot separately, then join with literal ~ characters. ' +
-      'Read the encoding rules below before generating a link by hand: three of them ' +
-      'silently corrupt content rather than erroring.',
+    summary: en('docs.summary'),
+    howToUse: en('docs.howToUse'),
     grammar: {
       shape: '/micropage?p=<head>~<slot>~<slot>...',
-      head:
-        'Dot-separated codes, namespaced by first letter: t=template, c=theme, w=width, l=language, ' +
-        'a=accent, x=flags. Order does not matter. Only the template code is required; ' +
-        'everything else falls back to a default.',
-      slots:
-        'Everything after the first ~ is slot content, positionally matched to the slots ' +
-        'the chosen template declares. Extra slots are ignored; missing ones are omitted ' +
-        'from the page rather than rendered blank.',
-      rules: [
-        'Percent-encode each slot. The ~ between slots must stay literal; a tilde INSIDE content must be written %7E, or it will be read as a slot separator.',
-        'An empty slot is two consecutive tildes.',
-        'Never leave a literal + in content: write %2B. Some clients decode a bare + as a space, so "C++" silently becomes "C  ".',
-        'Never leave a literal # in content: write %23. Everything after a # is a URL fragment, is never sent to the server, and is lost with no error.',
-        'Slot content is markdown-lite: **bold**, _italic_, `code`, [label](https://url) links, and line breaks. The Article body slot also takes headings, lists, quotes and code blocks.',
-        'Only http, https, mailto and tel links survive; any other scheme renders as plain text. Raw HTML is escaped, never rendered.',
-        'Keep the whole link under the length limit below. It is set so every page stays QR-encodable.'
-      ]
+      head: en('docs.head'),
+      slots: en('docs.slots'),
+      rules: [1, 2, 3, 4, 5, 6, 7].map((i) => en(`docs.rule${i}`))
     },
-    notes: [
-      'Slot order for a given template is fixed permanently, because a shared link has no stored record to migrate.',
-      'The Sign template scales its text to fill the page, so it works best with a handful of words.',
-      'The QR template renders the code server-side as inline SVG, always dark on white so it scans on any theme.'
-    ],
+    notes: [1, 2, 3].map((i) => en(`docs.note${i}`)),
     limits: LIMITS,
     templates: TEMPLATES.map((t) => ({
       code: t.code,
@@ -684,5 +661,34 @@ export function describeRegistry(origin: string) {
     // The page's own language: it sets the fixed words a template adds (When, Where,
     // Password …) and <html lang>. Slot content is never translated. Default: len.
     languages: LANGS.map((code) => ({ code: 'l' + code, name: code === 'de' ? 'Deutsch' : 'English' }))
+  };
+}
+
+export type Registry = ReturnType<typeof describeRegistry>;
+
+/**
+ * The registry with names and descriptions in the viewer's language, for the
+ * docs page. The builder does the same lookup client-side (T['mpName.…']);
+ * English has no keys of its own and falls back to the registry values.
+ */
+export function localizedRegistry(origin: string, tr: I18n): Registry & { languages: { code: string; name: string }[] } {
+  const r = describeRegistry(origin);
+  const L = tr.tOr;
+  return {
+    ...r,
+    templates: r.templates.map((t) => ({
+      ...t,
+      name: L(`js.mpName.${t.code}`, t.name),
+      description: L(`js.mpDesc.${t.code}`, t.description),
+      slots: t.slots.map((s) => ({
+        ...s,
+        name: L(`js.mpSlot.${s.name}`, s.name),
+        description: L(`js.mpSlotDesc.${t.code}.${s.name}`, s.description)
+      }))
+    })),
+    themes: r.themes.map((c) => ({ ...c, name: L(`js.mpName.${c.code}`, c.name), description: L(`js.mpThemeDesc.${c.code}`, c.description) })),
+    widths: r.widths.map((w) => ({ ...w, name: L(`js.mpName.${w.code}`, w.name) })),
+    accents: r.accents.map((a) => ({ ...a, name: L(`js.mpName.${a.code.slice(1)}`, a.name) })),
+    flags: r.flags.map((f) => ({ ...f, name: L(`js.mpFlag.${f.code.slice(1)}`, f.name), description: L(`js.mpFlagDesc.${f.code.slice(1)}`, f.description) }))
   };
 }

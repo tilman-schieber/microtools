@@ -1,54 +1,56 @@
 <!DOCTYPE html>
 <html lang="<%= lang %>">
 <head>
-  <%- include('../_head', { title: title }) %>
+  <%- include('../_head', { title }) %>
+  <link rel="alternate" type="text/markdown" href="/micropage/docs.md">
 </head>
 <body class="note-md-page">
   <%- include('../_header', { crumb: t('crumb.micropageDocs') }) %>
   <main>
-    <h1>Micropage</h1>
-    <p class="tagline"><%= registry.summary %></p>
+    <h1><%- t('docs.title') %></h1>
+    <p class="tagline"><%- t('docs.summary') %></p>
+    <p><%- t('docs.howToUse') %></p>
 
-    <h2>The shape of a link</h2>
+    <h2><%- t('docs.shapeHeading') %></h2>
     <pre class="note-text"><%= registry.grammar.shape %></pre>
-    <p><%= registry.grammar.head %></p>
-    <p><%= registry.grammar.slots %></p>
+    <p><%- t('docs.head') %></p>
+    <p><%- t('docs.slots') %></p>
 
-    <h2>Rules that will bite you</h2>
+    <h2><%- t('docs.rulesHeading') %></h2>
     <ul>
-      <% registry.grammar.rules.forEach(function (rule) { %>
-      <li><%= rule %></li>
+      <% [1, 2, 3, 4, 5, 6, 7].forEach(function (i) { %>
+      <li><%- t('docs.rule' + i) %></li>
       <% }); %>
     </ul>
 
-    <h2>Templates</h2>
+    <h2><%- t('docs.templatesHeading') %></h2>
     <table class="micropage-docs-table">
       <thead>
-        <tr><th>Code</th><th>Name</th><th>Slots, in order</th></tr>
+        <tr><th><%- t('docs.th.code') %></th><th><%- t('docs.th.name') %></th><th><%- t('docs.th.slots') %></th></tr>
       </thead>
       <tbody>
-        <% registry.templates.forEach(function (t) { %>
+        <% registry.templates.forEach(function (tpl) { %>
         <tr>
-          <td><code><%= t.code %></code></td>
-          <td><%= t.name %><br><span class="hint"><%= t.description %></span></td>
+          <td><code><%= tpl.code %></code></td>
+          <td><%= tpl.name %><br><span class="hint"><%= tpl.description %></span></td>
           <td>
-            <%= t.slots.map(function (s) { return s.name; }).join(', ') %>
+            <% tpl.slots.forEach(function (s, i) { %><%= i ? ', ' : '' %><%= s.name %><% }); %>
           </td>
         </tr>
         <% }); %>
       </tbody>
     </table>
 
-    <h2>Try one</h2>
+    <h2><%- t('docs.tryHeading') %></h2>
     <ul>
-      <% registry.templates.forEach(function (t) { %>
-      <li><a href="<%= t.example %>"><%= t.name %></a> &middot; <a href="/micropage/new?t=<%= t.code %>">build one</a></li>
+      <% registry.templates.forEach(function (tpl) { %>
+      <li><a href="<%= tpl.example %>"><%= tpl.name %></a> &middot; <a href="/micropage/new?t=<%= tpl.code %>"><%- t('docs.buildOne') %></a></li>
       <% }); %>
     </ul>
 
-    <h2>Themes</h2>
+    <h2><%- t('docs.themesHeading') %></h2>
     <table class="micropage-docs-table">
-      <thead><tr><th>Code</th><th>Name</th><th>Look</th></tr></thead>
+      <thead><tr><th><%- t('docs.th.code') %></th><th><%- t('docs.th.name') %></th><th><%- t('docs.th.look') %></th></tr></thead>
       <tbody>
         <% registry.themes.forEach(function (c) { %>
         <tr><td><code><%= c.code %></code></td><td><%= c.name %></td><td><%= c.description %></td></tr>
@@ -56,9 +58,9 @@
       </tbody>
     </table>
 
-    <h2>Accents</h2>
+    <h2><%- t('docs.accentsHeading') %></h2>
     <table class="micropage-docs-table">
-      <thead><tr><th>Code</th><th>Name</th><th>Colour</th></tr></thead>
+      <thead><tr><th><%- t('docs.th.code') %></th><th><%- t('docs.th.name') %></th><th><%- t('docs.th.colour') %></th></tr></thead>
       <tbody>
         <% registry.accents.forEach(function (a) { %>
         <tr><td><code><%= a.code %></code></td><td><%= a.name %></td><td><code><%= a.hex %></code></td></tr>
@@ -66,36 +68,39 @@
       </tbody>
     </table>
 
-    <h2>Widths and flags</h2>
+    <h2><%- t('docs.optionsHeading') %></h2>
     <p>
-      Widths:
+      <%- t('docs.widths') %>
       <% registry.widths.forEach(function (w, i) { %><code><%= w.code %></code> <%= w.name %><%= i < registry.widths.length - 1 ? ' · ' : '' %><% }); %>
     </p>
     <p>
-      Flags:
+      <%- t('docs.flags') %>
       <% registry.flags.forEach(function (f, i) { %><code><%= f.code %></code> <%= f.description %><%= i < registry.flags.length - 1 ? ' · ' : '' %><% }); %>
     </p>
-
     <p>
-      Languages:
+      <%- t('docs.languages') %>
       <% registry.languages.forEach(function (l, i) { %><code><%= l.code %></code> <%= l.name %><%= i < registry.languages.length - 1 ? ' · ' : '' %><% }); %>
-      — sets the fixed words a template adds (When, Where, Password) and the page's <code>lang</code>. Your own text is never translated. Default <code>len</code>.
+      &mdash; <%- t('docs.languagesNote') %>
     </p>
 
-    <h2>Limits</h2>
+    <h2><%- t('docs.notesHeading') %></h2>
     <ul>
-      <li>Whole link: <%= registry.limits.maxQueryLength %> characters — chosen so every micropage link stays QR-encodable</li>
-      <li>Slots: <%= registry.limits.maxSlots %></li>
-      <li>One slot: <%= registry.limits.maxInlineSlot %> characters, or <%= registry.limits.maxBlockSlot %> for a markdown body</li>
+      <% [1, 2, 3].forEach(function (i) { %>
+      <li><%- t('docs.note' + i) %></li>
+      <% }); %>
     </ul>
 
-    <h2>For agents</h2>
-    <p>
-      <a href="/micropage/agents">/micropage/agents</a> returns this same registry as JSON —
-      templates, slot order, limits, and a working example link per template.
-    </p>
+    <h2><%- t('docs.limitsHeading') %></h2>
+    <ul>
+      <li><%- t('docs.limitLink', { n: registry.limits.maxQueryLength }) %></li>
+      <li><%- t('docs.limitSlots', { n: registry.limits.maxSlots }) %></li>
+      <li><%- t('docs.limitSlot', { inline: registry.limits.maxInlineSlot, block: registry.limits.maxBlockSlot }) %></li>
+    </ul>
 
-    <p><a href="/micropage/new">Open the builder</a></p>
+    <h2><%- t('docs.agentsHeading') %></h2>
+    <p><%- t('docs.agentsText') %></p>
+
+    <p><a href="/micropage/new"><%- t('docs.openBuilder') %></a> &middot; <a href="/micropage/docs.md"><%- t('docs.markdownVersion') %></a></p>
   </main>
 </body>
 </html>
