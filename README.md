@@ -54,7 +54,7 @@ The build script copies [htmx](https://htmx.org/), [qrcode-generator](https://gi
 
 ## Languages
 
-The interface is available in English and German. The language belongs to the viewer, not to the link, because links get passed on: an explicit `?lang=de` (remembered in a `lang` cookie) wins, then the browser's `Accept-Language`, then English. The switcher in the header uses the same `?lang=` parameter. It is left off the one-time secret view, where a reload would destroy the secret.
+The interface is available in English and German. The language belongs to the viewer, not to the link, because links get passed on: an explicit `?lang=de` (remembered in a `lang` cookie) wins, then the browser's `Accept-Language`, then English. The switcher in the header uses the same `?lang=` parameter. It is left off the one-time secret view, where the switch would drop the key in the link's `#` fragment.
 
 Every user-facing string lives in `server/locales/`. Templates and server code call `t('key', params)`; parameters are HTML-escaped inside `t()`, so locale files may contain markup but user input never reaches the page unescaped. Keys under `js.` are sent to the browser as `window.T` for the client-side scripts.
 
@@ -127,7 +127,7 @@ microtools/
 
 **HTMX partials.** POST routes return HTML fragments that HTMX swaps into the page. Templates prefixed with `_` (like `_container.ejs`, `_entries.ejs`, `_list.ejs`) are partials rendered after mutations.
 
-**Client-side encryption.** The secrets tool encrypts in the browser using AES-256-GCM. The key is placed in the URL fragment (`#...`), which browsers never send to the server. The server only stores ciphertext.
+**Client-side encryption.** The secrets tool encrypts in the browser using AES-256-GCM. The key is placed in the URL fragment (`#...`), which browsers never send to the server. The server only stores ciphertext, plus a SHA-256 hash of the key. Opening `/secrets/:id` does not consume the secret, because Outlook Safe Links, Defender and Teams/Slack previews fetch every link before the recipient does; the page shows a "Reveal" button, and only its `POST /secrets/:id/reveal` (which must present the key hash) returns the ciphertext and deletes it.
 
 **File storage.** Uploaded files are stored on disk under `data/files/<share-id>/`. Metadata lives in SQLite. Expired shares are cleaned up both lazily (on access) and periodically (hourly timer).
 

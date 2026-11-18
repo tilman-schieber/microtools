@@ -83,6 +83,8 @@ const de: Record<keyof typeof en, string> & Record<string, string> = {
   'secrets.new.submit': 'Secret erstellen',
   'secrets.show.title': 'One-Time Secret',
   'secrets.show.loading': 'Secret wird entschlüsselt ...',
+  'secrets.show.intro': 'Jemand hat dir ein Secret geschickt. Es lässt sich nur einmal öffnen: Sobald du es anzeigst, wird es vom Server gelöscht.',
+  'secrets.show.reveal': 'Secret anzeigen',
   'secrets.show.deletedHint': 'Das Secret ist jetzt vom Server gelöscht und lässt sich kein zweites Mal öffnen.',
   'secrets.gone.title': 'Secret nicht gefunden',
   'secrets.gone.p1': 'Dieses Secret wurde schon geöffnet und gelöscht, oder es hat nie existiert.',
@@ -357,6 +359,9 @@ const de: Record<keyof typeof en, string> & Record<string, string> = {
   'js.encryptFailed': 'Verschlüsseln fehlgeschlagen: ',
   'js.missingKey': 'Im Link fehlt der Schlüssel hinter dem #.',
   'js.decryptFailed': 'Entschlüsseln fehlgeschlagen: ',
+  'js.secretGone': 'Dieses Secret wurde schon geöffnet oder existiert nicht mehr.',
+  'js.secretWrongKey': 'Der Schlüssel im Link passt nicht zu diesem Secret. Prüf, ob du den ganzen Link kopiert hast.',
+  'js.revealFailed': 'Secret konnte nicht geladen werden: ',
 
   'js.selectOneFile': 'Bitte wähle mindestens eine Datei aus.',
   'js.uploading': 'Wird hochgeladen ...',

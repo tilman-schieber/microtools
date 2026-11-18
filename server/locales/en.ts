@@ -81,6 +81,8 @@ const en = {
   'secrets.new.submit': 'Create Secret',
   'secrets.show.title': 'One-Time Secret',
   'secrets.show.loading': 'Decrypting secret...',
+  'secrets.show.intro': 'Someone sent you a secret. It can be opened only once: when you reveal it, it is deleted from the server.',
+  'secrets.show.reveal': 'Reveal secret',
   'secrets.show.deletedHint': 'This secret has been deleted from the server and cannot be viewed again.',
   'secrets.gone.title': 'Secret Not Found',
   'secrets.gone.p1': 'This secret has already been viewed and deleted, or never existed.',
@@ -356,6 +358,9 @@ const en = {
   'js.encryptFailed': 'Encryption failed: ',
   'js.missingKey': 'Missing decryption key in URL fragment.',
   'js.decryptFailed': 'Decryption failed: ',
+  'js.secretGone': 'This secret has already been opened or no longer exists.',
+  'js.secretWrongKey': 'The key in this link does not match the secret. Check that you copied the whole link.',
+  'js.revealFailed': 'Could not load the secret: ',
 
   'js.selectOneFile': 'Please select at least one file.',
   'js.uploading': 'Uploading...',
