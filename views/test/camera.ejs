@@ -1,0 +1,52 @@
+<% const content = `
+  <main class="test-tool test-camera">
+    <h1>${t('test.camera.name')}</h1>
+    <p class="tagline">${t('test.camera.tagline')}</p>
+
+    <section class="test-panel">
+      <div class="test-controls">
+        <button type="button" id="cam-start">${t('test.camera.start')}</button>
+        <button type="button" id="cam-stop" class="copy-btn" hidden>${t('test.stop')}</button>
+        <div class="test-field">
+          <label for="cam-device">${t('test.camera.device')}</label>
+          <select id="cam-device"><option value="">${t('test.defaultDevice')}</option></select>
+        </div>
+        <div class="test-field">
+          <label for="cam-res">${t('test.camera.resolution')}</label>
+          <select id="cam-res">
+            <option value="">${t('test.camera.resDefault')}</option>
+            <option value="480">640 × 480</option>
+            <option value="720">1280 × 720 (HD)</option>
+            <option value="1080">1920 × 1080 (Full HD)</option>
+            <option value="2160">3840 × 2160 (4K)</option>
+          </select>
+        </div>
+      </div>
+      <p id="cam-error" class="error" hidden></p>
+
+      <div class="cam-stage" id="cam-stage">
+        <video id="cam-video" class="is-mirrored" playsinline muted></video>
+        <p class="cam-placeholder" id="cam-placeholder">${t('test.camera.placeholder')}</p>
+      </div>
+
+      <div class="test-controls">
+        <label class="checkbox-option"><input type="checkbox" id="cam-mirror" checked> ${t('test.camera.mirror')}</label>
+        <button type="button" id="cam-snap" class="copy-btn" disabled>${t('test.camera.snapshot')}</button>
+        <button type="button" id="cam-full" class="copy-btn" disabled>${t('test.fullscreen')}</button>
+      </div>
+
+      <dl class="test-stats">
+        <div><dt>${t('test.camera.statRes')}</dt><dd id="cam-stat-res">—</dd></div>
+        <div><dt>${t('test.camera.statFps')}</dt><dd id="cam-stat-fps">—</dd></div>
+        <div><dt>${t('test.camera.statDevice')}</dt><dd id="cam-stat-device">—</dd></div>
+        <div><dt>${t('test.camera.statFacing')}</dt><dd id="cam-stat-facing">—</dd></div>
+      </dl>
+
+      <div class="cam-snaps" id="cam-snaps"></div>
+    </section>
+  </main>
+
+  <script src="/public/test/media.js"></script>
+  <script src="/public/test/camera.js"></script>
+` %>
+<%- include('../layout', { content, title, crumb: t('test.camera.name'), crumbParent: { href: '/test', label: t('crumb.test') } }) %>

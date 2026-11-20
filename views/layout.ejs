@@ -4,7 +4,7 @@
   <%- include('_head', { title: typeof title !== 'undefined' ? title : 'Microtools' }) %>
 </head>
 <body<% if (typeof bodyClass !== 'undefined' && bodyClass) { %> class="<%= bodyClass %>"<% } %>>
-  <%- include('_header', { crumb: typeof crumb !== 'undefined' ? crumb : '' }) %>
+  <%- include('_header', { crumb: typeof crumb !== 'undefined' ? crumb : '', crumbParent: typeof crumbParent !== 'undefined' ? crumbParent : null }) %>
   <%- content %>
 </body>
 </html>

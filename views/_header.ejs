@@ -1,5 +1,10 @@
 <header class="site-header">
   <a class="site-wordmark" href="/">Microtools</a>
+  <%# A sub-page names its parent tool as a link: Microtools / Test / Camera %>
+  <% if (typeof crumbParent !== 'undefined' && crumbParent) { %>
+  <span class="site-sep" aria-hidden="true">/</span>
+  <a class="site-crumb site-crumb-link" href="<%= crumbParent.href %>"><%= crumbParent.label %></a>
+  <% } %>
   <% if (typeof crumb !== 'undefined' && crumb) { %>
   <span class="site-sep" aria-hidden="true">/</span>
   <span class="site-crumb"><%= crumb %></span>

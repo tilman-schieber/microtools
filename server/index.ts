@@ -194,6 +194,22 @@ async function start() {
     });
   });
 
+  // Test: device and browser checks. Everything runs in the browser; the
+  // server only hands out the pages.
+  const TESTS = ['camera', 'microphone', 'speakers', 'gamepad', 'keyboard', 'pointer', 'browser'];
+
+  fastify.get('/test', async (request, reply) => {
+    return reply.view('test/index', { title: request.i18n.t('test.title'), tests: TESTS });
+  });
+
+  fastify.get<{ Params: { kind: string } }>('/test/:kind', async (request, reply) => {
+    const { kind } = request.params;
+    if (!TESTS.includes(kind)) {
+      return reply.status(404).view('404', { title: request.i18n.t('notFound.title') });
+    }
+    return reply.view(`test/${kind}`, { title: `${request.i18n.t(`test.${kind}.name`)} · ${request.i18n.t('test.title')}` });
+  });
+
   // Clock: Configuration page
   fastify.get('/clock/new', async (request, reply) => {
     return reply.view('clock/new', {

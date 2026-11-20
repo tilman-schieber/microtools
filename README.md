@@ -13,6 +13,7 @@ A self-hosted collection of simple, link-based web utilities. No accounts, no tr
 - **Clock** — Parameter-based digital, Swiss railway analogue, and countdown clock displays; analogue mode adapts [Swiss-Railway-Clock](https://github.com/manuelmeister/Swiss-Railway-Clock) by Manuel Meister
 - **Potluck Planner** — Coordinate who brings what, with real-time claim tracking
 - **Micropage** — Build a complete styled page whose entire content lives in the URL; nothing is stored server-side
+- **Test** — Check camera, microphone, speakers, gamepad, keyboard, mouse/touch/pen, and what the browser reports about the device; everything runs client-side
 
 ## Stack
 
@@ -99,13 +100,15 @@ microtools/
 │   ├── clock/            # Clock config + display templates
 │   ├── passwords/        # Password generator template
 │   ├── bring/            # Potluck templates (show, new, _list partial)
-│   └── micropage/        # Micropage render, docs, builder, error
+│   ├── micropage/        # Micropage render, docs, builder, error
+│   └── test/             # Device test overview plus one page per test
 ├── public/
 │   ├── style.css         # All styles (single file, no build step)
 │   ├── clock-config.js   # Client-side clock link generator
 │   ├── clock-display.js  # Client-side clock renderer
 │   ├── password-words.js  # Vendored local word lists for the password generator
 │   ├── passwords.js      # Client-side password generator logic
+│   ├── test/             # Device tests, one script per page (media.js shared by camera and mic)
 │   ├── htmx.min.js       # Vendored from node_modules (gitignored)
 │   └── qrcode.min.js     # Vendored from node_modules (gitignored)
 ├── script/

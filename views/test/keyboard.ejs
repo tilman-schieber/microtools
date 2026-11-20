@@ -1,0 +1,50 @@
+<% const content = `
+  <main class="test-tool test-keyboard" data-iso="${lang === 'de' ? '1' : '0'}">
+    <h1>${t('test.keyboard.name')}</h1>
+    <p class="tagline">${t('test.keyboard.tagline')}</p>
+
+    <section class="test-panel">
+      <div class="test-controls">
+        <div class="test-field">
+          <label for="kb-layout">${t('test.keyboard.layout')}</label>
+          <select id="kb-layout">
+            <option value="ansi">${t('test.keyboard.ansi')}</option>
+            <option value="iso">${t('test.keyboard.iso')}</option>
+          </select>
+        </div>
+        <label class="checkbox-option"><input type="checkbox" id="kb-numpad" checked> ${t('test.keyboard.numpad')}</label>
+        <button type="button" id="kb-reset" class="copy-btn">${t('test.reset')}</button>
+      </div>
+
+      <div class="kb-scroll">
+        <div class="kb" id="kb" aria-hidden="true"></div>
+      </div>
+
+      <dl class="test-stats">
+        <div><dt>${t('test.keyboard.statTested')}</dt><dd id="kb-tested">0</dd></div>
+        <div><dt>${t('test.keyboard.statHeld')}</dt><dd id="kb-held">0</dd></div>
+        <div><dt>${t('test.keyboard.statMax')}</dt><dd id="kb-max">0</dd></div>
+      </dl>
+      <p class="hint">${t('test.keyboard.hint')}</p>
+      <div id="kb-other-wrap" hidden>
+        <h3>${t('test.keyboard.other')}</h3>
+        <div class="kb-other" id="kb-other"></div>
+      </div>
+    </section>
+
+    <section class="test-panel">
+      <h2>${t('test.keyboard.logHeading')}</h2>
+      <div class="kb-log-scroll">
+        <table class="kb-log">
+          <thead><tr>
+            <th>${t('test.keyboard.colEvent')}</th><th>key</th><th>code</th><th>${t('test.keyboard.colLocation')}</th><th>${t('test.keyboard.colModifiers')}</th><th>keyCode</th>
+          </tr></thead>
+          <tbody id="kb-log"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/public/test/keyboard.js"></script>
+` %>
+<%- include('../layout', { content, title, crumb: t('test.keyboard.name'), crumbParent: { href: '/test', label: t('crumb.test') } }) %>

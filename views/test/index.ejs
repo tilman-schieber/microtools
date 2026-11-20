@@ -1,0 +1,32 @@
+<%
+const icons = {
+  camera: '<path d="M3 7h4l2-2h6l2 2h4v12H3z"/><circle cx="12" cy="13" r="3.5"/>',
+  microphone: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6"/>',
+  speakers: '<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+  gamepad: '<path d="M7 7h10a4 4 0 0 1 4 4v3a3 3 0 0 1-5.4 1.8L14 14h-4l-1.6 1.8A3 3 0 0 1 3 14v-3a4 4 0 0 1 4-4z"/><path d="M8 9.5v3M6.5 11h3"/><circle cx="16" cy="10.5" r=".6"/><circle cx="17.5" cy="12" r=".6"/>',
+  keyboard: '<rect x="2.5" y="6" width="19" height="12" rx="1"/><path d="M6 10h.01M9 10h.01M12 10h.01M15 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/>',
+  pointer: '<path d="M6 3l12 8-5 1.5L10 18z"/><path d="M13 12.5l4 6"/>',
+  browser: '<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M6 6.5h.01M8.5 6.5h.01"/>'
+};
+
+const rows = tests.map(k => `
+      <li>
+        <a href="/test/${k}" class="tool-row">
+          <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[k]}</svg>
+          <span class="tool-text">
+            <span class="tool-name">${t('test.' + k + '.name')}</span>
+            <span class="tool-desc">${t('test.' + k + '.desc')}</span>
+          </span>
+          <svg class="tool-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </a>
+      </li>`).join('');
+
+const content = `
+  <main class="test-tool">
+    <h1>${t('test.title')}</h1>
+    <p class="tagline">${t('test.tagline')}</p>
+    <ul class="tool-list">${rows}
+    </ul>
+  </main>
+` %>
+<%- include('../layout', { content, title, crumb: t('crumb.test') }) %>

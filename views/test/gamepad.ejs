@@ -1,0 +1,17 @@
+<% const content = `
+  <main class="test-tool test-gamepad">
+    <h1>${t('test.gamepad.name')}</h1>
+    <p class="tagline">${t('test.gamepad.tagline')}</p>
+
+    <section class="test-panel pad-waiting" id="pad-waiting">
+      <p>${t('test.gamepad.waiting')}</p>
+      <p class="hint">${t('test.gamepad.waitingHint')}</p>
+    </section>
+    <p id="pad-unsupported" class="error" hidden>${t('test.gamepad.unsupported')}</p>
+
+    <div id="pad-list"></div>
+  </main>
+
+  <script src="/public/test/gamepad.js"></script>
+` %>
+<%- include('../layout', { content, title, crumb: t('test.gamepad.name'), crumbParent: { href: '/test', label: t('crumb.test') } }) %>

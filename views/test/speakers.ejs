@@ -1,0 +1,52 @@
+<% const content = `
+  <main class="test-tool test-speakers">
+    <h1>${t('test.speakers.name')}</h1>
+    <p class="tagline">${t('test.speakers.tagline')}</p>
+
+    <section class="test-panel">
+      <div class="test-controls">
+        <div class="test-field test-field-grow">
+          <label for="spk-volume">${t('test.speakers.volume')}</label>
+          <input type="range" id="spk-volume" min="0" max="100" value="30">
+        </div>
+        <div class="test-field" id="spk-output-field" hidden>
+          <label for="spk-output">${t('test.speakers.output')}</label>
+          <select id="spk-output"><option value="">${t('test.defaultDevice')}</option></select>
+        </div>
+        <button type="button" id="spk-names" class="copy-btn" hidden>${t('test.speakers.showNames')}</button>
+      </div>
+      <p id="spk-error" class="error" hidden></p>
+    </section>
+
+    <section class="test-panel">
+      <h2>${t('test.speakers.channelsHeading')}</h2>
+      <div class="spk-channels">
+        <button type="button" class="copy-btn spk-channel" data-pan="-1">${t('test.speakers.left')}</button>
+        <button type="button" class="copy-btn spk-channel" data-pan="0">${t('test.speakers.both')}</button>
+        <button type="button" class="copy-btn spk-channel" data-pan="1">${t('test.speakers.right')}</button>
+      </div>
+      <p class="hint">${t('test.speakers.channelsHint')}</p>
+    </section>
+
+    <section class="test-panel">
+      <h2>${t('test.speakers.toneHeading')}</h2>
+      <p class="spk-freq"><span id="spk-freq">440</span> Hz</p>
+      <input type="range" id="spk-freq-range" min="0" max="1000" value="">
+      <div class="meter-scale" aria-hidden="true"><span>20 Hz</span><span>200 Hz</span><span>2 kHz</span><span>20 kHz</span></div>
+      <div class="test-controls">
+        <button type="button" id="spk-tone" class="copy-btn">${t('test.speakers.playTone')}</button>
+        <button type="button" id="spk-sweep" class="copy-btn">${t('test.speakers.sweep')}</button>
+      </div>
+      <p class="hint">${t('test.speakers.sweepHint')}</p>
+    </section>
+
+    <dl class="test-stats">
+      <div><dt>${t('test.speakers.statRate')}</dt><dd id="spk-stat-rate">—</dd></div>
+      <div><dt>${t('test.speakers.statChannels')}</dt><dd id="spk-stat-channels">—</dd></div>
+      <div><dt>${t('test.speakers.statLatency')}</dt><dd id="spk-stat-latency">—</dd></div>
+    </dl>
+  </main>
+
+  <script src="/public/test/speakers.js"></script>
+` %>
+<%- include('../layout', { content, title, crumb: t('test.speakers.name'), crumbParent: { href: '/test', label: t('crumb.test') } }) %>

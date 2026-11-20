@@ -1,0 +1,54 @@
+<% const content = `
+  <main class="test-tool test-pointer">
+    <h1>${t('test.pointer.name')}</h1>
+    <p class="tagline">${t('test.pointer.tagline')}</p>
+
+    <section class="test-panel">
+      <h2>${t('test.pointer.drawHeading')}</h2>
+      <p class="hint">${t('test.pointer.drawHint')}</p>
+      <canvas class="ptr-canvas" id="ptr-canvas"></canvas>
+      <div class="test-controls">
+        <button type="button" id="ptr-clear" class="copy-btn">${t('test.pointer.clear')}</button>
+      </div>
+      <dl class="test-stats">
+        <div><dt>${t('test.pointer.statType')}</dt><dd id="ptr-type">—</dd></div>
+        <div><dt>${t('test.pointer.statPosition')}</dt><dd id="ptr-pos">—</dd></div>
+        <div><dt>${t('test.pointer.statRate')}</dt><dd id="ptr-rate">—</dd></div>
+        <div><dt>${t('test.pointer.statPointers')}</dt><dd id="ptr-count">—</dd></div>
+        <div><dt>${t('test.pointer.statPressure')}</dt><dd id="ptr-pressure">—</dd></div>
+        <div><dt>${t('test.pointer.statTilt')}</dt><dd id="ptr-tilt">—</dd></div>
+        <div><dt>${t('test.pointer.statTwist')}</dt><dd id="ptr-twist">—</dd></div>
+        <div><dt>${t('test.pointer.statSize')}</dt><dd id="ptr-size">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="test-panel">
+      <h2>${t('test.pointer.buttonsHeading')}</h2>
+      <div class="ptr-buttons" id="ptr-buttons">
+        <span class="ptr-button" data-button="0">${t('test.pointer.left')}<b>0</b></span>
+        <span class="ptr-button" data-button="1">${t('test.pointer.middle')}<b>0</b></span>
+        <span class="ptr-button" data-button="2">${t('test.pointer.right')}<b>0</b></span>
+        <span class="ptr-button" data-button="3">${t('test.pointer.back')}<b>0</b></span>
+        <span class="ptr-button" data-button="4">${t('test.pointer.forward')}<b>0</b></span>
+      </div>
+      <dl class="test-stats">
+        <div><dt>${t('test.pointer.statInterval')}</dt><dd id="ptr-interval">—</dd></div>
+        <div><dt>${t('test.pointer.statShortest')}</dt><dd id="ptr-shortest">—</dd></div>
+      </dl>
+      <p class="hint">${t('test.pointer.clickHint')}</p>
+    </section>
+
+    <section class="test-panel">
+      <h2>${t('test.pointer.wheelHeading')}</h2>
+      <div class="ptr-wheel" id="ptr-wheel">${t('test.pointer.wheelHere')}</div>
+      <dl class="test-stats">
+        <div><dt>${t('test.pointer.statDelta')}</dt><dd id="ptr-delta">—</dd></div>
+        <div><dt>${t('test.pointer.statSteps')}</dt><dd id="ptr-steps">—</dd></div>
+        <div><dt>${t('test.pointer.statTotal')}</dt><dd id="ptr-total">—</dd></div>
+      </dl>
+    </section>
+  </main>
+
+  <script src="/public/test/pointer.js"></script>
+` %>
+<%- include('../layout', { content, title, crumb: t('test.pointer.name'), crumbParent: { href: '/test', label: t('crumb.test') } }) %>
