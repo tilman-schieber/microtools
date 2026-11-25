@@ -62,7 +62,7 @@ for (const lang of LANGS) {
   // --- Static pages ---------------------------------------------------------
   const pages = [
     '/', '/notes/new', '/polls/new', '/expenses/new', '/secrets/new', '/files/new', '/passwords/new',
-    '/clock/new', '/clock', '/bring/new', '/test', '/test/camera', '/test/microphone', '/test/speakers',
+    '/clock/new', '/clock', '/bring/new', '/qr', '/test', '/test/camera', '/test/microphone', '/test/speakers',
     '/test/gamepad', '/test/keyboard', '/test/pointer', '/test/browser',
     '/micropage/new', '/micropage/docs', '/micropage/docs.md', '/micropage/agents'
   ];
@@ -291,6 +291,27 @@ for (const lang of LANGS) {
   const rid = (objectStore.get(legacy.id)!.data as { responses: Array<{ id?: string }> }).responses[0].id;
   check('poll keys: old answers get an id when the poll is viewed', rid && page.body.includes(`data-rid="${rid}"`));
   check('poll keys: that does not count as a change', objectStore.get(legacy.id)!.expires_at === before);
+}
+
+// --- QR code: what each kind of content encodes ----------------------------------------------
+{
+  await import('../public/qr-payload.js');
+  const { build } = (globalThis as unknown as { QRPayload: { build: Record<string, (f: Record<string, unknown>) => string> } }).QRPayload;
+  const eq = (what: string, got: string, want: string) => check(`qr: ${what}`, got === want, `got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
+
+  eq('text passes through unchanged', build.text({ text: 'https://example.com/ä?x=1' }), 'https://example.com/ä?x=1');
+  eq('wifi', build.wifi({ ssid: 'Home', security: 'WPA', password: 'secret' }), 'WIFI:T:WPA;S:Home;P:secret;;');
+  eq('wifi escapes ; , : \\ and "', build.wifi({ ssid: 'My;Net', security: 'WPA', password: 'a\\b,c:d"e' }), 'WIFI:T:WPA;S:My\\;Net;P:a\\\\b\\,c\\:d\\"e;;');
+  eq('open wifi has no password', build.wifi({ ssid: 'Cafe', security: 'nopass', password: 'ignored' }), 'WIFI:T:nopass;S:Cafe;;');
+  eq('hidden wifi', build.wifi({ ssid: 'X', security: 'WPA', password: 'p', hidden: true }), 'WIFI:T:WPA;S:X;P:p;H:true;;');
+  eq('wifi needs a network name', build.wifi({ ssid: ' ', security: 'WPA', password: 'p' }), '');
+  eq('contact', build.contact({ first: 'Ada', last: 'Müller', phone: '+41 79 1', email: 'ada@example.com', org: 'A, B; C' }),
+    ['BEGIN:VCARD', 'VERSION:3.0', 'N:Müller;Ada;;;', 'FN:Ada Müller', 'TEL;TYPE=CELL:+41 79 1', 'EMAIL:ada@example.com', 'ORG:A\\, B\\; C', 'END:VCARD'].join('\r\n'));
+  eq('empty contact', build.contact({}), '');
+  eq('email with subject and body', build.email({ to: 'a@b.ch', subject: 'Hi there', body: 'Line 1\nä & more' }), 'mailto:a@b.ch?subject=Hi%20there&body=Line%201%0A%C3%A4%20%26%20more');
+  eq('email without extras', build.email({ to: 'a@b.ch' }), 'mailto:a@b.ch');
+  eq('phone keeps + and digits', build.phone({ number: '+41 (79) 123-45-67' }), 'tel:+41791234567');
+  eq('empty phone', build.phone({ number: '' }), '');
 }
 
 // --- Lifetimes ---------------------------------------------------------------------------

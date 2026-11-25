@@ -1,0 +1,109 @@
+<%
+// One panel per kind of content; public/qr.js shows the active one and reads
+// its [name] fields, which public/qr-payload.js turns into what the code says.
+const kinds = ['text', 'wifi', 'contact', 'email', 'phone'];
+const field = (name, label, attrs = '') => `
+        <div class="qr-field">
+          <label for="qr-${name}">${t(label)}</label>
+          <input type="text" id="qr-${name}" name="${name}" ${attrs}>
+        </div>`;
+
+const content = `
+  <main class="qr-tool">
+    <h1>${t('qr.title')}</h1>
+    <p class="tagline">${t('qr.tagline')}</p>
+
+    <div class="qr-layout">
+      <div class="qr-inputs">
+        <div class="password-tabs qr-kinds" role="tablist" aria-label="${t('qr.kind')}">
+          ${kinds.map((k, i) => `<button type="button" class="btn-secondary btn-sm password-tab${i === 0 ? ' is-active' : ''}" role="tab" data-kind="${k}" aria-selected="${i === 0}">${t('qr.kind.' + k)}</button>`).join('\n          ')}
+        </div>
+
+        <section class="qr-panel" data-panel="text" role="tabpanel">
+          <label for="qr-text">${t('qr.text')}</label>
+          <textarea id="qr-text" name="text" rows="4" placeholder="${t('qr.textPlaceholder')}" spellcheck="false"></textarea>
+        </section>
+
+        <section class="qr-panel" data-panel="wifi" role="tabpanel" hidden>
+          ${field('ssid', 'qr.ssid', 'autocomplete="off" spellcheck="false"')}
+          <div class="qr-row">
+            <div class="qr-field">
+              <label for="qr-security">${t('qr.security')}</label>
+              <select id="qr-security" name="security">
+                <option value="WPA">${t('qr.secWpa')}</option>
+                <option value="WEP">WEP</option>
+                <option value="nopass">${t('qr.secNone')}</option>
+              </select>
+            </div>
+            <div class="qr-field" id="qr-wifi-password-field">
+              <label for="qr-password">${t('qr.password')}</label>
+              <input type="text" id="qr-password" name="password" autocomplete="off" spellcheck="false">
+            </div>
+          </div>
+          <label class="checkbox-option"><input type="checkbox" name="hidden"> ${t('qr.hidden')}</label>
+        </section>
+
+        <section class="qr-panel" data-panel="contact" role="tabpanel" hidden>
+          <div class="qr-row">${field('first', 'qr.first', 'autocomplete="off"')}${field('last', 'qr.last', 'autocomplete="off"')}</div>
+          <div class="qr-row">${field('phone', 'qr.phone', 'inputmode="tel" autocomplete="off"')}${field('email', 'qr.email', 'inputmode="email" autocomplete="off"')}</div>
+          <div class="qr-row">${field('org', 'qr.org', 'autocomplete="off"')}${field('title', 'qr.jobTitle', 'autocomplete="off"')}</div>
+          ${field('url', 'qr.url', 'inputmode="url" autocomplete="off" placeholder="https://"')}
+        </section>
+
+        <section class="qr-panel" data-panel="email" role="tabpanel" hidden>
+          ${field('to', 'qr.to', 'inputmode="email" autocomplete="off"')}
+          ${field('subject', 'qr.subject', 'autocomplete="off"')}
+          <div class="qr-field">
+            <label for="qr-body">${t('qr.body')}</label>
+            <textarea id="qr-body" name="body" rows="3"></textarea>
+          </div>
+        </section>
+
+        <section class="qr-panel" data-panel="phone" role="tabpanel" hidden>
+          ${field('number', 'qr.number', 'inputmode="tel" autocomplete="off" placeholder="+41 79 123 45 67"')}
+        </section>
+
+        <fieldset class="qr-options">
+          <legend>${t('qr.options')}</legend>
+          <div class="qr-row">
+            <div class="qr-field">
+              <label for="qr-ecc">${t('qr.ecc')}</label>
+              <select id="qr-ecc">
+                <option value="L">${t('qr.eccL')}</option>
+                <option value="M" selected>${t('qr.eccM')}</option>
+                <option value="Q">${t('qr.eccQ')}</option>
+                <option value="H">${t('qr.eccH')}</option>
+              </select>
+            </div>
+            <div class="qr-field">
+              <label for="qr-size">${t('qr.size')}</label>
+              <select id="qr-size">
+                <option value="256">256 px</option>
+                <option value="512">512 px</option>
+                <option value="1024" selected>1024 px</option>
+                <option value="2048">2048 px</option>
+              </select>
+            </div>
+          </div>
+          <label class="checkbox-option"><input type="checkbox" id="qr-margin" checked> ${t('qr.margin')}</label>
+          <p class="hint">${t('qr.eccHint')}</p>
+        </fieldset>
+      </div>
+
+      <aside class="qr-output" aria-live="polite">
+        <div id="qr-preview" class="qr-preview"></div>
+        <p id="qr-meta" class="hint"></p>
+        <p id="qr-error" class="error" hidden></p>
+        <div class="actions actions-tight">
+          <button type="button" id="qr-png" disabled>${t('qr.downloadPng')}</button>
+          <button type="button" id="qr-svg" class="btn-secondary" disabled>${t('qr.downloadSvg')}</button>
+          <button type="button" id="qr-copy" class="btn-secondary" disabled hidden>${t('qr.copy')}</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="/public/qr-payload.js"></script>
+  <script src="/public/qr.js"></script>
+` %>
+<%- include('../layout', { content, title, crumb: t('crumb.qr') }) %>

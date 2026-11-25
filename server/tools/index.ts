@@ -8,6 +8,7 @@ import { files } from './files';
 import { secrets } from './secrets';
 import { micropageTool } from './micropage';
 import { passwords } from './passwords';
+import { qr } from './qr';
 import { clock } from './clock';
 import { test } from './test';
 
@@ -22,7 +23,7 @@ export { CATEGORIES } from './shared';
 export const TOOLS: readonly Tool[] = [
   polls, potluck, expenses,
   notes, files, secrets, micropageTool,
-  passwords, clock, test
+  passwords, qr, clock, test
 ];
 
 /** The landing page's groups, each with its tools, empty groups left out */

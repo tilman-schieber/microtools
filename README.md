@@ -21,6 +21,7 @@ The landing page groups the tools by what you want to do, which also says what h
 
 **Quick utilities** (runs in your browser, nothing is stored)
 
+- **QR Code** — Plain black-on-white QR codes for text and links, Wi-Fi logins, contacts (vCard), emails and phone numbers; PNG or SVG download, copy to clipboard; everything runs client-side
 - **Password Generator** — Local-only alphanumeric passwords and XKCD-style passphrases in English or German
 - **Clock** — Parameter-based digital, Swiss railway analogue, and countdown clock displays; analogue mode adapts [Swiss-Railway-Clock](https://github.com/manuelmeister/Swiss-Railway-Clock) by Manuel Meister
 - **Device Check** — Check camera, microphone, speakers, gamepad, keyboard, mouse/touch/pen, and what the browser reports about the device; everything runs client-side
@@ -140,6 +141,8 @@ microtools/
 │   ├── clock-display.js  # Client-side clock renderer
 │   ├── password-words.js  # Vendored local word lists for the password generator
 │   ├── passwords.js      # Client-side password generator logic
+│   ├── qr.js             # QR code generator page: preview, PNG/SVG download, copy
+│   ├── qr-payload.js     # What a QR code encodes per kind (Wi-Fi, vCard, mailto, tel); tested by the smoke tests
 │   ├── recent.js         # Quick links: remembers pages in localStorage, lists them on the landing page
 │   ├── test/             # Device tests, one script per page (media.js shared by camera and mic)
 │   ├── htmx.min.js       # Vendored from node_modules (gitignored)
