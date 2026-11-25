@@ -52,6 +52,24 @@ export interface Tool {
   onPurge?(row: StoredRow): void;
 }
 
+/**
+ * A page the visitor may want to find again. Views render it through
+ * views/_remember.ejs; public/recent.js keeps it in that browser's
+ * localStorage for the landing page's quick links. Nothing reaches the server.
+ */
+export interface Remember {
+  /** Tool id, for the name and icon */
+  tool: string;
+  /** One entry per stored object: a later visit replaces the earlier one */
+  key: string;
+  path: string;
+  title: string;
+  /** When the link stops working; expired entries drop off the list */
+  expires: number | null;
+  /** A link only this person has (an expense participant's edit link), kept over the shared one */
+  personal?: boolean;
+}
+
 /** Scheme + host for the current request, honouring the reverse proxy's forwarded proto. */
 export function requestOrigin(request: { headers: Record<string, unknown> }): string {
   const protocol = (request.headers['x-forwarded-proto'] as string) || 'http';

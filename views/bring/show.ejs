@@ -5,6 +5,7 @@
 </head>
 <body>
   <%- include('../_header', { crumb: t('crumb.potluck') }) %>
+  <% if (typeof remember !== 'undefined' && remember) { %><%- include('../_remember', { remember }) %><% } %>
   <main>
     <h1><%= bringlist.data.title %></h1>
     <p class="hint"><%- t('bring.show.hint') %></p>

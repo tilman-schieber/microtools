@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import type { Lifetime, Tool } from './shared';
+import type { Lifetime, Remember, Tool } from './shared';
 import { errorP, plainP, notFound, requestOrigin, asArray, expiresIn, lifetimeHint } from './shared';
 import * as objectStore from '../objectStore';
 
@@ -12,6 +12,9 @@ type ExpenseData = {
 
 // Long: settling up after a trip can take months
 const LIFETIME: Lifetime = { type: 'expense', days: 365, from: 'activity' };
+
+const summary = (id: string, title: string, expires: number | null): Remember =>
+  ({ tool: 'expenses', key: id, path: `/e/${id}`, title, expires });
 
 export const expenses: Tool = {
   id: 'expenses',
@@ -50,7 +53,7 @@ export const expenses: Tool = {
 
       const base = `${requestOrigin(request)}/e/${expense.id}`;
       const links = participants.map((p) => ({ name: p.name, url: `${base}/p/${p.token}` }));
-      return reply.view('expenses/_created', { summaryUrl: base, links, hint: lifetimeHint(request.i18n, LIFETIME) });
+      return reply.view('expenses/_created', { summaryUrl: base, links, hint: lifetimeHint(request.i18n, LIFETIME), remember: summary(expense.id, title, expense.expires_at) });
     });
 
     // Summary page (read-only)
@@ -59,7 +62,7 @@ export const expenses: Tool = {
       const expense = objectStore.get(id);
       if (!expense || expense.type !== 'expense') return notFound(request, reply);
 
-      return reply.view('expenses/show', { title: (expense.data as ExpenseData).title, expense });
+      return reply.view('expenses/show', { title: (expense.data as ExpenseData).title, expense, remember: summary(id, (expense.data as ExpenseData).title, expense.expires_at) });
     });
 
     // Participant page (editable)
@@ -78,7 +81,8 @@ export const expenses: Tool = {
         title: data.title,
         expense,
         currentParticipant: participant.name,
-        token
+        token,
+        remember: { tool: 'expenses', key: id, path: `/e/${id}/p/${token}`, title: `${data.title} · ${participant.name}`, expires: expense.expires_at, personal: true }
       });
     });
 

@@ -5,6 +5,7 @@
 </head>
 <body>
   <%- include('../_header', { crumb: t('crumb.note') }) %>
+  <% if (typeof remember !== 'undefined' && remember) { %><%- include('../_remember', { remember }) %><% } %>
   <main>
     <h1><%= note.data.title || t('notes.fallbackTitle') %></h1>
     <div id="note-container">

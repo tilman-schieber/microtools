@@ -70,6 +70,8 @@
           body: formData
         });
         resultDiv.innerHTML = await response.text();
+        renderQRCodes(resultDiv);
+        rememberLinks(resultDiv);
       } catch (err) {
         resultDiv.innerHTML = '<p class="error"></p>'; resultDiv.firstChild.textContent = T.uploadFailed + err.message;
       }

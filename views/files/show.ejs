@@ -9,6 +9,7 @@ const isSingle = fileList.length === 1;
 </head>
 <body>
   <%- include('../_header', { crumb: t('crumb.files') }) %>
+  <% if (typeof remember !== 'undefined' && remember) { %><%- include('../_remember', { remember }) %><% } %>
   <main>
     <h1><%- t('files.show.title') %></h1>
     <% if (isSingle) { %>

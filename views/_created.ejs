@@ -11,3 +11,4 @@
 <% } %>
 <div class="qrcode" data-url="<%= url %>"></div>
 <% if (typeof hint !== 'undefined' && hint) { %><p class="hint"><%- hint %></p><% } %>
+<% if (typeof remember !== 'undefined' && remember) { %><%- include('_remember', { remember }) %><% } %>

@@ -247,6 +247,52 @@ for (const lang of LANGS) {
   check('backfill: old note gets 180 days', near(expiry(old.id), 180));
 }
 
+// --- Quick links: pages mark themselves for the browser's local list -----------------------
+{
+  const c = client('en');
+  const marker = (body: string) => {
+    const m = body.match(/<span hidden data-remember ([^>]*)>/);
+    if (!m) return null;
+    const attr = (name: string) => (m[1].match(new RegExp(`data-${name}="([^"]*)"`)) || [])[1];
+    return { tool: attr('tool'), key: attr('key'), path: attr('path'), title: attr('title'), expires: Number(attr('expires')), personal: m[1].includes('data-personal') };
+  };
+
+  const created = await c.form('/polls', [['title', 'Lunch <b>&</b>'], ['dates[]', '2026-12-01'], ['times[]', '10:00']]);
+  const m1 = marker(created.body);
+  check('remember: created poll is marked', m1 && m1.tool === 'polls' && m1.path === `/polls/${m1.key}` && m1.expires > Date.now(), created.body);
+  check('remember: title is escaped', created.body.includes('data-title="Lunch &lt;b&gt;&amp;&lt;/b&gt;"'));
+  check('remember: poll page is marked', marker((await c.get(m1!.path)).body)?.key === m1!.key);
+
+  const note = await c.form('/notes', [['text', '\n## Shopping list\n- milk']]);
+  const m2 = marker(note.body);
+  check('remember: untitled note uses its first line', m2?.title === 'Shopping list', JSON.stringify(m2));
+  check('remember: markdown view is marked too', marker((await c.get(`${m2!.path}/md`)).body)?.key === m2!.key);
+
+  const exp = await c.form('/expenses', [['title', 'Trip'], ['participants[]', 'Ada'], ['participants[]', 'Bo']]);
+  const m3 = marker(exp.body);
+  check('remember: new expense group remembers the summary', m3?.path === `/e/${m3?.key}` && !m3?.personal);
+  const personal = find(exp.body, /\/e\/[\w-]+\/p\/[\w-]+/);
+  const m4 = marker((await c.get(personal)).body);
+  check('remember: participant page is personal', m4?.personal && m4.path === personal && m4.title === 'Trip · Ada', JSON.stringify(m4));
+
+  const bring = await c.form('/bring', [['title', 'Party'], ['items[]', 'Salad']]);
+  check('remember: potluck is marked', marker(bring.body)?.tool === 'potluck');
+
+  const files = await c.multipart('/files', [['expiry', '7']], [['a.txt', 'a'], ['b.txt', 'b']]);
+  const m5 = marker(files.body);
+  check('remember: file share named after its first file', m5?.title === 'a.txt +1', JSON.stringify(m5));
+  check('remember: file share page is marked', marker((await c.get(m5!.path)).body)?.key === m5!.key);
+
+  // A secret's link carries its key; it must never be remembered
+  const secret = (await c.form('/secrets', [['ciphertext', 'x'], ['keyHash', 'k'.repeat(43)]])).body.trim();
+  check('remember: secrets are never marked', !marker((await c.get(secret)).body) && !(await c.get('/secrets/new')).body.includes('data-remember'));
+
+  const home = (await c.get('/')).body;
+  const meta = JSON.parse(find(home, /<script type="application\/json" id="tool-meta">[^<]*<\/script>/).replace(/^<script[^>]*>|<\/script>$/g, '') || '{}');
+  check('landing: tool names and icons for the quick links', meta.polls?.name === 'Date Poll' && meta.polls?.icon.includes('<rect'), JSON.stringify(meta).slice(0, 200));
+  check('landing: quick links section starts hidden', home.includes('id="recent" aria-labelledby="group-recent" hidden'));
+}
+
 // --- Rate limits ----------------------------------------------------------------------------
 {
   const limited = await buildApp({ logger: false });

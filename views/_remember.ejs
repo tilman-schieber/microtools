@@ -1,0 +1,4 @@
+<%# Marks this page for the visitor's quick links. public/recent.js copies it into
+    this browser's localStorage; nothing about it is sent anywhere. See Remember
+    in server/tools/shared.ts. %>
+<span hidden data-remember data-tool="<%= remember.tool %>" data-key="<%= remember.key %>" data-path="<%= remember.path %>" data-title="<%= remember.title %>" data-expires="<%= remember.expires || '' %>"<% if (remember.personal) { %> data-personal<% } %>></span>

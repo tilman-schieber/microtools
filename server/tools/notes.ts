@@ -1,9 +1,21 @@
-import type { Lifetime, Tool } from './shared';
+import type { Lifetime, Remember, Tool } from './shared';
 import { errorP, plainP, notFound, requestOrigin, expiresIn, lifetimeHint } from './shared';
 import * as objectStore from '../objectStore';
 import { renderMarkdown } from '../markdown';
 
 const LIFETIME: Lifetime = { type: 'note', days: 180, from: 'creation' };
+
+type NoteData = { text: string; title?: string };
+
+/** The note's title, or its first line without Markdown heading marks */
+function noteTitle(data: NoteData): string {
+  if (data.title) return data.title;
+  const first = data.text.split('\n').find((line) => line.trim()) || '';
+  return first.replace(/^#+\s*/, '').trim().slice(0, 80);
+}
+
+const remember = (id: string, data: NoteData, expires: number | null): Remember =>
+  ({ tool: 'notes', key: id, path: `/notes/${id}`, title: noteTitle(data), expires });
 
 export const notes: Tool = {
   id: 'notes',
@@ -34,7 +46,7 @@ export const notes: Tool = {
       const note = objectStore.create('note', noteData, expiresIn(LIFETIME.days));
       const noteUrl = `${requestOrigin(request)}/notes/${note.id}`;
 
-      return reply.view('_created', { heading: request.i18n.t('notes.created'), url: noteUrl, md: `${noteUrl}/md`, hint: lifetimeHint(request.i18n, LIFETIME) });
+      return reply.view('_created', { heading: request.i18n.t('notes.created'), url: noteUrl, md: `${noteUrl}/md`, hint: lifetimeHint(request.i18n, LIFETIME), remember: remember(note.id, noteData, note.expires_at) });
     });
 
     // View note page
@@ -43,7 +55,7 @@ export const notes: Tool = {
       const note = objectStore.get(id);
       if (!note) return notFound(request, reply);
 
-      return reply.view('notes/show', { title: request.i18n.t('notes.fallbackTitle'), note });
+      return reply.view('notes/show', { title: request.i18n.t('notes.fallbackTitle'), note, remember: remember(id, note.data as NoteData, note.expires_at) });
     });
 
     // Raw text view
@@ -65,7 +77,8 @@ export const notes: Tool = {
       return reply.view('notes/md', {
         title: data.title || request.i18n.t('notes.fallbackTitle'),
         note,
-        renderedMarkdown: renderMarkdown(data.text)
+        renderedMarkdown: renderMarkdown(data.text),
+        remember: remember(id, data, note.expires_at)
       });
     });
 

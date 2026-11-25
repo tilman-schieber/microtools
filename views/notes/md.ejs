@@ -6,6 +6,7 @@
 </head>
 <body class="note-md-page">
   <%- include('../_header', { crumb: t('crumb.note') }) %>
+  <% if (typeof remember !== 'undefined' && remember) { %><%- include('../_remember', { remember }) %><% } %>
   <main>
     <h1><%= note.data.title || t('notes.fallbackTitle') %></h1>
     <div class="markdown-content">

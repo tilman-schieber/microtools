@@ -604,7 +604,7 @@ button[hx-delete]:hover {
 }
 
 /* Groups: a quiet label over each list, with what happens to your data beside it */
-.tool-group + .tool-group {
+.tool-group ~ .tool-group {
   margin-top: 2.25rem;
 }
 
@@ -627,6 +627,67 @@ button[hx-delete]:hover {
   letter-spacing: 0;
   text-transform: none;
   color: var(--muted);
+}
+
+/* Quick links: same rows as the tool list, with a remove button beside each */
+.recent-item {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--rule);
+}
+
+.recent-item .tool-row {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-top: 0;
+}
+
+.recent-item .tool-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-remove {
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0 0 0 0.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--faint);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+
+.recent-remove:hover {
+  color: var(--danger);
+  background: none;
+}
+
+.recent-remove:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.recent-clear {
+  height: auto;
+  margin-top: 0.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.recent-clear:hover {
+  color: var(--danger);
+  background: none;
+  text-decoration: underline;
 }
 
 .landing-footer {

@@ -36,6 +36,9 @@ const de: Record<keyof typeof en, string> & Record<string, string> = {
   'landing.title': 'Kleine Tools. Ein Link genügt.',
   'landing.lead': 'Erstellen, Link verschicken, fertig. Ohne Konto, ohne Tracking.',
   'landing.footer': 'Open Source und selbst gehostet.',
+  'landing.recent': 'Deine Links',
+  'landing.recent.note': 'Nur in diesem Browser gespeichert',
+  'landing.recent.clear': 'Alle vergessen',
   'landing.group.plan': 'Gemeinsam planen',
   'landing.group.plan.note': 'Wer den Link hat, macht mit',
   'landing.group.share': 'Etwas teilen',
@@ -422,6 +425,8 @@ const de: Record<keyof typeof en, string> & Record<string, string> = {
   'js.mpTooLong': 'Dieser Link hat {len} Zeichen, erlaubt sind {max}. Kürze den Inhalt.',
   'js.mpMeta': '{len} Zeichen. Der Link aktualisiert sich beim Tippen.',
   'js.mpDefault': 'Standard',
+  'js.recentOpened': 'zuletzt geöffnet: {when}',
+  'js.recentRemove': 'Aus der Liste entfernen',
   'js.mpLoadFailed': 'Die Vorlagen ließen sich nicht laden. Bitte lade die Seite neu.',
 
   // Builder labels. English takes these straight from the micropage registry,

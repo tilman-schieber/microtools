@@ -118,6 +118,7 @@ microtools/
 ├── views/
 │   ├── _head.ejs         # Shared <head> contents (styles, htmx, QR rendering)
 │   ├── _header.ejs       # Site header: wordmark plus a per-tool breadcrumb
+│   ├── _remember.ejs     # Hidden marker that puts a page into the quick links
 │   ├── layout.ejs        # Shared HTML shell (used by creation forms)
 │   ├── index.ejs         # Landing page
 │   ├── 404.ejs           # Not-found page
@@ -137,6 +138,7 @@ microtools/
 │   ├── clock-display.js  # Client-side clock renderer
 │   ├── password-words.js  # Vendored local word lists for the password generator
 │   ├── passwords.js      # Client-side password generator logic
+│   ├── recent.js         # Quick links: remembers pages in localStorage, lists them on the landing page
 │   ├── test/             # Device tests, one script per page (media.js shared by camera and mic)
 │   ├── htmx.min.js       # Vendored from node_modules (gitignored)
 │   └── qrcode.min.js     # Vendored from node_modules (gitignored)
@@ -179,6 +181,8 @@ microtools/
 | File Share | after 1, 3, 7 or 30 days, as chosen when uploading |
 
 "Last change" means every vote, claim or entry restarts the count, so anything still in use stays. The sentence under a newly created link says which rule applies. Objects stored before lifetimes existed get one on the next start, counted from that day. Expiry is enforced lazily on access and by the hourly cleanup.
+
+**Quick links.** With no accounts, the landing page's "Your links" list is how people find a poll or expense group again. Pages that are worth returning to render a hidden marker (`views/_remember.ejs`, fed by a `remember` object from the route); `public/recent.js` copies it into that browser's localStorage, at most 20 entries, and draws the list. Nothing is sent to the server. Entries drop off once the link's expiry passes. An expense participant's personal edit link is kept over the group's summary link. One-time secrets are never remembered, because their link carries the decryption key; micropages and clocks are left out because their whole content is the URL.
 
 **Abuse limits.** Writes (POST, DELETE) are limited to 60 a minute per client IP, uploads to 20 an hour; reading is never limited. Uploads are refused once all shares together reach `FILES_QUOTA_MB`. The client IP comes from `X-Forwarded-For` only when the request arrives from a trusted proxy (`TRUST_PROXY`, by default one on the same machine), so a client cannot pick its own.
 

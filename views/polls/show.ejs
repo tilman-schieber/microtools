@@ -8,6 +8,7 @@
 </head>
 <body>
   <%- include('../_header', { crumb: t('crumb.poll') }) %>
+  <% if (typeof remember !== 'undefined' && remember) { %><%- include('../_remember', { remember }) %><% } %>
   <main>
     <h1><%= poll.data.title %></h1>
     <%- include('_container', { poll }) %>

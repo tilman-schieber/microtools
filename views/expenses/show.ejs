@@ -74,6 +74,7 @@ const settlements = simplifyDebts(balances);
 </head>
 <body>
   <%- include('../_header', { crumb: t('crumb.expenses') }) %>
+  <% if (typeof remember !== 'undefined' && remember) { %><%- include('../_remember', { remember }) %><% } %>
   <main>
     <h1><%= expenseTitle %></h1>
     <p class="hint"><%- t('expenses.readOnly') %></p>

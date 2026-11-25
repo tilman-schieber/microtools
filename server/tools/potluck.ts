@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import type { Lifetime, Tool } from './shared';
+import type { Lifetime, Remember, Tool } from './shared';
 import { errorP, notFound, requestOrigin, asArray, expiresIn, lifetimeHint } from './shared';
 import * as objectStore from '../objectStore';
 
@@ -14,6 +14,9 @@ const newToken = () => crypto.randomBytes(8).toString('base64url');
 
 // Routes live under /bring (create) and /b (the shared list)
 const LIFETIME: Lifetime = { type: 'bringlist', days: 90, from: 'activity' };
+
+const remember = (id: string, title: string, expires: number | null): Remember =>
+  ({ tool: 'potluck', key: id, path: `/b/${id}`, title, expires });
 
 export const potluck: Tool = {
   id: 'potluck',
@@ -56,7 +59,8 @@ export const potluck: Tool = {
       return reply.view('_created', {
         heading: `${request.i18n.t('bring.created')} <strong>${request.i18n.t('common.shareThisLink')}</strong>`,
         url: `${requestOrigin(request)}/b/${bringlist.id}`,
-        hint: lifetimeHint(request.i18n, LIFETIME)
+        hint: lifetimeHint(request.i18n, LIFETIME),
+        remember: remember(bringlist.id, title, bringlist.expires_at)
       });
     });
 
@@ -66,7 +70,7 @@ export const potluck: Tool = {
       const bringlist = objectStore.get(id);
       if (!bringlist || bringlist.type !== 'bringlist') return notFound(request, reply);
 
-      return reply.view('bring/show', { title: (bringlist.data as BringData).title, bringlist });
+      return reply.view('bring/show', { title: (bringlist.data as BringData).title, bringlist, remember: remember(id, (bringlist.data as BringData).title, bringlist.expires_at) });
     });
 
     // Claim an item (returns HTML fragment for HTMX)

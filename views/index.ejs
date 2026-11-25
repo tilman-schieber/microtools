@@ -19,12 +19,26 @@ const sections = groups.map(g => `
       </ul>
     </section>`).join('');
 
+// Names and icons for the quick links, which public/recent.js draws from localStorage.
+// Escaped for a <script> block: no tool name or icon may close it early.
+const toolMeta = {};
+groups.forEach(g => g.tools.forEach(tool => { toolMeta[tool.id] = { name: plain(t('tool.' + tool.id + '.name')), icon: tool.icon }; }));
+const toolMetaJson = JSON.stringify(toolMeta).replace(/</g, '\\u003c');
+
+const recent = `
+    <section class="tool-group recent-links" id="recent" aria-labelledby="group-recent" hidden>
+      <h2 class="tool-group-head" id="group-recent">${t('landing.recent')}<span class="tool-group-note">${t('landing.recent.note')}</span></h2>
+      <ul class="tool-list"></ul>
+      <button type="button" class="recent-clear">${t('landing.recent.clear')}</button>
+    </section>
+    <script type="application/json" id="tool-meta">${toolMetaJson}</script>`;
+
 const content = `
   <main class="landing">
     <div class="landing-hero">
       <h1>${t('landing.title')}</h1>
       <p>${t('landing.lead')}</p>
-    </div>${sections}
+    </div>${recent}${sections}
     <p class="landing-footer">${t('landing.footer')}</p>
   </main>
 ` %>

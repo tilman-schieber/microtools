@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { pipeline } from 'stream/promises';
 import archiver from 'archiver';
-import type { Tool } from './shared';
+import type { Remember, Tool } from './shared';
 import { errorP, plainP, requestOrigin } from './shared';
 import * as objectStore from '../objectStore';
 import { FILES_DIR } from '../paths';
@@ -44,6 +44,13 @@ function formatFileSize(bytes: number): string {
 }
 
 type ShareData = { files: Array<{ name: string; storedName: string }> };
+
+/** Named after its first file, with a count of the rest */
+function remember(id: string, data: ShareData, expires: number | null): Remember {
+  const [first, ...rest] = data.files;
+  const title = rest.length ? `${first.name} +${rest.length}` : first.name;
+  return { tool: 'files', key: id, path: `/files/${id}`, title, expires };
+}
 
 export const files: Tool = {
   id: 'files',
@@ -110,7 +117,8 @@ export const files: Tool = {
         return reply.view('_created', {
           heading: request.i18n.t('files.created'),
           url: `${requestOrigin(request)}/files/${shareId}`,
-          hint: request.i18n.tn('files.expiresIn', expiryDays)
+          hint: request.i18n.tn('files.expiresIn', expiryDays),
+          remember: remember(shareId, { files: uploadedFiles }, expiresAt)
         });
       } catch (err) {
         removeShareDir(shareId);
@@ -134,7 +142,8 @@ export const files: Tool = {
       return reply.view('files/show', {
         title: request.i18n.t('files.show.title'),
         share,
-        shareUrl: `${requestOrigin(request)}/files/${id}`
+        shareUrl: `${requestOrigin(request)}/files/${id}`,
+        remember: remember(id, share.data as ShareData, share.expires_at)
       });
     });
 

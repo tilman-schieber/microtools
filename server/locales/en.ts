@@ -34,6 +34,9 @@ const en = {
   'landing.title': 'Simple, link-based tools.',
   'landing.lead': 'Create something and share the link. Nothing to sign up for, nothing tracked.',
   'landing.footer': 'Open source. Runs on your own server.',
+  'landing.recent': 'Your links',
+  'landing.recent.note': 'Saved only in this browser',
+  'landing.recent.clear': 'Forget all',
   'landing.group.plan': 'Plan together',
   'landing.group.plan.note': 'Others open the link and add to it',
   'landing.group.share': 'Share something',
@@ -421,6 +424,8 @@ const en = {
   'js.mpTooLong': 'This link is {len} characters, over the {max} limit. Shorten the content.',
   'js.mpMeta': '{len} characters. The link updates as you type.',
   'js.mpDefault': 'Default',
+  'js.recentOpened': 'last opened {when}',
+  'js.recentRemove': 'Remove from this list',
   'js.mpLoadFailed': 'Could not load the template list. Reload the page to try again.',
 
   // -- Test ------------------------------------------------------------
