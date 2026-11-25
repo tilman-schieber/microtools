@@ -14,7 +14,7 @@
         <a href="/notes/<%= note.id %>/raw"><%- t('notes.show.raw') %></a>
         <a href="/notes/<%= note.id %>/md"><%- t('notes.show.md') %></a>
       </div>
-      <button hx-delete="/notes/<%= note.id %>" hx-target="#note-container" hx-swap="innerHTML" hx-confirm="<%- t('notes.show.deleteConfirm') %>"><%- t('notes.show.delete') %></button>
+      <div class="actions"><button class="btn-danger" hx-delete="/notes/<%= note.id %>" hx-target="#note-container" hx-swap="innerHTML" hx-confirm="<%- t('notes.show.deleteConfirm') %>"><%- t('notes.show.delete') %></button></div>
     </div>
   </main>
 </body>

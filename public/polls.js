@@ -6,7 +6,8 @@
 // in the URL fragment (#edit=<answerId>.<key> or #admin=<key>), which browsers
 // never send to the server.
 (function () {
-  const VOTES = { yes: '✅', tentative: '🟡', no: '❌' };
+  // Stored value → icon name and its word (server/icons.ts, locales js.pollVote*)
+  const VOTES = { yes: ['yes', 'pollVoteYes'], tentative: ['maybe', 'pollVoteMaybe'], no: ['no', 'pollVoteNo'] };
   const NEXT = { yes: 'tentative', tentative: 'no', no: 'yes' };
 
   function load(pollId) {
@@ -68,7 +69,9 @@
 
   function setVote(cell, vote) {
     cell.querySelector('input').value = vote;
-    cell.querySelector('.vote-emoji').textContent = VOTES[vote];
+    const mark = cell.querySelector('.vote-emoji');
+    mark.innerHTML = ICONS[VOTES[vote][0]] + '<span class="sr-only"></span>';
+    mark.lastChild.textContent = T[VOTES[vote][1]];
     cell.className = 'vote-cell vote-' + vote;
   }
 
@@ -103,7 +106,7 @@
   }
 
   function actionBtn(label, onClick) {
-    const b = el('button', 'copy-btn poll-action', label);
+    const b = el('button', 'btn-secondary btn-sm', label);
     b.type = 'button';
     b.addEventListener('click', onClick);
     return b;
@@ -145,10 +148,10 @@
     const names = own.map(function (r) { return r.cells[0].textContent; });
     box.append(el('p', null, tf('pollAnsweredAs', { names: names.join(', ') })));
 
-    const actions = el('div', 'poll-mine-actions');
+    const actions = el('div', 'actions actions-tight');
     if (own.length === 1) {
       const b = actionBtn(T.pollEditMine, function () { startEdit(own[0].dataset.rid); });
-      b.className = 'poll-action';
+      b.className = '';
       actions.append(b);
     }
     actions.append(actionBtn(T.pollAddAnother, function () {

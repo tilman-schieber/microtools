@@ -4,5 +4,5 @@
 <div class="poll-admin" data-poll-admin="<%= pollId %>" data-key="<%= adminKey %>">
   <p class="hint"><%- t('polls.adminHint') %></p>
   <p><a href="<%= adminUrl %>" rel="nofollow"><%= adminUrl %></a></p>
-  <button class="copy-btn" data-url="<%= adminUrl %>" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent=T.copied"><%- t('polls.copyAdminLink') %></button>
+  <div class="actions actions-tight"><button class="btn-secondary" data-url="<%= adminUrl %>" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent=T.copied"><%- t('polls.copyAdminLink') %></button></div>
 </div>

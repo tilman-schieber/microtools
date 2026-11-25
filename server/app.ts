@@ -11,6 +11,7 @@ import * as objectStore from './objectStore';
 import { TOOLS, toolGroups } from './tools';
 import { expiresIn } from './tools/shared';
 import { UPLOAD_LIMIT_BYTES } from './tools/files';
+import { icon, ICONS_JSON, FAVICON } from './icons';
 
 declare module 'fastify' {
   interface FastifyRequest { i18n: I18n }
@@ -111,7 +112,8 @@ export async function buildApp(options: { logger?: boolean; rateLimit?: boolean 
 
     reply.locals = {
       t: tr.t, tn: tr.tn, fmtDate: tr.fmtDate, fmtMoney: tr.fmtMoney, plain: plainText,
-      lang, langLinks, clientT: clientStrings(lang)
+      lang, langLinks, clientT: clientStrings(lang),
+      icon, icons: ICONS_JSON, favicon: FAVICON
     };
 
     // A rendered micropage is a pure function of its URL and is cached as such;

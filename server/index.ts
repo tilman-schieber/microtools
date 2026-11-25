@@ -12,7 +12,8 @@ function log(message: string, source = "fastify") {
 }
 
 async function start() {
-  const fastify = await buildApp();
+  // RATE_LIMIT=off is for local scripts that write much faster than people do
+  const fastify = await buildApp({ rateLimit: process.env.RATE_LIMIT !== 'off' });
   const port = parseInt(process.env.PORT || "3459", 10);
 
   // Periodic cleanup: purge expired objects and their files every hour

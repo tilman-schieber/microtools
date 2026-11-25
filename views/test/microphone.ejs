@@ -6,7 +6,7 @@
     <section class="test-panel">
       <div class="test-controls">
         <button type="button" id="mic-start">${t('test.microphone.start')}</button>
-        <button type="button" id="mic-stop" class="copy-btn" hidden>${t('test.stop')}</button>
+        <button type="button" id="mic-stop" class="btn-secondary" hidden>${t('test.stop')}</button>
         <div class="test-field">
           <label for="mic-device">${t('test.microphone.device')}</label>
           <select id="mic-device"><option value="">${t('test.defaultDevice')}</option></select>
@@ -28,8 +28,8 @@
       <p id="mic-silent" class="hint" hidden>${t('test.microphone.silent')}</p>
 
       <div class="test-tabs" role="tablist">
-        <button type="button" class="password-tab is-active" data-view="wave" role="tab" aria-selected="true">${t('test.microphone.waveform')}</button>
-        <button type="button" class="password-tab" data-view="spectrum" role="tab" aria-selected="false">${t('test.microphone.spectrum')}</button>
+        <button type="button" class="btn-secondary btn-sm password-tab is-active" data-view="wave" role="tab" aria-selected="true">${t('test.microphone.waveform')}</button>
+        <button type="button" class="btn-secondary btn-sm password-tab" data-view="spectrum" role="tab" aria-selected="false">${t('test.microphone.spectrum')}</button>
       </div>
       <canvas class="scope" id="mic-scope"></canvas>
     </section>
@@ -38,7 +38,7 @@
       <h2>${t('test.microphone.recordHeading')}</h2>
       <p class="hint">${t('test.microphone.recordHint')}</p>
       <div class="test-controls">
-        <button type="button" id="mic-record" class="copy-btn" disabled>${t('test.microphone.record')}</button>
+        <button type="button" id="mic-record" class="btn-secondary" disabled>${t('test.microphone.record')}</button>
       </div>
       <audio id="mic-playback" controls hidden></audio>
     </section>

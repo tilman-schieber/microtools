@@ -33,7 +33,7 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
             <span class="bring-claim-chip">
               <%= c.name %>: <%= c.amount %>
               <% if (_lastToken && c.token === _lastToken) { %>
-                <button class="claim-delete-btn" hx-delete="/b/<%= id %>/claim/<%= idx %>/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="<%- t('bring.removeClaimConfirm') %>">&times;</button>
+                <button class="claim-delete-btn" hx-delete="/b/<%= id %>/claim/<%= idx %>/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="<%- t('bring.removeClaimConfirm') %>" aria-label="<%- t('common.remove') %>"><%- icon('x') %></button>
               <% } %>
             </span>
           <% }); %>
@@ -67,7 +67,7 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
         <span class="bring-claim-chip">
           <%= c.name %><% if (c.amount > 1) { %>: <%= c.amount %><% } %>
           <% if (_lastToken && c.token === _lastToken) { %>
-            <button class="claim-delete-btn" hx-delete="/b/<%= id %>/custom/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="<%- t('bring.removeItemConfirm') %>">&times;</button>
+            <button class="claim-delete-btn" hx-delete="/b/<%= id %>/custom/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="<%- t('bring.removeItemConfirm') %>" aria-label="<%- t('common.remove') %>"><%- icon('x') %></button>
           <% } %>
         </span>
       </div>

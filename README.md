@@ -97,6 +97,7 @@ The Micropage documentation at `/micropage/docs` is the reference for people and
 | `DATA_DIR` | `data/` | Where the database and uploaded files live |
 | `TRUST_PROXY` | `loopback` | Which proxies may set the client IP via `X-Forwarded-For` (Fastify's `trustProxy`: `true`, `false`, a hop count, or addresses/CIDRs) |
 | `FILES_QUOTA_MB` | `5000` | Total disk space all file shares together may use |
+| `RATE_LIMIT` | on | `off` disables rate limiting, for local scripts such as screenshot runs |
 | `UPLOAD_LIMIT_MB` | `50` | Largest single upload, all its files together; keep it at or below nginx's `client_max_body_size` |
 
 ## Project structure
@@ -182,6 +183,8 @@ microtools/
 | File Share | after 1, 3, 7 or 30 days, as chosen when uploading |
 
 "Last change" means every vote, claim or entry restarts the count, so anything still in use stays. The sentence under a newly created link says which rule applies. Objects stored before lifetimes existed get one on the next start, counted from that day. Expiry is enforced lazily on access and by the hourly cleanup.
+
+**Buttons and icons.** A button sets its size and look but never its outer margin; the row it sits in decides spacing, so any two buttons side by side line up. An unclassed `<button>` is the primary action; the others take `btn-secondary`, `btn-danger`, `btn-sm`, `btn-icon` or `btn-link`, and a link styled as a button takes `btn`. Rows of buttons go in `<div class="actions">` (`actions-tight` right under a field, `actions-stack` to stack them on phones). Icons are inline SVG from `server/icons.ts`: `icon('yes')` in views, `ICONS.yes` in browser scripts. They are decorative, so pair each with text or an `aria-label`.
 
 **Quick links.** With no accounts, the landing page's "Your links" list is how people find a poll or expense group again. Pages that are worth returning to render a hidden marker (`views/_remember.ejs`, fed by a `remember` object from the route); `public/recent.js` copies it into that browser's localStorage, at most 20 entries, and draws the list. Nothing is sent to the server. Entries drop off once the link's expiry passes. An expense participant's personal edit link is kept over the group's summary link. One-time secrets are never remembered, because their link carries the decryption key; micropages and clocks are left out because their whole content is the URL.
 

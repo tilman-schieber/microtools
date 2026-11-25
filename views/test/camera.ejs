@@ -6,7 +6,7 @@
     <section class="test-panel">
       <div class="test-controls">
         <button type="button" id="cam-start">${t('test.camera.start')}</button>
-        <button type="button" id="cam-stop" class="copy-btn" hidden>${t('test.stop')}</button>
+        <button type="button" id="cam-stop" class="btn-secondary" hidden>${t('test.stop')}</button>
         <div class="test-field">
           <label for="cam-device">${t('test.camera.device')}</label>
           <select id="cam-device"><option value="">${t('test.defaultDevice')}</option></select>
@@ -31,8 +31,8 @@
 
       <div class="test-controls">
         <label class="checkbox-option"><input type="checkbox" id="cam-mirror" checked> ${t('test.camera.mirror')}</label>
-        <button type="button" id="cam-snap" class="copy-btn" disabled>${t('test.camera.snapshot')}</button>
-        <button type="button" id="cam-full" class="copy-btn" disabled>${t('test.fullscreen')}</button>
+        <button type="button" id="cam-snap" class="btn-secondary" disabled>${t('test.camera.snapshot')}</button>
+        <button type="button" id="cam-full" class="btn-secondary" disabled>${t('test.fullscreen')}</button>
       </div>
 
       <dl class="test-stats">

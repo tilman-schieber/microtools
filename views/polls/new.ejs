@@ -13,7 +13,7 @@
       <h3><%- t('polls.new.step1') %></h3>
       <div class="date-picker-row">
         <input type="date" id="date-input">
-        <button type="button" id="add-date-btn"><%- t('polls.new.addDate') %></button>
+        <button type="button" id="add-date-btn" class="btn-secondary"><%- t('polls.new.addDate') %></button>
       </div>
       <div id="dates-list"></div>
       
@@ -24,8 +24,7 @@
       
       <div id="hidden-inputs"></div>
       
-      <br>
-      <button type="submit" id="create-btn" disabled><%- t('polls.new.submit') %></button>
+      <div class="actions"><button type="submit" id="create-btn" disabled><%- t('polls.new.submit') %></button></div>
     </form>
     <div id="result"></div>
   </main>
@@ -65,7 +64,7 @@
       list.innerHTML = dates.map((d, i) => `
         <span class="date-chip">
           ${formatDateDisplay(d)}
-          <button type="button" onclick="removeDate(${i})">x</button>
+          <button type="button" onclick="removeDate(${i})" aria-label="${T.remove}">${ICONS.x}</button>
         </span>
       `).join('');
       renderTimeGrid();
@@ -118,9 +117,9 @@
       const times = getAllTimes();
       
       let html = '<div class="time-controls">';
-      html += `<button type="button" class="expand-btn" onclick="expandEarlier()" ${startHour <= 0 ? 'disabled' : ''}>${T.pollEarlier} (${formatTime24(startHour - 1)})</button>`;
-      html += '<span class="custom-time-add"><input type="time" id="custom-time-input"><button type="button" onclick="addCustomTime()">' + T.pollAddTime + '</button></span>';
-      html += `<button type="button" class="expand-btn" onclick="expandLater()" ${endHour >= 23 ? 'disabled' : ''}>${T.pollLater} (${formatTime24(endHour + 1)})</button>`;
+      html += `<button type="button" class="btn-secondary btn-sm" onclick="expandEarlier()" ${startHour <= 0 ? 'disabled' : ''}>${T.pollEarlier} (${formatTime24(startHour - 1)})</button>`;
+      html += '<span class="custom-time-add"><input type="time" id="custom-time-input"><button type="button" class="btn-secondary btn-sm" onclick="addCustomTime()">' + T.pollAddTime + '</button></span>';
+      html += `<button type="button" class="btn-secondary btn-sm" onclick="expandLater()" ${endHour >= 23 ? 'disabled' : ''}>${T.pollLater} (${formatTime24(endHour + 1)})</button>`;
       html += '</div>';
       
       html += '<div class="overflow-x-auto"><table class="time-grid"><thead><tr><th>' + T.pollTime + '</th>';
@@ -134,7 +133,7 @@
         dates.forEach(d => {
           const key = `${d}|${time}`;
           const isSelected = selectedSlots.has(key);
-          html += `<td class="time-cell ${isSelected ? 'selected' : ''}" data-key="${key}" onclick="toggleSlot('${key}')">${isSelected ? '✅' : ''}</td>`;
+          html += `<td class="time-cell ${isSelected ? 'selected' : ''}" data-key="${key}" onclick="toggleSlot('${key}')">${isSelected ? ICONS.check : ''}</td>`;
         });
         html += '</tr>';
       });

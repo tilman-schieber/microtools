@@ -18,17 +18,15 @@
       <div id="participants-container">
         <div class="participant-row">
           <input type="text" name="participants[]" placeholder="${t('expenses.new.namePlaceholder')}" required>
-          <button type="button" onclick="this.parentElement.remove()">${t('common.remove')}</button>
+          <button type="button" class="btn-secondary" onclick="this.parentElement.remove()">${t('common.remove')}</button>
         </div>
         <div class="participant-row">
           <input type="text" name="participants[]" placeholder="${t('expenses.new.namePlaceholder')}" required>
-          <button type="button" onclick="this.parentElement.remove()">${t('common.remove')}</button>
+          <button type="button" class="btn-secondary" onclick="this.parentElement.remove()">${t('common.remove')}</button>
         </div>
       </div>
-      <button type="button" id="add-participant">${t('expenses.new.addParticipant')}</button>
-      
-      <br><br>
-      <button type="submit">${t('expenses.new.title')}</button>
+      <div class="actions actions-tight"><button type="button" id="add-participant" class="btn-secondary">${t('expenses.new.addParticipant')}</button></div>
+      <div class="actions"><button type="submit">${t('expenses.new.title')}</button></div>
     </form>
     <div id="result"></div>
   </main>
@@ -38,7 +36,7 @@
       const container = document.getElementById('participants-container');
       const row = document.createElement('div');
       row.className = 'participant-row';
-      row.innerHTML = '<input type="text" name="participants[]" required> <button type="button" onclick="this.parentElement.remove()"></button>';
+      row.innerHTML = '<input type="text" name="participants[]" required> <button type="button" class="btn-secondary" onclick="this.parentElement.remove()"></button>';
       row.querySelector('input').placeholder = T.namePlaceholder;
       row.querySelector('button').textContent = T.remove;
       container.appendChild(row);

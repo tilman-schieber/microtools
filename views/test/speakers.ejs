@@ -13,7 +13,7 @@
           <label for="spk-output">${t('test.speakers.output')}</label>
           <select id="spk-output"><option value="">${t('test.defaultDevice')}</option></select>
         </div>
-        <button type="button" id="spk-names" class="copy-btn" hidden>${t('test.speakers.showNames')}</button>
+        <button type="button" id="spk-names" class="btn-secondary" hidden>${t('test.speakers.showNames')}</button>
       </div>
       <p id="spk-error" class="error" hidden></p>
     </section>
@@ -21,9 +21,9 @@
     <section class="test-panel">
       <h2>${t('test.speakers.channelsHeading')}</h2>
       <div class="spk-channels">
-        <button type="button" class="copy-btn spk-channel" data-pan="-1">${t('test.speakers.left')}</button>
-        <button type="button" class="copy-btn spk-channel" data-pan="0">${t('test.speakers.both')}</button>
-        <button type="button" class="copy-btn spk-channel" data-pan="1">${t('test.speakers.right')}</button>
+        <button type="button" class="btn-secondary spk-channel" data-pan="-1">${t('test.speakers.left')}</button>
+        <button type="button" class="btn-secondary spk-channel" data-pan="0">${t('test.speakers.both')}</button>
+        <button type="button" class="btn-secondary spk-channel" data-pan="1">${t('test.speakers.right')}</button>
       </div>
       <p class="hint">${t('test.speakers.channelsHint')}</p>
     </section>
@@ -34,8 +34,8 @@
       <input type="range" id="spk-freq-range" min="0" max="1000" value="">
       <div class="meter-scale" aria-hidden="true"><span>20 Hz</span><span>200 Hz</span><span>2 kHz</span><span>20 kHz</span></div>
       <div class="test-controls">
-        <button type="button" id="spk-tone" class="copy-btn">${t('test.speakers.playTone')}</button>
-        <button type="button" id="spk-sweep" class="copy-btn">${t('test.speakers.sweep')}</button>
+        <button type="button" id="spk-tone" class="btn-secondary">${t('test.speakers.playTone')}</button>
+        <button type="button" id="spk-sweep" class="btn-secondary">${t('test.speakers.sweep')}</button>
       </div>
       <p class="hint">${t('test.speakers.sweepHint')}</p>
     </section>

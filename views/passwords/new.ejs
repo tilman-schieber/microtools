@@ -7,9 +7,9 @@
       <label for="generated-password">${t('passwords.generated')}</label>
       <textarea id="generated-password" class="password-value" rows="3" readonly spellcheck="false"></textarea>
 
-      <div class="password-actions">
+      <div class="actions actions-tight actions-stack">
         <button type="button" id="generate-password-btn">${t('passwords.generate')}</button>
-        <button type="button" id="copy-password-btn" class="copy-btn">${t('common.copy')}</button>
+        <button type="button" id="copy-password-btn" class="btn-secondary">${t('common.copy')}</button>
       </div>
 
       <p id="password-meta" class="hint"></p>
@@ -17,8 +17,8 @@
     </section>
 
     <div class="password-tabs" role="tablist" aria-label="${t('passwords.modeLabel')}">
-      <button type="button" class="password-tab is-active" data-tab="alphanumeric" role="tab" aria-selected="true" aria-controls="password-panel-alphanumeric" id="password-tab-alphanumeric">${t('passwords.tabAlpha')}</button>
-      <button type="button" class="password-tab" data-tab="xkcd" role="tab" aria-selected="false" aria-controls="password-panel-xkcd" id="password-tab-xkcd">${t('passwords.tabXkcd')}</button>
+      <button type="button" class="btn-secondary btn-sm password-tab is-active" data-tab="alphanumeric" role="tab" aria-selected="true" aria-controls="password-panel-alphanumeric" id="password-tab-alphanumeric">${t('passwords.tabAlpha')}</button>
+      <button type="button" class="btn-secondary btn-sm password-tab" data-tab="xkcd" role="tab" aria-selected="false" aria-controls="password-panel-xkcd" id="password-tab-xkcd">${t('passwords.tabXkcd')}</button>
     </div>
 
     <section id="password-panel-alphanumeric" class="password-panel" data-panel="alphanumeric" role="tabpanel" aria-labelledby="password-tab-alphanumeric">

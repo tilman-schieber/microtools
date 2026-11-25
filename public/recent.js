@@ -115,8 +115,8 @@
 
       var remove = document.createElement('button');
       remove.type = 'button';
-      remove.className = 'recent-remove';
-      remove.textContent = '×';
+      remove.className = 'btn-icon';
+      remove.innerHTML = ICONS.x;
       remove.title = T.recentRemove;
       remove.setAttribute('aria-label', T.recentRemove + ': ' + (e.title || tool.name));
       remove.addEventListener('click', function () { forget(e.key); renderList(); });

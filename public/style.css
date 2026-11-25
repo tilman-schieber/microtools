@@ -309,16 +309,19 @@ legend {
 }
 
 /* -- Buttons ------------------------------------------------------------ */
-/* Unclassed buttons are the primary action: dark, one per form. Secondary
-   actions opt in with a class and get an outline instead. */
-button {
+/* A button sets its size and look, never its outer margin: the form or row it
+   sits in decides the spacing, so any two buttons side by side line up.
+   Unclassed buttons are the primary action, one per form; everything else
+   opts into a variant. Links that act as buttons take the class .btn. */
+button,
+.btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   height: 2.75rem;
   padding: 0 1.25rem;
-  margin-top: 1.25rem;
+  margin: 0;
   background: var(--fg);
   color: #fff;
   border: 1px solid var(--fg);
@@ -327,17 +330,23 @@ button {
   font-size: 15px;
   font-weight: 500;
   line-height: 1;
-  cursor: pointer;
+  text-decoration: none;
   white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
-button:hover {
+button:hover,
+.btn:hover {
   background: #000;
   border-color: #000;
+  color: #fff;
+  text-decoration: none;
 }
 
-button:focus-visible {
+button:focus-visible,
+.btn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--accent-ring);
 }
@@ -347,113 +356,132 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.copy-btn,
-.expand-btn,
-.qr-toggle-btn,
-.password-tab,
-.slot-row button,
-.participant-row button,
-.item-row button,
-.custom-time-add button,
-#add-slot,
-#add-date-btn,
-#add-participant,
-#add-item {
+/* Secondary: any action that is not the main one */
+.btn-secondary {
   background: var(--panel);
   color: var(--fg);
   border-color: var(--border);
-  font-weight: 500;
 }
 
-.copy-btn:hover,
-.expand-btn:hover:not(:disabled),
-.qr-toggle-btn:hover,
-.password-tab:hover,
-.slot-row button:hover,
-.participant-row button:hover,
-.item-row button:hover,
-.custom-time-add button:hover,
-#add-slot:hover,
-#add-date-btn:hover,
-#add-participant:hover,
-#add-item:hover {
+.btn-secondary:hover:not(:disabled) {
   background: var(--panel-2);
   border-color: #c4c3bd;
   color: var(--fg);
 }
 
-.copy-btn,
-.qr-toggle-btn,
-.expand-btn,
-.custom-time-add button {
-  height: 2.25rem;
-  padding: 0 0.85rem;
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
-}
-
-.qr-toggle-btn {
-  margin-left: 0.4rem;
-}
-
-.expand-btn:disabled {
-  opacity: 0.45;
-}
-
-#add-slot,
-#add-date-btn,
-#add-participant,
-#add-item {
-  margin-top: 0.5rem;
-}
-
-.delete-btn {
-  height: 2rem;
-  padding: 0 0.7rem;
-  margin-top: 0;
-  background: transparent;
-  color: var(--danger);
-  border-color: transparent;
-  font-size: 0.85rem;
-}
-
-.delete-btn:hover {
-  background: var(--bad-bg);
-  border-color: var(--bad-bg);
-  color: var(--danger);
-}
-
-/* Destructive actions: outlined, never the dark primary */
-button[hx-delete] {
+/* Destructive: outlined, never the dark primary */
+.btn-danger {
   background: var(--panel);
   color: var(--danger);
   border-color: var(--border);
 }
 
-button[hx-delete]:hover {
+.btn-danger:hover:not(:disabled) {
   background: var(--bad-bg);
   border-color: var(--bad-bg);
   color: var(--danger);
 }
 
-/* Links that act as buttons */
-.download-btn {
-  display: inline-flex;
-  align-items: center;
-  height: 2.75rem;
-  padding: 0 1.25rem;
-  background: var(--fg);
+/* A delete that asks for a second click turns solid while it waits */
+.is-armed,
+.is-armed:hover:not(:disabled) {
+  background: var(--danger);
+  border-color: var(--danger);
   color: #fff;
-  border-radius: var(--radius);
-  font-weight: 500;
-  text-decoration: none;
-  margin-top: 1rem;
 }
 
-.download-btn:hover {
-  background: #000;
-  color: #fff;
-  text-decoration: none;
+/* Compact: inside tables, lists and toolbars */
+.btn-sm {
+  height: 2.25rem;
+  padding: 0 0.85rem;
+  font-size: 0.875rem;
+}
+
+/* In a table cell, compact buttons stay within the row's height */
+td .btn-sm {
+  height: 2rem;
+  padding: 0 0.7rem;
+}
+
+/* Text only, for quiet actions */
+.btn-link {
+  height: auto;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.btn-link:hover {
+  background: none;
+  color: var(--fg);
+  text-decoration: underline;
+}
+
+/* An icon alone: square, quiet until hovered. Always give it an aria-label. */
+.btn-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  background: none;
+  border-color: transparent;
+  color: var(--faint);
+}
+
+.btn-icon:hover {
+  background: var(--panel-2);
+  border-color: transparent;
+  color: var(--danger);
+}
+
+.btn-icon .icon {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+/* A row of buttons. It owns the spacing: the gap between them, and the space
+   above it when it follows form fields. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.actions-tight {
+  margin-top: 0.6rem;
+}
+
+/* Buttons inline in running text, e.g. after a link in a list */
+.inline-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+/* -- Icons -------------------------------------------------------------- */
+/* Text for screen readers only, e.g. the word behind an icon */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.icon {
+  width: 1.1em;
+  height: 1.1em;
+  flex: none;
+  vertical-align: -0.2em;
 }
 
 /* -- Panels ------------------------------------------------------------- */
@@ -648,46 +676,16 @@ button[hx-delete]:hover {
   white-space: nowrap;
 }
 
-.recent-remove {
-  flex: 0 0 auto;
-  width: 2.25rem;
-  height: 2.25rem;
-  margin: 0 0 0 0.5rem;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--faint);
-  font-size: 1.25rem;
-  line-height: 1;
-  cursor: pointer;
-  border-radius: var(--radius);
-}
-
-.recent-remove:hover {
-  color: var(--danger);
-  background: none;
-}
-
-.recent-remove:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--accent-ring);
+.recent-item .btn-icon {
+  margin-left: 0.5rem;
 }
 
 .recent-clear {
-  height: auto;
   margin-top: 0.75rem;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--muted);
-  font-size: 0.85rem;
-  cursor: pointer;
 }
 
 .recent-clear:hover {
   color: var(--danger);
-  background: none;
-  text-decoration: underline;
 }
 
 .landing-footer {
@@ -750,10 +748,42 @@ button[hx-delete]:hover {
   color: var(--ok-fg);
 }
 
+/* No stays plain, so the yeses are what the eye finds */
 .vote-no {
-  background: var(--bad-bg);
-  color: var(--bad-fg);
+  color: var(--muted);
 }
+
+/* Answer icons: yes is a filled green disc, maybe an amber ring, no a grey cross */
+.vote-yes .icon { color: var(--ok-bar); }
+.vote-tentative .icon { color: #b08518; }
+
+.poll-table .icon {
+  width: 1.3rem;
+  height: 1.3rem;
+  vertical-align: middle;
+}
+
+.vote-legend {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.9rem;
+  margin-left: 0.25rem;
+}
+
+.vote-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.vote-legend .icon {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.vote-legend .icon-yes { color: var(--ok-bar); }
+.vote-legend .icon-maybe { color: #b08518; }
+.vote-legend .icon-no { color: var(--muted); }
 
 .vote-tentative {
   background: var(--warn-bg);
@@ -793,17 +823,20 @@ button[hx-delete]:hover {
   background: var(--panel);
 }
 
-.poll-action {
-  height: 2rem;
-  padding: 0 0.7rem;
-  margin: 0 0 0 0.35rem;
-  font-size: 0.85rem;
+.poll-table td.poll-actions button + button {
+  margin-left: 0.35rem;
 }
 
-.poll-action.is-armed {
-  background: var(--danger);
-  border-color: var(--danger);
-  color: #fff;
+
+
+/* The voting grid has no name column: every cell centred, icons a size up */
+.poll-table.vote-grid td:first-child {
+  text-align: center;
+}
+
+.poll-table.vote-grid .icon {
+  width: 1.6rem;
+  height: 1.6rem;
 }
 
 .poll-mine {
@@ -816,24 +849,6 @@ button[hx-delete]:hover {
 
 .poll-mine p {
   margin: 0;
-}
-
-.poll-mine-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-}
-
-.poll-mine-actions .poll-action,
-.poll-mine-actions .copy-btn {
-  margin: 0;
-  height: 2.4rem;
-}
-
-.poll-mine-actions button.poll-action:not(.copy-btn) {
-  padding: 0 1rem;
-  font-size: 15px;
 }
 
 .poll-links {
@@ -865,16 +880,6 @@ button[hx-delete]:hover {
   font-size: 0.8rem;
 }
 
-.poll-link .poll-action {
-  margin: 0;
-}
-
-.poll-form-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
 .poll-admin {
   margin-top: 1.25rem;
   padding-top: 1rem;
@@ -891,10 +896,6 @@ button[hx-delete]:hover {
   gap: 0.5rem;
   align-items: center;
   margin-bottom: 1rem;
-}
-
-.date-picker-row button {
-  margin-top: 0;
 }
 
 #dates-list {
@@ -927,6 +928,11 @@ button[hx-delete]:hover {
   margin: 0;
   font-size: 0.8rem;
   border: none;
+}
+
+.date-chip button .icon {
+  width: 0.95rem;
+  height: 0.95rem;
 }
 
 .date-chip button:hover {
@@ -987,6 +993,13 @@ button[hx-delete]:hover {
 
 .time-cell.selected {
   background: var(--ok-bg);
+  color: var(--ok-bar);
+}
+
+.time-cell .icon {
+  width: 1.35rem;
+  height: 1.35rem;
+  vertical-align: middle;
 }
 
 .slot-row {
@@ -996,9 +1009,6 @@ button[hx-delete]:hover {
   align-items: center;
 }
 
-.slot-row button {
-  margin-top: 0;
-}
 
 /* -- Expense tool ------------------------------------------------------- */
 .participant-row {
@@ -1008,9 +1018,6 @@ button[hx-delete]:hover {
   align-items: center;
 }
 
-.participant-row button {
-  margin-top: 0;
-}
 
 .settlements {
   list-style: none;
@@ -1337,9 +1344,6 @@ body.note-md-page {
   max-width: 100px;
 }
 
-.item-row button {
-  margin-top: 0;
-}
 
 .bring-items {
   display: flex;
@@ -1436,6 +1440,11 @@ body.note-md-page {
   cursor: pointer;
 }
 
+.claim-delete-btn .icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
 .claim-delete-btn:hover {
   background: var(--danger);
   color: #fff;
@@ -1474,7 +1483,6 @@ body.note-md-page {
   height: 2.25rem;
   padding: 0 0.9rem;
   font-size: 0.9rem;
-  margin-top: 0;
 }
 
 .complete-badge {
@@ -1505,9 +1513,6 @@ body.note-md-page {
   width: 70px;
 }
 
-.bring-custom-form button {
-  margin-top: 0;
-}
 
 .bring-extras {
   display: flex;
@@ -1606,17 +1611,6 @@ body.note-md-page {
   background: var(--panel-2);
 }
 
-.password-actions {
-  display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.password-actions button,
-.password-actions .download-btn {
-  margin-top: 0;
-}
 
 .password-tabs {
   display: inline-flex;
@@ -1625,7 +1619,6 @@ body.note-md-page {
 }
 
 .password-tab {
-  margin-top: 0;
   height: 2.25rem;
   padding: 0 0.9rem;
   font-size: 0.9rem;
@@ -1699,15 +1692,11 @@ body.note-md-page {
 
 /* -- Mobile ------------------------------------------------------------- */
 @media (max-width: 640px) {
-  .password-actions {
+  .actions-stack {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .password-actions button,
-  .password-actions .download-btn {
-    width: 100%;
-  }
 
   .password-length-controls {
     grid-template-columns: 1fr;
@@ -1809,7 +1798,7 @@ body.note-md-page {
     align-items: stretch;
   }
 
-  .time-controls .expand-btn {
+  .time-controls .btn-sm {
     width: 100%;
   }
 }
@@ -1839,9 +1828,6 @@ body.note-md-page {
   gap: 0.75rem;
 }
 
-.clock-open-link {
-  margin-top: 0;
-}
 
 .clock-display-page {
   max-width: none;
@@ -2647,10 +2633,6 @@ body.note-md-page {
   margin-top: 0;
 }
 
-.test-controls > button:not(.copy-btn) {
-  height: 2.75rem;
-}
-
 .test-field label {
   margin: 0 0 0.3rem;
   font-size: 0.8rem;
@@ -2699,7 +2681,7 @@ body.note-md-page {
   gap: 0.4rem;
 }
 
-.copy-btn.is-playing {
+.btn-secondary.is-playing {
   background: var(--fg);
   border-color: var(--fg);
   color: #fff;

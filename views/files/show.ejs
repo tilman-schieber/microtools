@@ -15,7 +15,7 @@ const isSingle = fileList.length === 1;
     <% if (isSingle) { %>
       <div class="file-download">
         <p><%- t('files.show.downloadYour') %></p>
-        <a href="/files/<%= share.id %>/download/<%= encodeURIComponent(fileList[0].name) %>" class="download-btn">
+        <a href="/files/<%= share.id %>/download/<%= encodeURIComponent(fileList[0].name) %>" class="btn">
           <%= fileList[0].name %> (<%= fileList[0].sizeFormatted %>)
         </a>
       </div>
@@ -30,7 +30,7 @@ const isSingle = fileList.length === 1;
             </li>
           <% }); %>
         </ul>
-        <a href="/files/<%= share.id %>/zip" class="download-btn"><%- t('files.show.downloadZip') %></a>
+        <a href="/files/<%= share.id %>/zip" class="btn"><%- t('files.show.downloadZip') %></a>
       </div>
     <% } %>
 
@@ -45,7 +45,7 @@ const isSingle = fileList.length === 1;
     </div>
 
     <div class="file-actions">
-      <button hx-delete="/files/<%= share.id %>" hx-target="#delete-result" hx-swap="innerHTML" hx-confirm="<%- t('files.show.deleteConfirm') %>"><%- t('files.show.delete') %></button>
+      <button class="btn-danger" hx-delete="/files/<%= share.id %>" hx-target="#delete-result" hx-swap="innerHTML" hx-confirm="<%- t('files.show.deleteConfirm') %>"><%- t('files.show.delete') %></button>
       <div id="delete-result"></div>
     </div>
 

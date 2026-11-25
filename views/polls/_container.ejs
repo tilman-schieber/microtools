@@ -10,10 +10,10 @@ function formatTime(timeStr) {
   return timeStr;
 }
 
-function getVoteEmoji(vote) {
-  if (vote === 'yes') return '✅';
-  if (vote === 'tentative') return '🟡';
-  return '❌';
+// An answer as an icon, with its word for screen readers
+function voteMark(vote) {
+  const kind = vote === 'yes' ? 'yes' : vote === 'tentative' ? 'maybe' : 'no';
+  return icon(kind) + '<span class="sr-only">' + t('polls.vote.' + kind) + '</span>';
 }
 %>
 <div id="poll-container" data-poll="<%= poll.id %>">
@@ -36,7 +36,7 @@ function getVoteEmoji(vote) {
           <tr data-rid="<%= responses[r].id %>">
             <td><%= responses[r].name %></td>
             <% for (let i = 0; i < slots.length; i++) { %>
-              <td class="vote-<%= responses[r].votes[i] || 'no' %>"><%- getVoteEmoji(responses[r].votes[i]) %></td>
+              <td class="vote-<%= responses[r].votes[i] || 'no' %>"><%- voteMark(responses[r].votes[i]) %></td>
             <% } %>
           </tr>
         <% } %>
@@ -53,7 +53,9 @@ function getVoteEmoji(vote) {
     <label for="name"><%- t('polls.yourName') %></label>
     <input type="text" name="name" id="name" placeholder="<%- t('polls.yourNamePlaceholder') %>" required maxlength="100" autocomplete="name">
     
-    <p class="hint"><%- t('polls.voteHint') %></p>
+    <p class="hint"><%- t('polls.voteHint') %>
+      <span class="vote-legend"><span><%- icon('yes') %><%- t('polls.vote.yes') %></span><span><%- icon('maybe') %><%- t('polls.vote.maybe') %></span><span><%- icon('no') %><%- t('polls.vote.no') %></span></span>
+    </p>
     
     <div class="overflow-x-auto">
     <table class="poll-table vote-grid">
@@ -68,7 +70,7 @@ function getVoteEmoji(vote) {
         <tr>
           <% for (let i = 0; i < slots.length; i++) { %>
             <td class="vote-cell vote-yes" data-index="<%= i %>">
-              <span class="vote-emoji">✅</span>
+              <span class="vote-emoji"><%- voteMark('yes') %></span>
               <input type="hidden" name="votes[]" value="yes">
             </td>
           <% } %>
@@ -78,9 +80,9 @@ function getVoteEmoji(vote) {
     </div>
     
     <div id="poll-error"></div>
-    <div class="poll-form-actions">
+    <div class="actions">
       <button type="submit" id="poll-submit"><%- t('polls.submitResponse') %></button>
-      <button type="button" id="poll-cancel" class="copy-btn" hidden><%- t('polls.cancel') %></button>
+      <button type="button" id="poll-cancel" class="btn-secondary" hidden><%- t('polls.cancel') %></button>
     </div>
   </form>
 </div>

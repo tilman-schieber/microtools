@@ -11,13 +11,11 @@
         <div class="item-row">
           <input type="text" name="items[]" placeholder="${t('bring.new.itemPlaceholder')}" required>
           <input type="number" name="amounts[]" placeholder="${t('bring.new.amountPlaceholder')}" min="1" value="1" required>
-          <button type="button" onclick="this.parentElement.remove()">${t('common.remove')}</button>
+          <button type="button" class="btn-secondary" onclick="this.parentElement.remove()">${t('common.remove')}</button>
         </div>
       </div>
-      <button type="button" id="add-item">${t('bring.new.addItem')}</button>
-      
-      <br><br>
-      <button type="submit">${t('bring.new.submit')}</button>
+      <div class="actions actions-tight"><button type="button" id="add-item" class="btn-secondary">${t('bring.new.addItem')}</button></div>
+      <div class="actions"><button type="submit">${t('bring.new.submit')}</button></div>
     </form>
     <div id="result"></div>
   </main>
@@ -27,7 +25,7 @@
       const container = document.getElementById('items-container');
       const row = document.createElement('div');
       row.className = 'item-row';
-      row.innerHTML = '<input type="text" name="items[]" required> <input type="number" name="amounts[]" min="1" value="1" required> <button type="button" onclick="this.parentElement.remove()"></button>';
+      row.innerHTML = '<input type="text" name="items[]" required> <input type="number" name="amounts[]" min="1" value="1" required> <button type="button" class="btn-secondary" onclick="this.parentElement.remove()"></button>';
       row.querySelector('input[type=text]').placeholder = T.itemPlaceholder;
       row.querySelector('input[type=number]').placeholder = T.amountPlaceholder;
       row.querySelector('button').textContent = T.remove;

@@ -117,13 +117,13 @@
     if (sticks.length) section.append(stickRow);
 
     const controls = el('div', 'test-controls');
-    const reset = el('button', 'copy-btn', T.testPadClearTrail);
+    const reset = el('button', 'btn-secondary btn-sm', T.testPadClearTrail);
     reset.type = 'button';
     reset.addEventListener('click', function () { sticks.forEach(function (s) { s.trail = []; s.lastX = NaN; draw(s, s.x || 0, s.y || 0, false); }); });
     controls.append(reset);
     if (gp.vibrationActuator || (gp.hapticActuators && gp.hapticActuators.length)) {
       [[T.testPadRumbleWeak, 0], [T.testPadRumbleStrong, 1]].forEach(function (r) {
-        const b = el('button', 'copy-btn', r[0]);
+        const b = el('button', 'btn-secondary btn-sm', r[0]);
         b.type = 'button';
         b.addEventListener('click', function () { rumble(gp.index, r[1]); });
         controls.append(b);
