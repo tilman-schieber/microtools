@@ -59,6 +59,15 @@ npm run build        # Bundles to dist/index.mjs, vendors htmx + qrcode to publi
 npm run start        # Runs the production bundle
 ```
 
+### Tests
+
+```bash
+npm test             # Type check, markdown safety, micropage, and smoke tests
+npm run test:smoke   # Every page and every create/update/delete flow, in both languages
+```
+
+The smoke tests build the app with `buildApp()` from `server/app.ts` and call it through `fastify.inject()`, so no port is opened. They set `DATA_DIR` to a temporary directory and never touch `data/`.
+
 ## Vendored client-side dependencies
 
 The build script copies [htmx](https://htmx.org/), [qrcode-generator](https://github.com/nicokoenig/qrcode-generator), and the [IBM Plex Sans](https://github.com/IBM/plex) font files (via `@fontsource/ibm-plex-sans`) from `node_modules` into `public/` so they are served locally instead of from CDNs. These generated files are gitignored — run `npm run build` after cloning to produce them.
@@ -85,13 +94,15 @@ The Micropage documentation at `/micropage/docs` is the reference for people and
 |------------|---------|----------------------|
 | `PORT`     | `3459`  | HTTP listen port     |
 | `NODE_ENV` | —       | Set to `production` by the build script |
+| `DATA_DIR` | `data/` | Where the database and uploaded files live |
 
 ## Project structure
 
 ```
 microtools/
 ├── server/
-│   ├── index.ts          # Server setup, language hook, landing page, cleanup timer
+│   ├── index.ts          # Starts the server and the hourly cleanup
+│   ├── app.ts            # buildApp(): plugins, language hook, landing page, tool routes
 │   ├── tools/            # One module per tool: its routes plus landing-page entry
 │   │   ├── index.ts      # TOOLS (display order) and toolGroups()
 │   │   └── shared.ts     # Tool interface, categories, small route helpers

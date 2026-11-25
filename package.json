@@ -9,6 +9,8 @@
     "check": "tsc --noEmit",
     "test:safety": "tsx script/test-markdown-safety.ts",
     "test:micropage": "tsx script/test-micropage.ts",
+    "test:smoke": "tsx script/test-smoke.ts",
+    "test": "npm run check && npm run test:safety && npm run test:micropage && npm run test:smoke",
     "start": "NODE_ENV=production node dist/index.mjs"
   },
   "dependencies": {

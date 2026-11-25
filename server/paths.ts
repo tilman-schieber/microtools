@@ -9,5 +9,6 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.join(here, '..');
 export const VIEWS_DIR = path.join(ROOT, 'views');
 export const PUBLIC_DIR = path.join(ROOT, 'public');
-export const DATA_DIR = path.join(ROOT, 'data');
+// DATA_DIR can be moved, e.g. so the smoke tests never touch the real database
+export const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, 'data');
 export const FILES_DIR = path.join(DATA_DIR, 'files');
