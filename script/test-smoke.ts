@@ -61,7 +61,7 @@ for (const lang of LANGS) {
 
   // --- Static pages ---------------------------------------------------------
   const pages = [
-    '/', '/notes/new', '/polls/new', '/expenses/new', '/secrets/new', '/files/new', '/passwords/new',
+    '/', '/notes/new', '/polls/new', '/expenses/new', '/secrets/new', '/files/new', '/random',
     '/clock/new', '/clock', '/bring/new', '/qr', '/test', '/test/camera', '/test/microphone', '/test/speakers',
     '/test/gamepad', '/test/keyboard', '/test/pointer', '/test/browser',
     '/micropage/new', '/micropage/docs', '/micropage/docs.md', '/micropage/agents'
@@ -239,6 +239,8 @@ for (const lang of LANGS) {
   check('?lang= sets the cookie', String(res.headers['set-cookie']).includes('lang=de'));
   const accept = await app.inject({ method: 'GET', url: '/', headers: { 'accept-language': 'de-CH,de;q=0.9' } });
   check('Accept-Language picks German', accept.body.includes('lang="de"'));
+  const old = await app.inject({ method: 'GET', url: '/passwords/new' });
+  check('the old password URL redirects to Random', old.statusCode === 301 && old.headers.location === '/random');
 }
 
 // --- Date poll: editing your own answer, and the creator's admin key -------------------------
@@ -291,6 +293,37 @@ for (const lang of LANGS) {
   const rid = (objectStore.get(legacy.id)!.data as { responses: Array<{ id?: string }> }).responses[0].id;
   check('poll keys: old answers get an id when the poll is viewed', rid && page.body.includes(`data-rid="${rid}"`));
   check('poll keys: that does not count as a change', objectStore.get(legacy.id)!.expires_at === before);
+}
+
+// --- Random: the draws ------------------------------------------------------------------------
+{
+  await import('../public/random-core.js');
+  type Core = {
+    randomInt(max: number): number; shuffle<T>(a: T[]): T[]; pick<T>(a: T[], n: number): T[]; teams<T>(a: T[], n: number): T[][];
+    dice(n: number, sides: number): number[]; numbers(min: number, max: number, n: number, unique: boolean): number[] | null; parseNames(s: string): string[];
+  };
+  const R = (globalThis as unknown as { RandomCore: Core }).RandomCore;
+  const names = R.parseNames(' Ada \n\nBo\r\nCy\nDee\nEve\n');
+  check('random: names are trimmed, blanks dropped', names.join() === 'Ada,Bo,Cy,Dee,Eve', names.join());
+  const picked = R.pick(names, 3);
+  check('random: pick gives distinct names from the list', picked.length === 3 && new Set(picked).size === 3 && picked.every((n) => names.includes(n)));
+  check('random: pick never gives more than there are', R.pick(names, 9).length === 5);
+  const shuffled = R.shuffle(names);
+  check('random: shuffle keeps every name once', [...shuffled].sort().join() === [...names].sort().join());
+  const teams = R.teams(names, 2);
+  check('random: teams differ in size by at most one', teams.length === 2 && Math.abs(teams[0].length - teams[1].length) <= 1 && teams.flat().length === 5);
+  check('random: no more teams than people', R.teams(names, 9).length === 5);
+  const rolls = R.dice(200, 6);
+  check('random: dice stay within 1..sides', rolls.every((n) => n >= 1 && n <= 6) && new Set(rolls).size === 6);
+  const uniq = R.numbers(1, 10, 10, true)!;
+  check('random: unique numbers cover the range exactly', [...uniq].sort((a, b) => a - b).join() === '1,2,3,4,5,6,7,8,9,10');
+  check('random: unique draw larger than the range is refused', R.numbers(1, 3, 4, true) === null);
+  check('random: max below min is refused', R.numbers(5, 1, 1, false) === null);
+  check('random: negative ranges work', R.numbers(-3, -1, 50, false)!.every((n) => n >= -3 && n <= -1));
+  // Fairness: 60 000 draws of randomInt(3) should split close to evenly
+  const counts = [0, 0, 0];
+  for (let i = 0; i < 60000; i++) counts[R.randomInt(3)]++;
+  check('random: randomInt is even', counts.every((c) => Math.abs(c - 20000) < 600), counts.join());
 }
 
 // --- QR code: what each kind of content encodes ----------------------------------------------

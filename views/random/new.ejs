@@ -1,0 +1,199 @@
+<%
+// Four modes behind one set of tabs. The password mode is the former password
+// generator, unchanged (public/passwords.js); the others live in public/random.js
+// and draw through public/random-core.js.
+const modes = ['password', 'names', 'dice', 'number'];
+const content = `
+  <main class="password-tool random-tool">
+    <h1>${t('random.title')}</h1>
+    <p class="tagline">${t('random.tagline')}</p>
+
+    <div class="random-modes" role="tablist" aria-label="${t('random.modeLabel')}">
+      ${modes.map((m, i) => `<button type="button" class="btn-secondary random-mode${i === 0 ? ' is-active' : ''}" role="tab" data-mode="${m}" aria-selected="${i === 0}">${t('random.mode.' + m)}</button>`).join('')}
+    </div>
+
+    <div data-mode-panel="password" role="tabpanel">
+    <section class="password-output">
+      <label for="generated-password">${t('passwords.generated')}</label>
+      <textarea id="generated-password" class="password-value" rows="3" readonly spellcheck="false"></textarea>
+
+      <div class="actions actions-tight actions-stack">
+        <button type="button" id="generate-password-btn">${t('passwords.generate')}</button>
+        <button type="button" id="copy-password-btn" class="btn-secondary">${t('common.copy')}</button>
+      </div>
+
+      <p id="password-meta" class="hint"></p>
+      <p id="password-error" class="error" hidden></p>
+    </section>
+
+    <div class="password-tabs" role="tablist" aria-label="${t('passwords.modeLabel')}">
+      <button type="button" class="btn-secondary btn-sm password-tab is-active" data-tab="alphanumeric" role="tab" aria-selected="true" aria-controls="password-panel-alphanumeric" id="password-tab-alphanumeric">${t('passwords.tabAlpha')}</button>
+      <button type="button" class="btn-secondary btn-sm password-tab" data-tab="xkcd" role="tab" aria-selected="false" aria-controls="password-panel-xkcd" id="password-tab-xkcd">${t('passwords.tabXkcd')}</button>
+    </div>
+
+    <section id="password-panel-alphanumeric" class="password-panel" data-panel="alphanumeric" role="tabpanel" aria-labelledby="password-tab-alphanumeric">
+      <h2>${t('passwords.tabAlpha')}</h2>
+
+      <div class="password-field password-length-field">
+        <label for="alpha-length">${t('passwords.length')}</label>
+        <div class="password-length-controls">
+          <input type="range" id="alpha-length-range" min="8" max="64" value="20">
+          <input type="number" id="alpha-length" min="8" max="64" value="20">
+        </div>
+      </div>
+
+      <div class="password-options-grid">
+        <fieldset class="password-fieldset">
+          <legend>${t('passwords.charsets')}</legend>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-lowercase" checked> ${t('passwords.lowercase')}</label>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-uppercase" checked> ${t('passwords.uppercase')}</label>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-digits" checked> ${t('passwords.numbers')}</label>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-symbols"> ${t('passwords.symbols')}</label>
+        </fieldset>
+
+        <fieldset class="password-fieldset">
+          <legend>${t('passwords.options')}</legend>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-avoid-ambiguous" checked> ${t('passwords.avoidAmbiguous')}</label>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-require-each" checked> ${t('passwords.requireEach')}</label>
+          <label class="checkbox-option"><input type="checkbox" id="alpha-unique"> ${t('passwords.noRepeat')}</label>
+        </fieldset>
+      </div>
+
+      <p class="hint">${t('passwords.symbolsHint')}</p>
+    </section>
+
+    <section id="password-panel-xkcd" class="password-panel" data-panel="xkcd" role="tabpanel" aria-labelledby="password-tab-xkcd" hidden>
+      <h2>${t('passwords.xkcdHeading')}</h2>
+
+      <div class="password-options-grid">
+        <div class="password-field">
+          <label for="xkcd-language">${t('passwords.language')}</label>
+          <select id="xkcd-language">
+            <option value="en"${lang === 'de' ? '' : ' selected'}>English</option>
+            <option value="de"${lang === 'de' ? ' selected' : ''}>Deutsch</option>
+          </select>
+        </div>
+
+        <div class="password-field">
+          <label for="xkcd-word-count">${t('passwords.words')}</label>
+          <input type="number" id="xkcd-word-count" min="3" max="8" value="5">
+        </div>
+
+        <div class="password-field">
+          <label for="xkcd-separator">${t('passwords.separator')}</label>
+          <select id="xkcd-separator">
+            <option value="-" selected>${t('passwords.hyphen')}</option>
+            <option value=" ">${t('passwords.space')}</option>
+            <option value=".">${t('passwords.dot')}</option>
+          </select>
+        </div>
+
+        <fieldset class="password-fieldset">
+          <legend>${t('passwords.options')}</legend>
+          <label class="checkbox-option"><input type="checkbox" id="xkcd-capitalize"> ${t('passwords.capitalize')}</label>
+          <label class="checkbox-option"><input type="checkbox" id="xkcd-unique" checked> ${t('passwords.avoidRepeatWords')}</label>
+        </fieldset>
+      </div>
+
+      <p class="hint">${t('passwords.xkcdHint')}</p>
+    </section>
+    </div>
+
+    <!-- Names: pick, shuffle, teams -->
+    <div data-mode-panel="names" role="tabpanel" hidden>
+      <section class="password-output random-output">
+        <div id="names-result" class="random-result" aria-live="polite"><p class="hint">${t('random.names.empty')}</p></div>
+        <p id="names-error" class="error" hidden></p>
+      </section>
+      <section class="random-panel">
+        <label for="names-list">${t('random.names.list')}</label>
+        <textarea id="names-list" rows="7" placeholder="${t('random.names.placeholder')}" spellcheck="false"></textarea>
+        <p class="hint" id="names-count"></p>
+        <div class="random-controls">
+          <div class="random-control">
+            <label for="names-pick-count">${t('random.names.howMany')}</label>
+            <div class="random-inline">
+              <input type="number" id="names-pick-count" min="1" max="1000" value="1">
+              <button type="button" id="names-pick">${t('random.names.pick')}</button>
+            </div>
+          </div>
+          <div class="random-control">
+            <label for="names-team-count">${t('random.names.teamCount')}</label>
+            <div class="random-inline">
+              <input type="number" id="names-team-count" min="2" max="100" value="2">
+              <button type="button" id="names-teams" class="btn-secondary">${t('random.names.teams')}</button>
+            </div>
+          </div>
+          <div class="random-control">
+            <span class="random-control-label">${t('random.names.order')}</span>
+            <div class="random-inline">
+              <button type="button" id="names-shuffle" class="btn-secondary">${t('random.names.shuffle')}</button>
+            </div>
+          </div>
+        </div>
+        <p class="hint">${t('random.names.saved')}</p>
+      </section>
+    </div>
+
+    <!-- Dice and coin -->
+    <div data-mode-panel="dice" role="tabpanel" hidden>
+      <section class="password-output random-output">
+        <div id="dice-result" class="random-result" aria-live="polite"></div>
+      </section>
+      <section class="random-panel">
+        <div class="random-controls">
+          <div class="random-control">
+            <label for="dice-count">${t('random.dice.count')}</label>
+            <input type="number" id="dice-count" min="1" max="20" value="2">
+          </div>
+          <div class="random-control">
+            <label for="dice-sides">${t('random.dice.sides')}</label>
+            <select id="dice-sides">
+              ${[4, 6, 8, 10, 12, 20, 100].map((n) => `<option value="${n}"${n === 6 ? ' selected' : ''}>d${n}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" id="dice-roll">${t('random.dice.roll')}</button>
+          <button type="button" id="coin-flip" class="btn-secondary">${t('random.coin.flip')}</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Numbers -->
+    <div data-mode-panel="number" role="tabpanel" hidden>
+      <section class="password-output random-output">
+        <div id="number-result" class="random-result" aria-live="polite"></div>
+        <p id="number-error" class="error" hidden></p>
+      </section>
+      <section class="random-panel">
+        <div class="random-controls">
+          <div class="random-control">
+            <label for="number-min">${t('random.number.min')}</label>
+            <input type="number" id="number-min" value="1" step="1">
+          </div>
+          <div class="random-control">
+            <label for="number-max">${t('random.number.max')}</label>
+            <input type="number" id="number-max" value="100" step="1">
+          </div>
+          <div class="random-control">
+            <label for="number-count">${t('random.number.count')}</label>
+            <input type="number" id="number-count" min="1" max="1000" value="1">
+          </div>
+        </div>
+        <label class="checkbox-option"><input type="checkbox" id="number-unique" checked> ${t('random.number.unique')}</label>
+        <div class="actions">
+          <button type="button" id="number-draw">${t('random.number.draw')}</button>
+          <button type="button" id="number-copy" class="btn-secondary" hidden>${t('common.copy')}</button>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <script src="/public/password-words.js"></script>
+  <script src="/public/passwords.js"></script>
+  <script src="/public/random-core.js"></script>
+  <script src="/public/random.js"></script>
+` %>
+<%- include('../layout', { content, title, crumb: t('crumb.random') }) %>

@@ -22,7 +22,7 @@ The landing page groups the tools by what you want to do, which also says what h
 **Quick utilities** (runs in your browser, nothing is stored)
 
 - **QR Code** — Plain black-on-white QR codes for text and links, Wi-Fi logins, contacts (vCard), emails and phone numbers; PNG or SVG download, copy to clipboard; everything runs client-side
-- **Password Generator** — Local-only alphanumeric passwords and XKCD-style passphrases in English or German
+- **Random** — Passwords and XKCD-style passphrases (English or German), drawing names, shuffling, splitting into teams, dice, coin flips and random numbers; all drawn locally with the browser's cryptographic random source. `/passwords/new` redirects here
 - **Clock** — Parameter-based digital, Swiss railway analogue, and countdown clock displays; analogue mode adapts [Swiss-Railway-Clock](https://github.com/manuelmeister/Swiss-Railway-Clock) by Manuel Meister
 - **Device Check** — Check camera, microphone, speakers, gamepad, keyboard, mouse/touch/pen, and what the browser reports about the device; everything runs client-side
 
@@ -131,7 +131,7 @@ microtools/
 │   ├── secrets/          # Secret templates (show, gone, new)
 │   ├── files/            # File share templates (show, gone, new)
 │   ├── clock/            # Clock config + display templates
-│   ├── passwords/        # Password generator template
+│   ├── random/           # Random tool template (passwords, names, dice, numbers)
 │   ├── bring/            # Potluck templates (show, new, _list partial)
 │   ├── micropage/        # Micropage render, docs, builder, error
 │   └── test/             # Device test overview plus one page per test
@@ -140,7 +140,9 @@ microtools/
 │   ├── clock-config.js   # Client-side clock link generator
 │   ├── clock-display.js  # Client-side clock renderer
 │   ├── password-words.js  # Vendored local word lists for the password generator
-│   ├── passwords.js      # Client-side password generator logic
+│   ├── passwords.js      # Random tool, password mode
+│   ├── random.js         # Random tool, the other modes: names, dice and coin, numbers
+│   ├── random-core.js    # Unbiased draws (pick, shuffle, teams, dice, numbers); tested by the smoke tests
 │   ├── qr.js             # QR code generator page: preview, PNG/SVG download, copy
 │   ├── qr-payload.js     # What a QR code encodes per kind (Wi-Fi, vCard, mailto, tel); tested by the smoke tests
 │   ├── recent.js         # Quick links: remembers pages in localStorage, lists them on the landing page

@@ -1824,7 +1824,177 @@ body.note-md-page {
   width: 100%;
 }
 
-/* -- QR code ------------------------------------------------------------ */
+/* -- Random --------------------------------------------------------------- */
+/* Top-level modes above the password generator's own tabs */
+.random-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 1.25rem;
+}
+
+.random-mode.is-active,
+.random-mode.is-active:hover {
+  background: var(--fg);
+  color: #fff;
+  border-color: var(--fg);
+}
+
+[data-mode-panel] {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+[data-mode-panel][hidden] {
+  display: none;
+}
+
+.random-panel {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.random-panel > label:first-child {
+  margin-top: 0;
+}
+
+.random-panel .hint:last-child {
+  margin-bottom: 0;
+}
+
+.random-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.random-control label,
+.random-control-label {
+  display: block;
+  margin: 0 0 0.4rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.random-inline {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.random-inline input[type="number"] {
+  width: 5rem;
+  flex: none;
+}
+
+/* The result: big when it is one thing, a list or grid when it is several */
+.random-result {
+  min-height: 4.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.random-result > :first-child { margin-top: 0; }
+.random-result > :last-child { margin-bottom: 0; }
+
+.random-result.is-fresh {
+  animation: random-in 0.25s ease-out;
+}
+
+@keyframes random-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .random-result.is-fresh { animation: none; }
+}
+
+.random-big {
+  margin: 0;
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.random-list {
+  margin: 0;
+  padding-left: 1.5rem;
+  columns: 2 12rem;
+  column-gap: 2rem;
+}
+
+.random-list li {
+  padding: 0.15rem 0;
+  break-inside: avoid;
+}
+
+.random-teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.75rem;
+}
+
+.random-team {
+  padding: 0.75rem 1rem;
+  background: var(--panel-2);
+  border-radius: var(--radius);
+}
+
+.random-team h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.random-team ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.random-dice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.random-die {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.25rem;
+  height: 3.25rem;
+  padding: 0 0.5rem;
+  border: 1.5px solid var(--fg);
+  border-radius: 0.6rem;
+  background: var(--panel);
+  font-size: 1.4rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.random-sum {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+}
+
+.random-numbers {
+  margin: 0;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* -- QR code tool ------------------------------------------------------- */
 .qr-tool {
   max-width: 960px;
 }
