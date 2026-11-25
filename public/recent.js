@@ -7,6 +7,8 @@
 (function () {
   var STORE = 'microtools-recent';
   var MAX = 20;
+  var SHOWN = 5;          // the landing page lists this many until asked for more
+  var expanded = false;
 
   function load() {
     try {
@@ -91,7 +93,16 @@
     ul.textContent = '';
     section.hidden = entries.length === 0;
 
-    entries.forEach(function (e) {
+    var rest = entries.length - SHOWN;
+    var more = section.querySelector('.recent-more');
+    more.hidden = rest <= 0;
+    more.textContent = expanded ? T.recentLess : tf('recentMore', { n: rest });
+    if (!more.dataset.bound) {
+      more.dataset.bound = '1';
+      more.addEventListener('click', function () { expanded = !expanded; renderList(); });
+    }
+
+    entries.slice(0, expanded ? entries.length : SHOWN).forEach(function (e) {
       var tool = meta[e.tool];
       var li = document.createElement('li');
       li.className = 'recent-item';

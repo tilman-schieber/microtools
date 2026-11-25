@@ -455,6 +455,8 @@ const de: Record<keyof typeof en, string> & Record<string, string> = {
   'js.mpDefault': 'Standard',
   'js.recentOpened': 'zuletzt geöffnet: {when}',
   'js.recentRemove': 'Aus der Liste entfernen',
+  'js.recentMore': '{n} weitere anzeigen',
+  'js.recentLess': 'Weniger anzeigen',
   'js.mpLoadFailed': 'Die Vorlagen ließen sich nicht laden. Bitte lade die Seite neu.',
 
   // Builder labels. English takes these straight from the micropage registry,

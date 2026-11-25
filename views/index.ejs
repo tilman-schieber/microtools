@@ -26,10 +26,13 @@ groups.forEach(g => g.tools.forEach(tool => { toolMeta[tool.id] = { name: plain(
 const toolMetaJson = JSON.stringify(toolMeta).replace(/</g, '\\u003c');
 
 const recent = `
-    <section class="tool-group recent-links" id="recent" aria-labelledby="group-recent" hidden>
-      <h2 class="tool-group-head" id="group-recent">${t('landing.recent')}<span class="tool-group-note">${t('landing.recent.note')}</span></h2>
+    <section class="recent-card" id="recent" aria-labelledby="group-recent" hidden>
+      <div class="recent-head">
+        <h2 class="tool-group-head" id="group-recent">${t('landing.recent')}<span class="tool-group-note">${t('landing.recent.note')}</span></h2>
+        <button type="button" class="btn-link recent-clear">${t('landing.recent.clear')}</button>
+      </div>
       <ul class="tool-list"></ul>
-      <button type="button" class="btn-link recent-clear">${t('landing.recent.clear')}</button>
+      <button type="button" class="btn-link recent-more" hidden></button>
     </section>
     <script type="application/json" id="tool-meta">${toolMetaJson}</script>`;
 

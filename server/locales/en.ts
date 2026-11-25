@@ -454,6 +454,8 @@ const en = {
   'js.mpDefault': 'Default',
   'js.recentOpened': 'last opened {when}',
   'js.recentRemove': 'Remove from this list',
+  'js.recentMore': 'Show {n} more',
+  'js.recentLess': 'Show fewer',
   'js.mpLoadFailed': 'Could not load the template list. Reload the page to try again.',
 
   // -- Test ------------------------------------------------------------

@@ -680,12 +680,62 @@ td .btn-sm {
   margin-left: 0.5rem;
 }
 
+/* The one part of the landing page that is about you: a card, so it stands
+   apart from the plain list of tools below it */
+.recent-card {
+  margin-bottom: 2.75rem;
+  padding: 1rem 1.25rem 0.5rem;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 2px rgba(28, 28, 26, 0.04), 0 4px 16px rgba(28, 28, 26, 0.04);
+}
+
+.recent-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.recent-head .tool-group-head {
+  margin-bottom: 0.4rem;
+}
+
+.recent-card .tool-list {
+  border-bottom: 0;
+}
+
+.recent-card .recent-item:first-child {
+  border-top: 0;
+}
+
+.recent-card .tool-row {
+  padding: 0.7rem 0;
+  gap: 0.9rem;
+}
+
+/* The tool icon sits on a tinted tile here, unlike in the tool list */
+.recent-card .tool-icon {
+  flex: 0 0 2.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  background: rgba(45, 95, 115, 0.08);
+}
+
 .recent-clear {
-  margin-top: 0.75rem;
+  flex: none;
 }
 
 .recent-clear:hover {
   color: var(--danger);
+}
+
+.recent-more {
+  margin: 0.15rem 0 0.6rem 3.15rem;
+  color: var(--accent);
 }
 
 .landing-footer {
