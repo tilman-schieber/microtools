@@ -204,6 +204,58 @@ for (const lang of LANGS) {
   check('Accept-Language picks German', accept.body.includes('lang="de"'));
 }
 
+// --- Date poll: editing your own answer, and the creator's admin key -------------------------
+{
+  const created = await app.inject({
+    method: 'POST', url: '/polls', headers: { 'content-type': 'application/x-www-form-urlencoded', host: 'smoke.test' },
+    payload: 'title=Keys&dates%5B%5D=2026-12-01&times%5B%5D=10%3A00&dates%5B%5D=2026-12-02&times%5B%5D=11%3A00'
+  });
+  const [, pollId, adminKey] = created.body.match(/data-poll-admin="([\w-]+)" data-key="([\w-]+)"/) || [];
+  check('poll keys: creator gets an admin key', pollId && adminKey, created.body);
+  check('poll keys: admin link carries the key in the fragment', created.body.includes(`/polls/${pollId}#admin=${adminKey}`));
+  check('poll keys: only the hash is stored', !JSON.stringify(objectStore.get(pollId)!.data).includes(adminKey));
+
+  const call = (method: string, url: string, key?: string, payload?: string) => app.inject({
+    method: method as 'POST', url, payload,
+    headers: { ...(payload ? { 'content-type': 'application/x-www-form-urlencoded' } : {}), ...(key ? { 'x-poll-key': key } : {}) }
+  });
+  const answer = async (name: string, votes: string[]) => {
+    const res = await call('POST', `/polls/${pollId}/responses`, undefined, new URLSearchParams([['name', name], ...votes.map((v) => ['votes[]', v])]).toString());
+    const [rid, key] = String(res.headers['x-poll-response'] || '').split('.');
+    return { res, rid, key };
+  };
+
+  const ada = await answer('Ada', ['yes', 'bogus']);
+  check('poll keys: an answer returns its id and key once', ada.rid && ada.key, JSON.stringify(ada.res.headers));
+  const stored = (objectStore.get(pollId)!.data as { responses: Array<{ id: string; votes: string[]; keyHash: string }> }).responses[0];
+  check('poll keys: unknown votes count as no', stored.votes.join() === 'yes,no', stored.votes.join());
+  check('poll keys: answer key stored only as a hash', stored.keyHash && !JSON.stringify(stored).includes(ada.key));
+  const bo = await answer('Bo', ['no', 'no']);
+
+  const edit = (rid: string, key: string | undefined, name: string, votes: string[]) =>
+    call('PUT', `/polls/${pollId}/responses/${rid}`, key, new URLSearchParams([['name', name], ...votes.map((v) => ['votes[]', v])]).toString());
+  check('poll keys: editing without the key is refused', (await edit(ada.rid, undefined, 'Mallory', ['no', 'no'])).statusCode === 403);
+  check('poll keys: editing with another answer\'s key is refused', (await edit(ada.rid, bo.key, 'Mallory', ['no', 'no'])).statusCode === 403);
+  check('poll keys: the admin key cannot edit answers', (await edit(ada.rid, adminKey, 'Mallory', ['no', 'no'])).statusCode === 403);
+  const edited = await edit(ada.rid, ada.key, 'Ada L.', ['tentative', 'yes']);
+  check('poll keys: editing with its key works', edited.statusCode === 200 && edited.body.includes('Ada L.'), edited.body);
+  check('poll keys: an empty name is refused', (await edit(ada.rid, ada.key, ' ', ['yes', 'yes'])).statusCode === 400);
+
+  check('poll keys: deleting someone else\'s answer is refused', (await call('DELETE', `/polls/${pollId}/responses/${bo.rid}`, ada.key)).statusCode === 403);
+  const adminDelete = await call('DELETE', `/polls/${pollId}/responses/${bo.rid}`, adminKey);
+  check('poll keys: the creator can delete any answer', adminDelete.statusCode === 200 && !adminDelete.body.includes('>Bo<'));
+  check('poll keys: a deleted answer is gone', (await call('DELETE', `/polls/${pollId}/responses/${bo.rid}`, adminKey)).statusCode === 404);
+  check('poll keys: you can delete your own answer', (await call('DELETE', `/polls/${pollId}/responses/${ada.rid}`, ada.key)).statusCode === 200);
+
+  // Polls from before keys existed: their answers get ids on first view, the expiry stays
+  const legacy = objectStore.create('poll', { title: 'Old', slots: [{ date: '2026-12-01', time: '10:00' }], responses: [{ name: 'Cy', votes: ['yes'] }] }, Date.now() + 5 * 86400000);
+  const before = objectStore.get(legacy.id)!.expires_at;
+  const page = await app.inject({ method: 'GET', url: `/polls/${legacy.id}` });
+  const rid = (objectStore.get(legacy.id)!.data as { responses: Array<{ id?: string }> }).responses[0].id;
+  check('poll keys: old answers get an id when the poll is viewed', rid && page.body.includes(`data-rid="${rid}"`));
+  check('poll keys: that does not count as a change', objectStore.get(legacy.id)!.expires_at === before);
+}
+
 // --- Lifetimes ---------------------------------------------------------------------------
 {
   const c = client('en');

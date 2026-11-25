@@ -781,6 +781,110 @@ button[hx-delete]:hover {
   display: block;
 }
 
+/* Your own answers: edit/delete, "you answered as …", links */
+.poll-table tr.is-mine td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.poll-table th.poll-actions,
+.poll-table td.poll-actions {
+  text-align: right;
+  white-space: nowrap;
+  background: var(--panel);
+}
+
+.poll-action {
+  height: 2rem;
+  padding: 0 0.7rem;
+  margin: 0 0 0 0.35rem;
+  font-size: 0.85rem;
+}
+
+.poll-action.is-armed {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.poll-mine {
+  margin: 1.5rem 0 0;
+  padding: 0.9rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+}
+
+.poll-mine p {
+  margin: 0;
+}
+
+.poll-mine-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.poll-mine-actions .poll-action,
+.poll-mine-actions .copy-btn {
+  margin: 0;
+  height: 2.4rem;
+}
+
+.poll-mine-actions button.poll-action:not(.copy-btn) {
+  padding: 0 1rem;
+  font-size: 15px;
+}
+
+.poll-links {
+  margin-top: 0.9rem;
+  font-size: 0.9rem;
+}
+
+.poll-links summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.poll-links .hint {
+  margin: 0.5rem 0;
+}
+
+.poll-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.poll-link code {
+  flex: 1 1 16rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+}
+
+.poll-link .poll-action {
+  margin: 0;
+}
+
+.poll-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.poll-admin {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+.poll-admin a {
+  overflow-wrap: anywhere;
+}
+
 /* -- Poll creation ------------------------------------------------------ */
 .date-picker-row {
   display: flex;

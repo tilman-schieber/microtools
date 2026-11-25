@@ -1,0 +1,8 @@
+<%# The creator's key travels in the URL fragment, which browsers never send to
+    the server, so it stays out of access logs. new.ejs stores it on swap. %>
+<%- include('../_created', { heading, url, hint, remember }) %>
+<div class="poll-admin" data-poll-admin="<%= pollId %>" data-key="<%= adminKey %>">
+  <p class="hint"><%- t('polls.adminHint') %></p>
+  <p><a href="<%= adminUrl %>" rel="nofollow"><%= adminUrl %></a></p>
+  <button class="copy-btn" data-url="<%= adminUrl %>" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent=T.copied"><%- t('polls.copyAdminLink') %></button>
+</div>

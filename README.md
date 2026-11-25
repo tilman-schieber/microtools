@@ -8,7 +8,7 @@ The landing page groups the tools by what you want to do, which also says what h
 
 **Plan together** (others open the link and add to it)
 
-- **Date Poll** — Doodle-style scheduling with a time grid picker
+- **Date Poll** — Doodle-style scheduling with a time grid picker; people can edit or delete their own answers, and the creator can remove any
 - **Potluck Planner** — Coordinate who brings what, with real-time claim tracking
 - **Expense Share** — Split costs in a group with per-participant links and settlement calculation
 
@@ -124,7 +124,7 @@ microtools/
 │   ├── index.ejs         # Landing page
 │   ├── 404.ejs           # Not-found page
 │   ├── notes/            # Note templates (show, md, new)
-│   ├── polls/            # Poll templates (show, new, _container partial)
+│   ├── polls/            # Poll templates (show, new, _container and _created partials)
 │   ├── expenses/         # Expense templates (show, participant, new, _entries partial)
 │   ├── secrets/          # Secret templates (show, gone, new)
 │   ├── files/            # File share templates (show, gone, new)

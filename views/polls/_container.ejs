@@ -16,7 +16,7 @@ function getVoteEmoji(vote) {
   return '❌';
 }
 %>
-<div id="poll-container">
+<div id="poll-container" data-poll="<%= poll.id %>">
   <h2><%- t('polls.responses') %></h2>
   <div class="overflow-x-auto">
   <table class="poll-table">
@@ -33,7 +33,7 @@ function getVoteEmoji(vote) {
         <tr><td colspan="<%= slots.length + 1 %>"><%- t('polls.noResponses') %></td></tr>
       <% } else { %>
         <% for (let r = 0; r < responses.length; r++) { %>
-          <tr>
+          <tr data-rid="<%= responses[r].id %>">
             <td><%= responses[r].name %></td>
             <% for (let i = 0; i < slots.length; i++) { %>
               <td class="vote-<%= responses[r].votes[i] || 'no' %>"><%- getVoteEmoji(responses[r].votes[i]) %></td>
@@ -45,10 +45,13 @@ function getVoteEmoji(vote) {
   </table>
   </div>
   
-  <h3><%- t('polls.addYours') %></h3>
-  <form hx-post="/polls/<%= poll.id %>/responses" hx-target="#poll-container" hx-swap="outerHTML">
+  <%# Filled in by public/polls.js when this browser holds the key to an answer %>
+  <div id="poll-mine" class="poll-mine" hidden></div>
+
+  <h3 id="poll-form-heading"><%- t('polls.addYours') %></h3>
+  <form id="poll-form">
     <label for="name"><%- t('polls.yourName') %></label>
-    <input type="text" name="name" id="name" placeholder="<%- t('polls.yourNamePlaceholder') %>" required>
+    <input type="text" name="name" id="name" placeholder="<%- t('polls.yourNamePlaceholder') %>" required maxlength="100" autocomplete="name">
     
     <p class="hint"><%- t('polls.voteHint') %></p>
     
@@ -64,7 +67,7 @@ function getVoteEmoji(vote) {
       <tbody>
         <tr>
           <% for (let i = 0; i < slots.length; i++) { %>
-            <td class="vote-cell" data-index="<%= i %>" onclick="cycleVote(this)">
+            <td class="vote-cell vote-yes" data-index="<%= i %>">
               <span class="vote-emoji">✅</span>
               <input type="hidden" name="votes[]" value="yes">
             </td>
@@ -74,32 +77,10 @@ function getVoteEmoji(vote) {
     </table>
     </div>
     
-    <button type="submit"><%- t('polls.submitResponse') %></button>
+    <div id="poll-error"></div>
+    <div class="poll-form-actions">
+      <button type="submit" id="poll-submit"><%- t('polls.submitResponse') %></button>
+      <button type="button" id="poll-cancel" class="copy-btn" hidden><%- t('polls.cancel') %></button>
+    </div>
   </form>
 </div>
-
-<script>
-function cycleVote(cell) {
-  const input = cell.querySelector('input');
-  const emoji = cell.querySelector('.vote-emoji');
-  const current = input.value;
-  
-  if (current === 'yes') {
-    input.value = 'tentative';
-    emoji.textContent = '🟡';
-    cell.className = 'vote-cell vote-tentative';
-  } else if (current === 'tentative') {
-    input.value = 'no';
-    emoji.textContent = '❌';
-    cell.className = 'vote-cell vote-no';
-  } else {
-    input.value = 'yes';
-    emoji.textContent = '✅';
-    cell.className = 'vote-cell vote-yes';
-  }
-}
-
-document.querySelectorAll('.vote-cell').forEach(cell => {
-  cell.className = 'vote-cell vote-yes';
-});
-</script>
