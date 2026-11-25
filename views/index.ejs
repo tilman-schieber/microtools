@@ -1,47 +1,30 @@
 <%
-const tools = [
-  { href: '/notes/new', name: t('tool.notes.name'), desc: t('tool.notes.desc'),
-    icon: '<path d="M5 3h8l4 4v14H5z"/><path d="M13 3v4h4"/><path d="M8 12h8M8 16h8"/>' },
-  { href: '/polls/new', name: t('tool.polls.name'), desc: t('tool.polls.desc'),
-    icon: '<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/>' },
-  { href: '/expenses/new', name: t('tool.expenses.name'), desc: t('tool.expenses.desc'),
-    icon: '<circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/>' },
-  { href: '/secrets/new', name: t('tool.secrets.name'), desc: t('tool.secrets.desc'),
-    icon: '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>' },
-  { href: '/files/new', name: t('tool.files.name'), desc: t('tool.files.desc'),
-    icon: '<path d="M3 6h6l2 2h10v12H3z"/>' },
-  { href: '/passwords/new', name: t('tool.passwords.name'), desc: t('tool.passwords.desc'),
-    icon: '<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M17 6l2.5 2.5M14 9l2.5 2.5"/>' },
-  { href: '/clock/new', name: t('tool.clock.name'), desc: t('tool.clock.desc'),
-    icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>' },
-  { href: '/bring/new', name: t('tool.potluck.name'), desc: t('tool.potluck.desc'),
-    icon: '<path d="M3 17h18M5 17a7 7 0 0 1 14 0"/><path d="M12 8v2"/>' },
-  { href: '/test', name: t('tool.test.name'), desc: t('tool.test.desc'),
-    icon: '<rect x="3" y="4" width="18" height="12" rx="1"/><path d="M8 20h8M12 16v4"/><path d="M7 10l2.5 2.5L15 7"/>' },
-  { href: '/micropage/new', name: t('tool.micropage.name'), desc: t('tool.micropage.desc'),
-    icon: '<path d="M10 14a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1"/><path d="M14 10a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1"/>' },
-];
+// groups comes from server/tools: each category with its tools, in display order
+const arrow = '<svg class="tool-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
 
-const rows = tools.map(t => `
-      <li>
-        <a href="${t.href}" class="tool-row">
-          <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${t.icon}</svg>
-          <span class="tool-text">
-            <span class="tool-name">${t.name}</span>
-            <span class="tool-desc">${t.desc}</span>
-          </span>
-          <svg class="tool-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-        </a>
-      </li>`).join('');
+const sections = groups.map(g => `
+    <section class="tool-group" aria-labelledby="group-${g.category}">
+      <h2 class="tool-group-head" id="group-${g.category}">${t('landing.group.' + g.category)}<span class="tool-group-note">${t('landing.group.' + g.category + '.note')}</span></h2>
+      <ul class="tool-list">${g.tools.map(tool => `
+        <li>
+          <a href="${tool.href}" class="tool-row">
+            <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${tool.icon}</svg>
+            <span class="tool-text">
+              <span class="tool-name">${t('tool.' + tool.id + '.name')}</span>
+              <span class="tool-desc">${t('tool.' + tool.id + '.desc')}</span>
+            </span>
+            ${arrow}
+          </a>
+        </li>`).join('')}
+      </ul>
+    </section>`).join('');
 
 const content = `
   <main class="landing">
     <div class="landing-hero">
       <h1>${t('landing.title')}</h1>
       <p>${t('landing.lead')}</p>
-    </div>
-    <ul class="tool-list">${rows}
-    </ul>
+    </div>${sections}
     <p class="landing-footer">${t('landing.footer')}</p>
   </main>
 ` %>

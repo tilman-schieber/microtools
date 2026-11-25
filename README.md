@@ -4,16 +4,26 @@ A self-hosted collection of simple, link-based web utilities. No accounts, no tr
 
 ## Tools
 
-- **Note Sharing** — Create and share plain text or Markdown notes
+The landing page groups the tools by what you want to do, which also says what happens to your data.
+
+**Plan together** (others open the link and add to it)
+
 - **Date Poll** — Doodle-style scheduling with a time grid picker
+- **Potluck Planner** — Coordinate who brings what, with real-time claim tracking
 - **Expense Share** — Split costs in a group with per-participant links and settlement calculation
-- **One-Time Secret** — Client-side encrypted messages that self-destruct after one view
+
+**Share something** (you write it, they read it)
+
+- **Note Sharing** — Create and share plain text or Markdown notes
 - **File Share** — Upload files and share them via link, with configurable expiration
+- **One-Time Secret** — Client-side encrypted messages that self-destruct after one view
+- **Micropage** — Build a complete styled page whose entire content lives in the URL; nothing is stored server-side
+
+**Quick utilities** (runs in your browser, nothing is stored)
+
 - **Password Generator** — Local-only alphanumeric passwords and XKCD-style passphrases in English or German
 - **Clock** — Parameter-based digital, Swiss railway analogue, and countdown clock displays; analogue mode adapts [Swiss-Railway-Clock](https://github.com/manuelmeister/Swiss-Railway-Clock) by Manuel Meister
-- **Potluck Planner** — Coordinate who brings what, with real-time claim tracking
-- **Micropage** — Build a complete styled page whose entire content lives in the URL; nothing is stored server-side
-- **Test** — Check camera, microphone, speakers, gamepad, keyboard, mouse/touch/pen, and what the browser reports about the device; everything runs client-side
+- **Device Check** — Check camera, microphone, speakers, gamepad, keyboard, mouse/touch/pen, and what the browser reports about the device; everything runs client-side
 
 ## Stack
 
@@ -81,7 +91,13 @@ The Micropage documentation at `/micropage/docs` is the reference for people and
 ```
 microtools/
 ├── server/
-│   ├── index.ts          # All routes and application logic
+│   ├── index.ts          # Server setup, language hook, landing page, cleanup timer
+│   ├── tools/            # One module per tool: its routes plus landing-page entry
+│   │   ├── index.ts      # TOOLS (display order) and toolGroups()
+│   │   └── shared.ts     # Tool interface, categories, small route helpers
+│   ├── paths.ts          # Project directories, valid in dev and in the bundle
+│   ├── markdown.ts       # marked setup for notes (sanitizing, highlighting, math)
+│   ├── micropage.ts      # Micropage spec parser and renderer
 │   ├── i18n.ts           # Language resolution, t(), date and money formatting
 │   ├── locales/          # en.ts defines the keys, de.ts is typed against it
 │   ├── db.ts             # SQLite setup and schema
@@ -121,6 +137,13 @@ microtools/
 ├── package.json
 └── tsconfig.json
 ```
+
+## Adding a tool
+
+1. Write `server/tools/<name>.ts` exporting a `Tool`: an `id`, the `href` the landing page links to, a `category` (`plan`, `share` or `local`), an SVG `icon`, and a `routes(fastify)` function. If its stored objects own anything outside the database, add `onPurge(row)` so the hourly cleanup can remove it.
+2. Add it to `TOOLS` in `server/tools/index.ts`; its position there is its position within its group.
+3. Add `tool.<id>.name` and `tool.<id>.desc` to every locale.
+4. Put its templates in `views/<name>/`.
 
 ## Architecture notes
 

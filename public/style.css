@@ -603,6 +603,32 @@ button[hx-delete]:hover {
   color: var(--faint);
 }
 
+/* Groups: a quiet label over each list, with what happens to your data beside it */
+.tool-group + .tool-group {
+  margin-top: 2.25rem;
+}
+
+.tool-group-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg);
+  margin: 0 0 0.6rem;
+}
+
+.tool-group-note {
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+
 .landing-footer {
   margin-top: 3rem;
   font-size: 0.85rem;
