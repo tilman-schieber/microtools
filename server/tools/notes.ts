@@ -1,12 +1,15 @@
-import type { Tool } from './shared';
-import { errorP, plainP, notFound, requestOrigin } from './shared';
+import type { Lifetime, Tool } from './shared';
+import { errorP, plainP, notFound, requestOrigin, expiresIn, lifetimeHint } from './shared';
 import * as objectStore from '../objectStore';
 import { renderMarkdown } from '../markdown';
+
+const LIFETIME: Lifetime = { type: 'note', days: 180, from: 'creation' };
 
 export const notes: Tool = {
   id: 'notes',
   href: '/notes/new',
   category: 'share',
+  lifetime: LIFETIME,
   icon: '<path d="M5 3h8l4 4v14H5z"/><path d="M13 3v4h4"/><path d="M8 12h8M8 16h8"/>',
 
   routes(fastify) {
@@ -28,10 +31,10 @@ export const notes: Tool = {
       const noteData: { text: string; title?: string } = { text: text.trim() };
       if (title) noteData.title = title;
 
-      const note = objectStore.create('note', noteData);
+      const note = objectStore.create('note', noteData, expiresIn(LIFETIME.days));
       const noteUrl = `${requestOrigin(request)}/notes/${note.id}`;
 
-      return reply.view('_created', { heading: request.i18n.t('notes.created'), url: noteUrl, md: `${noteUrl}/md` });
+      return reply.view('_created', { heading: request.i18n.t('notes.created'), url: noteUrl, md: `${noteUrl}/md`, hint: lifetimeHint(request.i18n, LIFETIME) });
     });
 
     // View note page

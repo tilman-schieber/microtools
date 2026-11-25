@@ -1,18 +1,25 @@
 import crypto from 'crypto';
-import type { Tool } from './shared';
-import { errorP } from './shared';
+import type { Lifetime, Tool } from './shared';
+import { errorP, expiresIn } from './shared';
 import * as objectStore from '../objectStore';
+
+// Short: a secret is meant to be read soon, and one nobody opens should not linger
+const LIFETIME: Lifetime = { type: 'secret', days: 7, from: 'creation' };
 
 export const secrets: Tool = {
   id: 'secrets',
   href: '/secrets/new',
   category: 'share',
+  lifetime: LIFETIME,
   icon: '<rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
 
   routes(fastify) {
     // Create form page
     fastify.get('/secrets/new', async (request, reply) => {
-      return reply.view('secrets/new', { title: request.i18n.t('secrets.new.title') });
+      return reply.view('secrets/new', {
+        title: request.i18n.t('secrets.new.title'),
+        lifetime: request.i18n.tn('secrets.lifetime', LIFETIME.days)
+      });
     });
 
     // Store ciphertext (returns HTML fragment)
@@ -27,7 +34,7 @@ export const secrets: Tool = {
         return reply.type('text/html').send(errorP(request.i18n, 'secrets.err.noCiphertext'));
       }
 
-      const secret = objectStore.create('secret', { ciphertext: ciphertext.trim(), keyHash });
+      const secret = objectStore.create('secret', { ciphertext: ciphertext.trim(), keyHash }, expiresIn(LIFETIME.days));
 
       // Return the ID so client JS can build the full URL with fragment
       return reply.type('text/html').send(`/secrets/${secret.id}`);

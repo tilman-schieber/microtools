@@ -95,6 +95,8 @@ The Micropage documentation at `/micropage/docs` is the reference for people and
 | `PORT`     | `3459`  | HTTP listen port     |
 | `NODE_ENV` | —       | Set to `production` by the build script |
 | `DATA_DIR` | `data/` | Where the database and uploaded files live |
+| `TRUST_PROXY` | `loopback` | Which proxies may set the client IP via `X-Forwarded-For` (Fastify's `trustProxy`: `true`, `false`, a hop count, or addresses/CIDRs) |
+| `FILES_QUOTA_MB` | `5000` | Total disk space all file shares together may use |
 
 ## Project structure
 
@@ -151,7 +153,7 @@ microtools/
 
 ## Adding a tool
 
-1. Write `server/tools/<name>.ts` exporting a `Tool`: an `id`, the `href` the landing page links to, a `category` (`plan`, `share` or `local`), an SVG `icon`, and a `routes(fastify)` function. If its stored objects own anything outside the database, add `onPurge(row)` so the hourly cleanup can remove it.
+1. Write `server/tools/<name>.ts` exporting a `Tool`: an `id`, the `href` the landing page links to, a `category` (`plan`, `share` or `local`), an SVG `icon`, and a `routes(fastify)` function. If it stores objects, give it a `lifetime` and pass `expiresIn(...)` when creating (and, for `from: 'activity'`, when updating). If its stored objects own anything outside the database, add `onPurge(row)` so the hourly cleanup can remove it.
 2. Add it to `TOOLS` in `server/tools/index.ts`; its position there is its position within its group.
 3. Add `tool.<id>.name` and `tool.<id>.desc` to every locale.
 4. Put its templates in `views/<name>/`.
@@ -166,6 +168,20 @@ microtools/
 
 **Client-side encryption.** The secrets tool encrypts in the browser using AES-256-GCM. The key is placed in the URL fragment (`#...`), which browsers never send to the server. The server only stores ciphertext, plus a SHA-256 hash of the key. Opening `/secrets/:id` does not consume the secret, because Outlook Safe Links, Defender and Teams/Slack previews fetch every link before the recipient does; the page shows a "Reveal" button, and only its `POST /secrets/:id/reveal` (which must present the key hash) returns the ciphertext and deletes it.
 
+**Lifetimes.** Nothing is kept forever. Each tool that stores something declares how long it lives:
+
+| Tool | Deleted |
+|---|---|
+| One-Time Secret | 7 days after creation, if nobody opens it |
+| Note | 180 days after creation |
+| Date Poll, Potluck Planner | 90 days after the last change |
+| Expense Share | 365 days after the last change |
+| File Share | after 1, 3, 7 or 30 days, as chosen when uploading |
+
+"Last change" means every vote, claim or entry restarts the count, so anything still in use stays. The sentence under a newly created link says which rule applies. Objects stored before lifetimes existed get one on the next start, counted from that day. Expiry is enforced lazily on access and by the hourly cleanup.
+
+**Abuse limits.** Writes (POST, DELETE) are limited to 60 a minute per client IP, uploads to 20 an hour; reading is never limited. Uploads are refused once all shares together reach `FILES_QUOTA_MB`. The client IP comes from `X-Forwarded-For` only when the request arrives from a trusted proxy (`TRUST_PROXY`, by default one on the same machine), so a client cannot pick its own.
+
 **File storage.** Uploaded files are stored on disk under `data/files/<share-id>/`. Metadata lives in SQLite. Expired shares are cleaned up both lazily (on access) and periodically (hourly timer).
 
 **URL as storage.** The micropage tool has no database row at all — a page's template, theme and every word of its content are encoded in one `p` query parameter, so the URL *is* the document. Its parser reads `request.raw.url` and splits on `~` *before* percent-decoding, which is what makes `%7E` a literal tilde distinct from the delimiter and stops `+` silently becoming a space. Because it renders attacker-authorable markup on our own origin, `/micropage` sends a strict route-scoped CSP (`script-src 'none'`, `form-action 'none'`) and its query string is redacted from request logs.
@@ -179,7 +195,7 @@ microtools/
 The production build outputs a single `dist/index.mjs` that you can run with `node`. In production you'll want:
 
 1. A reverse proxy (nginx, Caddy, etc.) for TLS termination
-2. The `X-Forwarded-Proto` header set so generated URLs use `https://`
+2. The `X-Forwarded-Proto` header set so generated URLs use `https://`, and `X-Forwarded-For` so rate limits apply per visitor rather than to everyone at once (nginx: `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
 3. A process manager (systemd, pm2, etc.) to keep the server running
 4. The `data/` directory persisted and backed up (it contains the database and uploaded files)
 

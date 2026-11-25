@@ -13,6 +13,11 @@ const de: Record<keyof typeof en, string> & Record<string, string> = {
   'common.shareThisLink': 'Teile diesen Link:',
   'common.qr': 'QR',
   'common.err.title': 'Bitte gib einen Titel ein.',
+  'common.err.tooMany': 'Zu viele Anfragen. Warte kurz und versuch es nochmal.',
+  'lifetime.creation.one': 'Nach {n} Tag wird alles gelöscht.',
+  'lifetime.creation.other': 'Nach {n} Tagen wird alles gelöscht.',
+  'lifetime.activity.one': '{n} Tag nach der letzten Änderung wird alles gelöscht.',
+  'lifetime.activity.other': '{n} Tage nach der letzten Änderung wird alles gelöscht.',
   'lang.switch': 'Sprache',
 
   'crumb.note': 'Notiz',
@@ -84,6 +89,8 @@ const de: Record<keyof typeof en, string> & Record<string, string> = {
   // -- Geheimnisse ----------------------------------------------------------
   'secrets.new.title': 'One-Time Secret erstellen',
   'secrets.new.hint': 'Dein Secret wird in deinem Browser verschlüsselt. Der Schlüssel verlässt dein Gerät nie.',
+  'secrets.lifetime.one': 'Öffnet es niemand, wird es nach {n} Tag gelöscht.',
+  'secrets.lifetime.other': 'Öffnet es niemand, wird es nach {n} Tagen gelöscht.',
   'secrets.new.label': 'Geheime Nachricht',
   'secrets.new.placeholder': 'Gib deine geheime Nachricht hier ein ...',
   'secrets.new.submit': 'Secret erstellen',
@@ -109,6 +116,7 @@ const de: Record<keyof typeof en, string> & Record<string, string> = {
   'files.created': 'Hochgeladen. Hier ist der Link zum Teilen:',
   'files.expiresIn.one': 'Der Link läuft in {n} Tag ab.',
   'files.expiresIn.other': 'Der Link läuft in {n} Tagen ab.',
+  'files.err.quota': 'Auf dem Server ist gerade kein Platz für weitere Uploads. Versuch es später nochmal.',
   'files.show.title': 'Geteilte Dateien',
   'files.show.downloadYour': 'Datei herunterladen:',
   'files.shared.one': '{n} Datei:',

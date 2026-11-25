@@ -7,6 +7,7 @@ import path from 'path';
 
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'microtools-smoke-'));
 process.env.DATA_DIR = dataDir;
+process.env.FILES_QUOTA_MB = '1'; // small, so the quota check can be reached
 
 // Imported after DATA_DIR is set: the database opens on import
 const { buildApp, purgeExpired } = await import('../server/app');
@@ -14,7 +15,8 @@ const objectStore = await import('../server/objectStore');
 const { TOOLS } = await import('../server/tools');
 const { LANGS } = await import('../server/i18n');
 
-const app = await buildApp({ logger: false });
+// The flows below send far more writes than a person would; the rate limit has its own section
+const app = await buildApp({ logger: false, rateLimit: false });
 
 let failed = 0;
 let passed = 0;
@@ -199,6 +201,101 @@ for (const lang of LANGS) {
   check('?lang= sets the cookie', String(res.headers['set-cookie']).includes('lang=de'));
   const accept = await app.inject({ method: 'GET', url: '/', headers: { 'accept-language': 'de-CH,de;q=0.9' } });
   check('Accept-Language picks German', accept.body.includes('lang="de"'));
+}
+
+// --- Lifetimes ---------------------------------------------------------------------------
+{
+  const c = client('en');
+  const DAY = 24 * 60 * 60 * 1000;
+  const expiry = (id: string) => objectStore.get(id)!.expires_at!;
+  const near = (ts: number, days: number) => Math.abs(ts - (Date.now() + days * DAY)) < 60 * 1000;
+
+  for (const tool of TOOLS) {
+    if (tool.category === 'local') check(`${tool.id} stores nothing, so has no lifetime`, !tool.lifetime);
+  }
+
+  const note = await c.form('/notes', [['text', 'x']]);
+  check('note: expires in 180 days', near(expiry(find(note.body, /\/notes\/[\w-]+/).split('/')[2]), 180));
+  check('note: says so', note.body.includes('deleted after 180 days'), note.body);
+
+  const secret = (await c.form('/secrets', [['ciphertext', 'x'], ['keyHash', 'k'.repeat(43)]])).body.trim();
+  check('secret: expires in 7 days', near(expiry(secret.split('/')[2]), 7));
+  check('secret: form says so', (await c.get('/secrets/new')).body.includes('deleted after 7 days'));
+
+  const poll = find((await c.form('/polls', [['title', 'P'], ['dates[]', '2026-12-01'], ['times[]', '10:00']])).body, /\/polls\/[\w-]+/);
+  const pollId = poll.split('/')[2];
+  check('poll: expires in 90 days', near(expiry(pollId), 90));
+  objectStore.update(pollId, objectStore.get(pollId)!.data, Date.now() + DAY); // pretend it is about to expire
+  await c.form(`${poll}/responses`, [['name', 'Ada']]);
+  check('poll: a response restarts the 90 days', near(expiry(pollId), 90));
+
+  const exp = await c.form('/expenses', [['title', 'E'], ['participants[]', 'A'], ['participants[]', 'B']]);
+  check('expense: expires in 365 days', near(expiry(find(exp.body, /\/e\/[\w-]+/).split('/')[2]), 365));
+  check('expense: says so', exp.body.includes('365 days after the last change'), exp.body);
+
+  const bring = find((await c.form('/bring', [['title', 'B'], ['items[]', 'Salad']])).body, /\/b\/[\w-]+/);
+  const bringId = bring.split('/')[2];
+  objectStore.update(bringId, objectStore.get(bringId)!.data, Date.now() + DAY);
+  await c.form(`${bring}/custom`, [['name', 'Bo'], ['item', 'Wine'], ['amount', '1']]);
+  check('potluck: a change restarts the 90 days', near(expiry(bringId), 90));
+
+  // Rows from before lifetimes: a fresh app start gives them one, counted from now
+  const legacy = objectStore.create('poll', { title: 'old', slots: [], responses: [] });
+  const old = objectStore.create('note', { text: 'old' });
+  await (await buildApp({ logger: false, rateLimit: false })).close();
+  check('backfill: old poll gets 90 days', near(expiry(legacy.id), 90));
+  check('backfill: old note gets 180 days', near(expiry(old.id), 180));
+}
+
+// --- Rate limits ----------------------------------------------------------------------------
+{
+  const limited = await buildApp({ logger: false });
+  const post = (ip: string) => limited.inject({
+    method: 'POST', url: '/notes', payload: 'text=x',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', 'x-forwarded-for': ip, cookie: 'lang=de' }
+  });
+  let first429 = 0;
+  for (let i = 1; i <= 61 && !first429; i++) if ((await post('203.0.113.1')).statusCode === 429) first429 = i;
+  check('rate limit: 61st write in a minute is refused', first429 === 61, `refused at ${first429}`);
+  const refused = await post('203.0.113.1');
+  check('rate limit: answers with a translated HTML error', refused.body.includes('class="error"') && refused.body.includes('Zu viele'), refused.body);
+  check('rate limit: other clients are unaffected', (await post('203.0.113.2')).statusCode === 200);
+  const read = await limited.inject({ method: 'GET', url: '/notes/new', headers: { 'x-forwarded-for': '203.0.113.1' } });
+  check('rate limit: reading is never limited', read.statusCode === 200);
+  // X-Forwarded-For only counts from a proxy on this machine
+  const spoofed = await limited.inject({
+    method: 'POST', url: '/notes', payload: 'text=x', remoteAddress: '198.51.100.7',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', 'x-forwarded-for': '203.0.113.99' }
+  });
+  check('rate limit: a remote client cannot pick its own IP', spoofed.statusCode === 200);
+
+  // Uploads have their own, tighter budget: 20 an hour
+  const upload = () => limited.inject({
+    method: 'POST', url: '/files', remoteAddress: '198.51.100.8',
+    payload: '--b\r\nContent-Disposition: form-data; name="files"; filename="a.txt"\r\n\r\na\r\n--b--\r\n',
+    headers: { 'content-type': 'multipart/form-data; boundary=b' }
+  });
+  let uploads429 = 0;
+  for (let i = 1; i <= 21 && !uploads429; i++) if ((await upload()).statusCode === 429) uploads429 = i;
+  check('rate limit: 21st upload in an hour is refused', uploads429 === 21, `refused at ${uploads429}`);
+  const noteAfter = await limited.inject({
+    method: 'POST', url: '/notes', payload: 'text=x', remoteAddress: '198.51.100.8',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' }
+  });
+  check('rate limit: the upload budget does not block other writes', noteAfter.statusCode === 200);
+  for (const dir of fs.readdirSync(path.join(dataDir, 'files'))) fs.rmSync(path.join(dataDir, 'files', dir), { recursive: true });
+  await limited.close();
+}
+
+// --- Disk quota for uploads (FILES_QUOTA_MB=1 above) --------------------------------------
+{
+  const c = client('en');
+  const big = 'x'.repeat(1024 * 1024 + 1);
+  const res = await c.multipart('/files', [['expiry', '1']], [['big.txt', big]]);
+  check('quota: upload over the quota is refused', res.statusCode === 507 && res.body.includes('no room'), `${res.statusCode} ${res.body}`);
+  const dirs = fs.readdirSync(path.join(dataDir, 'files'));
+  check('quota: refused upload leaves nothing on disk', dirs.length === 0, dirs.join(' '));
+  check('quota: small uploads still work', find((await c.multipart('/files', [], [['s.txt', 'small']])).body, /\/files\/[\w-]+/));
 }
 
 // --- Cleanup removes expired objects and their files ---------------------------------

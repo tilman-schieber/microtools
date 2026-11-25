@@ -1,5 +1,5 @@
-import type { Tool } from './shared';
-import { errorP, plainP, notFound, requestOrigin, asArray } from './shared';
+import type { Lifetime, Tool } from './shared';
+import { errorP, plainP, notFound, requestOrigin, asArray, expiresIn, lifetimeHint } from './shared';
 import * as objectStore from '../objectStore';
 
 type PollData = {
@@ -8,10 +8,13 @@ type PollData = {
   responses: Array<{ name: string; votes: string[] }>;
 };
 
+const LIFETIME: Lifetime = { type: 'poll', days: 90, from: 'activity' };
+
 export const polls: Tool = {
   id: 'polls',
   href: '/polls/new',
   category: 'plan',
+  lifetime: LIFETIME,
   icon: '<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/>',
 
   routes(fastify) {
@@ -35,9 +38,9 @@ export const polls: Tool = {
       }
 
       const slots = dates.map((date, i) => ({ date, time: times[i] }));
-      const poll = objectStore.create('poll', { title: title.trim(), slots, responses: [] });
+      const poll = objectStore.create('poll', { title: title.trim(), slots, responses: [] }, expiresIn(LIFETIME.days));
 
-      return reply.view('_created', { heading: request.i18n.t('polls.created'), url: `${requestOrigin(request)}/polls/${poll.id}` });
+      return reply.view('_created', { heading: request.i18n.t('polls.created'), url: `${requestOrigin(request)}/polls/${poll.id}`, hint: lifetimeHint(request.i18n, LIFETIME) });
     });
 
     // View poll page
@@ -71,7 +74,7 @@ export const polls: Tool = {
 
       const data = poll.data as PollData;
       data.responses.push({ name, votes });
-      objectStore.update(id, data);
+      objectStore.update(id, data, expiresIn(LIFETIME.days));
 
       return reply.view('polls/_container', { poll: objectStore.get(id) });
     });

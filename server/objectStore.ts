@@ -69,11 +69,13 @@ export function get(id: string): StoredObject | null {
   };
 }
 
-export function update(id: string, data: unknown): StoredObject | null {
+/** Replace an object's data; with expiresAt, also move its expiry (for lifetimes that count from the last change). */
+export function update(id: string, data: unknown, expiresAt?: number): StoredObject | null {
   const jsonData = JSON.stringify(data);
 
-  const stmt = db.prepare('UPDATE objects SET data = ? WHERE id = ?');
-  const result = stmt.run(jsonData, id);
+  const result = expiresAt === undefined
+    ? db.prepare('UPDATE objects SET data = ? WHERE id = ?').run(jsonData, id)
+    : db.prepare('UPDATE objects SET data = ?, expires_at = ? WHERE id = ?').run(jsonData, expiresAt, id);
 
   if (result.changes === 0) {
     return null;
@@ -90,6 +92,15 @@ export function remove(id: string): boolean {
 }
 
 export { remove as deleteObject };
+
+/**
+ * Give objects of a type that have no expiry one. Rows from before lifetimes
+ * existed get the full lifetime from now on rather than from their creation,
+ * so nothing old disappears without warning on the first deploy.
+ */
+export function backfillExpiry(type: string, expiresAt: number): number {
+  return db.prepare('UPDATE objects SET expires_at = ? WHERE type = ? AND expires_at IS NULL').run(expiresAt, type).changes;
+}
 
 /** Delete all rows whose expires_at is in the past. Returns the deleted rows (id + type) so callers can clean up associated files. */
 export function purgeExpired(): Array<{ id: string; type: string }> {

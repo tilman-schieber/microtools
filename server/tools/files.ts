@@ -12,6 +12,23 @@ if (!fs.existsSync(FILES_DIR)) {
   fs.mkdirSync(FILES_DIR, { recursive: true });
 }
 
+// Total disk space all shares together may use. An upload is refused once the
+// total is reached; it can overshoot by at most one file (50 MB).
+const QUOTA_BYTES = (parseInt(process.env.FILES_QUOTA_MB || '', 10) || 5000) * 1024 * 1024;
+
+/** Bytes currently stored under FILES_DIR (one directory per share, files directly inside) */
+function usedBytes(): number {
+  let total = 0;
+  for (const share of fs.readdirSync(FILES_DIR, { withFileTypes: true })) {
+    if (!share.isDirectory()) continue;
+    const dir = path.join(FILES_DIR, share.name);
+    for (const name of fs.readdirSync(dir)) total += fs.statSync(path.join(dir, name)).size;
+  }
+  return total;
+}
+
+class QuotaExceeded extends Error {}
+
 /** Remove a share's directory, e.g. after lazy expiration deleted its DB row. */
 function removeShareDir(shareId: string): void {
   const shareDir = path.join(FILES_DIR, shareId);
@@ -55,6 +72,8 @@ export const files: Tool = {
       let expiryDays = 3; // default
 
       try {
+        let used = usedBytes();
+        if (used >= QUOTA_BYTES) throw new QuotaExceeded();
         fs.mkdirSync(shareDir, { recursive: true });
 
         for await (const part of parts) {
@@ -69,6 +88,8 @@ export const files: Tool = {
             await pipeline(part.file, fs.createWriteStream(filePath));
 
             const stats = fs.statSync(filePath);
+            used += stats.size;
+            if (used > QUOTA_BYTES) throw new QuotaExceeded();
             uploadedFiles.push({
               name: part.filename,
               storedName: safeName,
@@ -93,6 +114,9 @@ export const files: Tool = {
         });
       } catch (err) {
         removeShareDir(shareId);
+        if (err instanceof QuotaExceeded) {
+          return reply.status(507).type('text/html').send(errorP(request.i18n, 'files.err.quota'));
+        }
         return reply.type('text/html').send(errorP(request.i18n, 'files.err.upload', { message: (err as Error).message }));
       }
     });

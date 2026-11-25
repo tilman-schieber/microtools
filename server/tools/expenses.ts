@@ -1,6 +1,6 @@
 import crypto from 'crypto';
-import type { Tool } from './shared';
-import { errorP, plainP, notFound, requestOrigin, asArray } from './shared';
+import type { Lifetime, Tool } from './shared';
+import { errorP, plainP, notFound, requestOrigin, asArray, expiresIn, lifetimeHint } from './shared';
 import * as objectStore from '../objectStore';
 
 type ExpenseData = {
@@ -10,10 +10,14 @@ type ExpenseData = {
   entries: Array<{ description: string; amount: number; paid_by: string; split_between: string[] }>;
 };
 
+// Long: settling up after a trip can take months
+const LIFETIME: Lifetime = { type: 'expense', days: 365, from: 'activity' };
+
 export const expenses: Tool = {
   id: 'expenses',
   href: '/expenses/new',
   category: 'plan',
+  lifetime: LIFETIME,
   icon: '<circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/>',
 
   routes(fastify) {
@@ -42,11 +46,11 @@ export const expenses: Tool = {
         token: crypto.randomBytes(8).toString('base64url')
       }));
 
-      const expense = objectStore.create('expense', { title, currency, participants, entries: [] });
+      const expense = objectStore.create('expense', { title, currency, participants, entries: [] }, expiresIn(LIFETIME.days));
 
       const base = `${requestOrigin(request)}/e/${expense.id}`;
       const links = participants.map((p) => ({ name: p.name, url: `${base}/p/${p.token}` }));
-      return reply.view('expenses/_created', { summaryUrl: base, links });
+      return reply.view('expenses/_created', { summaryUrl: base, links, hint: lifetimeHint(request.i18n, LIFETIME) });
     });
 
     // Summary page (read-only)
@@ -110,7 +114,7 @@ export const expenses: Tool = {
       }
 
       data.entries.push({ description, amount, paid_by: participant.name, split_between });
-      objectStore.update(id, data);
+      objectStore.update(id, data, expiresIn(LIFETIME.days));
 
       return reply.view('expenses/_entries', {
         expense: objectStore.get(id),
@@ -138,7 +142,7 @@ export const expenses: Tool = {
       const index = parseInt(idx);
       if (index >= 0 && index < data.entries.length) {
         data.entries.splice(index, 1);
-        objectStore.update(id, data);
+        objectStore.update(id, data, expiresIn(LIFETIME.days));
       }
 
       return reply.view('expenses/_entries', {

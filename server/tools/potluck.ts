@@ -1,6 +1,6 @@
 import crypto from 'crypto';
-import type { Tool } from './shared';
-import { errorP, notFound, requestOrigin, asArray } from './shared';
+import type { Lifetime, Tool } from './shared';
+import { errorP, notFound, requestOrigin, asArray, expiresIn, lifetimeHint } from './shared';
 import * as objectStore from '../objectStore';
 
 type Claim = { name: string; amount: number; token: string };
@@ -13,10 +13,13 @@ type BringData = {
 const newToken = () => crypto.randomBytes(8).toString('base64url');
 
 // Routes live under /bring (create) and /b (the shared list)
+const LIFETIME: Lifetime = { type: 'bringlist', days: 90, from: 'activity' };
+
 export const potluck: Tool = {
   id: 'potluck',
   href: '/bring/new',
   category: 'plan',
+  lifetime: LIFETIME,
   icon: '<path d="M3 17h18M5 17a7 7 0 0 1 14 0"/><path d="M12 8v2"/>',
 
   routes(fastify) {
@@ -48,11 +51,12 @@ export const potluck: Tool = {
         return reply.type('text/html').send(errorP(request.i18n, 'bring.err.items'));
       }
 
-      const bringlist = objectStore.create('bringlist', { title, needed, custom: [] });
+      const bringlist = objectStore.create('bringlist', { title, needed, custom: [] }, expiresIn(LIFETIME.days));
 
       return reply.view('_created', {
         heading: `${request.i18n.t('bring.created')} <strong>${request.i18n.t('common.shareThisLink')}</strong>`,
-        url: `${requestOrigin(request)}/b/${bringlist.id}`
+        url: `${requestOrigin(request)}/b/${bringlist.id}`,
+        hint: lifetimeHint(request.i18n, LIFETIME)
       });
     });
 
@@ -100,7 +104,7 @@ export const potluck: Tool = {
       if (!item.claims) item.claims = [];
       const claimToken = newToken();
       item.claims.push({ name, amount, token: claimToken });
-      objectStore.update(id, data);
+      objectStore.update(id, data, expiresIn(LIFETIME.days));
 
       return reply.view('bring/_list', { bringlist, lastClaimToken: claimToken });
     });
@@ -134,7 +138,7 @@ export const potluck: Tool = {
       }
 
       claims.splice(claimIndex, 1);
-      objectStore.update(id, data);
+      objectStore.update(id, data, expiresIn(LIFETIME.days));
 
       return reply.view('bring/_list', { bringlist });
     });
@@ -160,7 +164,7 @@ export const potluck: Tool = {
       if (!data.custom) data.custom = [];
       const claimToken = newToken();
       data.custom.push({ name, item, amount, token: claimToken });
-      objectStore.update(id, data);
+      objectStore.update(id, data, expiresIn(LIFETIME.days));
 
       return reply.view('bring/_list', { bringlist, lastClaimToken: claimToken });
     });
@@ -187,7 +191,7 @@ export const potluck: Tool = {
       }
 
       custom.splice(index, 1);
-      objectStore.update(id, data);
+      objectStore.update(id, data, expiresIn(LIFETIME.days));
 
       return reply.view('bring/_list', { bringlist });
     });

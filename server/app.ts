@@ -3,11 +3,13 @@ import fastifyView from '@fastify/view';
 import fastifyStatic from '@fastify/static';
 import fastifyFormbody from '@fastify/formbody';
 import fastifyMultipart from '@fastify/multipart';
+import fastifyRateLimit from '@fastify/rate-limit';
 import ejs from 'ejs';
 import { i18n, resolveLang, isLang, langCookie, clientStrings, plainText, LANGS, type I18n } from './i18n';
 import { VIEWS_DIR, PUBLIC_DIR } from './paths';
 import * as objectStore from './objectStore';
 import { TOOLS, toolGroups } from './tools';
+import { expiresIn } from './tools/shared';
 
 declare module 'fastify' {
   interface FastifyRequest { i18n: I18n }
@@ -18,8 +20,9 @@ declare module 'fastify' {
  * The whole application, ready but not listening. server/index.ts starts it;
  * the smoke tests call it through fastify.inject() without opening a port.
  */
-export async function buildApp(options: { logger?: boolean } = {}): Promise<FastifyInstance> {
+export async function buildApp(options: { logger?: boolean; rateLimit?: boolean } = {}): Promise<FastifyInstance> {
   const fastify = Fastify({
+    trustProxy: trustProxy(process.env.TRUST_PROXY),
     logger: options.logger === false ? false : {
       serializers: {
         // A micropage's entire content lives in its query string, so logging the
@@ -33,6 +36,27 @@ export async function buildApp(options: { logger?: boolean } = {}): Promise<Fast
         }
       }
     }
+  });
+
+  // Writes are rate-limited per client IP; reading is not. Uploads get a
+  // tighter budget of their own, since they are what costs disk space.
+  if (options.rateLimit !== false) {
+    await fastify.register(fastifyRateLimit, {
+      global: true,
+      max: (request) => (request.method === 'POST' && request.url === '/files' ? 20 : 60),
+      timeWindow: (request) => (request.method === 'POST' && request.url === '/files' ? 60 * 60 * 1000 : 60 * 1000),
+      allowList: (request) => request.method === 'GET' || request.method === 'HEAD',
+      errorResponseBuilder: (_request, context) => ({ statusCode: context.statusCode, rateLimited: true })
+    });
+  }
+
+  // Rate-limited requests mostly come from htmx forms, so answer in the same
+  // HTML fragment the form would show for any other error.
+  fastify.setErrorHandler((error: { statusCode?: number; rateLimited?: boolean }, request, reply) => {
+    if (error.rateLimited) {
+      return reply.status(429).type('text/html').send(`<p class="error">${request.i18n.t('common.err.tooMany')}</p>`);
+    }
+    throw error;
   });
 
   await fastify.register(fastifyFormbody);
@@ -104,6 +128,11 @@ export async function buildApp(options: { logger?: boolean } = {}): Promise<Fast
     return reply.status(404).view('404', { title: request.i18n.t('notFound.title') });
   });
 
+  // Objects stored before lifetimes existed get one now, counted from today
+  for (const tool of TOOLS) {
+    if (tool.lifetime) objectStore.backfillExpiry(tool.lifetime.type, expiresIn(tool.lifetime.days));
+  }
+
   // Each tool registers its own routes; see server/tools/
   for (const tool of TOOLS) {
     await tool.routes(fastify);
@@ -119,4 +148,17 @@ export function purgeExpired(): number {
     for (const tool of TOOLS) tool.onPurge?.(row);
   }
   return purged.length;
+}
+
+/**
+ * Which proxies may tell us the client's address (X-Forwarded-For). The default,
+ * loopback, fits nginx on the same machine and cannot be spoofed by a client
+ * that connects directly. Without it, every visitor would share the proxy's IP
+ * and so one rate limit.
+ */
+function trustProxy(value: string | undefined): boolean | string | number {
+  if (value === undefined || value === '') return 'loopback';
+  if (value === 'true' || value === 'false') return value === 'true';
+  if (/^\d+$/.test(value)) return parseInt(value, 10);
+  return value;
 }

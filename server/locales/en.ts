@@ -11,6 +11,11 @@ const en = {
   'common.shareThisLink': 'Share this link:',
   'common.qr': 'QR',
   'common.err.title': 'Please enter a title.',
+  'common.err.tooMany': 'Too many requests. Please wait a minute and try again.',
+  'lifetime.creation.one': 'It is deleted after {n} day.',
+  'lifetime.creation.other': 'It is deleted after {n} days.',
+  'lifetime.activity.one': 'It is deleted {n} day after the last change.',
+  'lifetime.activity.other': 'It is deleted {n} days after the last change.',
   'lang.switch': 'Language',
 
   'crumb.note': 'Note',
@@ -82,6 +87,8 @@ const en = {
   // -- Secrets --------------------------------------------------------------
   'secrets.new.title': 'Create a One-Time Secret',
   'secrets.new.hint': 'Your secret is encrypted in your browser. The encryption key never leaves your device.',
+  'secrets.lifetime.one': 'If nobody opens it, it is deleted after {n} day.',
+  'secrets.lifetime.other': 'If nobody opens it, it is deleted after {n} days.',
   'secrets.new.label': 'Secret Message',
   'secrets.new.placeholder': 'Enter your secret here...',
   'secrets.new.submit': 'Create Secret',
@@ -107,6 +114,7 @@ const en = {
   'files.created': 'Files uploaded! Share this link:',
   'files.expiresIn.one': 'Expires in {n} day.',
   'files.expiresIn.other': 'Expires in {n} days.',
+  'files.err.quota': 'This server has no room for more uploads right now. Please try again later.',
   'files.show.title': 'Shared Files',
   'files.show.downloadYour': 'Download your file:',
   'files.shared.one': '{n} file shared:',

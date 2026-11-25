@@ -19,4 +19,8 @@
   }
   document.addEventListener('DOMContentLoaded', function() { renderQRCodes(); });
   document.addEventListener('htmx:afterSwap', function(e) { renderQRCodes(e.detail.target); });
+  // htmx drops error responses by default; show the rate-limit and disk-full messages where the result would go
+  document.addEventListener('htmx:beforeSwap', function(e) {
+    if (e.detail.xhr.status === 429 || e.detail.xhr.status === 507) { e.detail.shouldSwap = true; e.detail.isError = false; }
+  });
 </script>
