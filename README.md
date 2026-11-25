@@ -97,6 +97,7 @@ The Micropage documentation at `/micropage/docs` is the reference for people and
 | `DATA_DIR` | `data/` | Where the database and uploaded files live |
 | `TRUST_PROXY` | `loopback` | Which proxies may set the client IP via `X-Forwarded-For` (Fastify's `trustProxy`: `true`, `false`, a hop count, or addresses/CIDRs) |
 | `FILES_QUOTA_MB` | `5000` | Total disk space all file shares together may use |
+| `UPLOAD_LIMIT_MB` | `50` | Largest single upload, all its files together; keep it at or below nginx's `client_max_body_size` |
 
 ## Project structure
 
@@ -184,7 +185,7 @@ microtools/
 
 **Quick links.** With no accounts, the landing page's "Your links" list is how people find a poll or expense group again. Pages that are worth returning to render a hidden marker (`views/_remember.ejs`, fed by a `remember` object from the route); `public/recent.js` copies it into that browser's localStorage, at most 20 entries, and draws the list. Nothing is sent to the server. Entries drop off once the link's expiry passes. An expense participant's personal edit link is kept over the group's summary link. One-time secrets are never remembered, because their link carries the decryption key; micropages and clocks are left out because their whole content is the URL.
 
-**Abuse limits.** Writes (POST, DELETE) are limited to 60 a minute per client IP, uploads to 20 an hour; reading is never limited. Uploads are refused once all shares together reach `FILES_QUOTA_MB`. The client IP comes from `X-Forwarded-For` only when the request arrives from a trusted proxy (`TRUST_PROXY`, by default one on the same machine), so a client cannot pick its own.
+**Abuse limits.** Writes (POST, DELETE) are limited to 60 a minute per client IP, uploads to 20 an hour; reading is never limited. File Share is for small files: one upload may be `UPLOAD_LIMIT_MB` in total, which the form checks before sending and the server enforces. Uploads are refused once all shares together reach `FILES_QUOTA_MB`. The client IP comes from `X-Forwarded-For` only when the request arrives from a trusted proxy (`TRUST_PROXY`, by default one on the same machine), so a client cannot pick its own.
 
 **File storage.** Uploaded files are stored on disk under `data/files/<share-id>/`. Metadata lives in SQLite. Expired shares are cleaned up both lazily (on access) and periodically (hourly timer).
 

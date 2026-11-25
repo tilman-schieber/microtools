@@ -1,0 +1,42 @@
+(node:995943) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"level":30,"time":1795631124750,"pid":995943,"hostname":"oma","msg":"Server listening at http://127.0.0.1:3997"}
+7:25:24 PM [fastify] serving on port 3997
+{"level":30,"time":1795631125075,"pid":995943,"hostname":"oma","reqId":"req-1","req":{"method":"GET","url":"/","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631125094,"pid":995943,"hostname":"oma","reqId":"req-1","res":{"statusCode":200},"responseTime":17.10740999877453,"msg":"request completed"}
+{"level":30,"time":1795631125506,"pid":995943,"hostname":"oma","reqId":"req-2","req":{"method":"GET","url":"/files/new?lang=en","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631125508,"pid":995943,"hostname":"oma","reqId":"req-2","res":{"statusCode":302},"responseTime":1.165354996919632,"msg":"request completed"}
+{"level":30,"time":1795631125513,"pid":995943,"hostname":"oma","reqId":"req-3","req":{"method":"GET","url":"/files/new","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631125519,"pid":995943,"hostname":"oma","reqId":"req-3","res":{"statusCode":200},"responseTime":5.577794998884201,"msg":"request completed"}
+{"level":30,"time":1795631125537,"pid":995943,"hostname":"oma","reqId":"req-4","req":{"method":"GET","url":"/public/style.css","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631125542,"pid":995943,"hostname":"oma","reqId":"req-5","req":{"method":"GET","url":"/public/htmx.min.js","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631125544,"pid":995943,"hostname":"oma","reqId":"req-6","req":{"method":"GET","url":"/public/qrcode.min.js","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631125547,"pid":995943,"hostname":"oma","reqId":"req-4","res":{"statusCode":200},"responseTime":8.154587000608444,"msg":"request completed"}
+{"level":30,"time":1795631125547,"pid":995943,"hostname":"oma","reqId":"req-7","req":{"method":"GET","url":"/public/recent.js","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631125548,"pid":995943,"hostname":"oma","reqId":"req-5","res":{"statusCode":200},"responseTime":5.539781987667084,"msg":"request completed"}
+{"level":30,"time":1795631125549,"pid":995943,"hostname":"oma","reqId":"req-6","res":{"statusCode":200},"responseTime":4.58985099196434,"msg":"request completed"}
+{"level":30,"time":1795631125550,"pid":995943,"hostname":"oma","reqId":"req-7","res":{"statusCode":200},"responseTime":2.2919720113277435,"msg":"request completed"}
+{"level":30,"time":1795631125601,"pid":995943,"hostname":"oma","reqId":"req-8","req":{"method":"GET","url":"/public/fonts/ibm-plex-sans-latin-600-normal.woff2","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631125602,"pid":995943,"hostname":"oma","reqId":"req-9","req":{"method":"GET","url":"/public/fonts/ibm-plex-sans-latin-400-normal.woff2","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631125603,"pid":995943,"hostname":"oma","reqId":"req-a","req":{"method":"GET","url":"/public/fonts/ibm-plex-sans-latin-500-normal.woff2","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631125615,"pid":995943,"hostname":"oma","reqId":"req-9","res":{"statusCode":200},"responseTime":11.91380900144577,"msg":"request completed"}
+{"level":30,"time":1795631125615,"pid":995943,"hostname":"oma","reqId":"req-a","res":{"statusCode":200},"responseTime":11.952706009149551,"msg":"request completed"}
+{"level":30,"time":1795631125616,"pid":995943,"hostname":"oma","reqId":"req-8","res":{"statusCode":200},"responseTime":14.439381003379822,"msg":"request completed"}
+{"level":30,"time":1795631127969,"pid":995943,"hostname":"oma","reqId":"req-b","req":{"method":"GET","url":"/files/new?lang=de","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631127970,"pid":995943,"hostname":"oma","reqId":"req-b","res":{"statusCode":302},"responseTime":0.5566830039024353,"msg":"request completed"}
+{"level":30,"time":1795631127972,"pid":995943,"hostname":"oma","reqId":"req-c","req":{"method":"GET","url":"/files/new","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631127976,"pid":995943,"hostname":"oma","reqId":"req-c","res":{"statusCode":200},"responseTime":3.6804579943418503,"msg":"request completed"}
+{"level":30,"time":1795631127993,"pid":995943,"hostname":"oma","reqId":"req-d","req":{"method":"GET","url":"/public/style.css","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631127994,"pid":995943,"hostname":"oma","reqId":"req-e","req":{"method":"GET","url":"/public/htmx.min.js","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631127996,"pid":995943,"hostname":"oma","reqId":"req-d","res":{"statusCode":304},"responseTime":3.076547011733055,"msg":"request completed"}
+{"level":30,"time":1795631127997,"pid":995943,"hostname":"oma","reqId":"req-e","res":{"statusCode":304},"responseTime":3.0958239883184433,"msg":"request completed"}
+{"level":30,"time":1795631127997,"pid":995943,"hostname":"oma","reqId":"req-f","req":{"method":"GET","url":"/public/qrcode.min.js","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631127998,"pid":995943,"hostname":"oma","reqId":"req-g","req":{"method":"GET","url":"/public/recent.js","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631127998,"pid":995943,"hostname":"oma","reqId":"req-f","res":{"statusCode":304},"responseTime":0.8020129948854446,"msg":"request completed"}
+{"level":30,"time":1795631127999,"pid":995943,"hostname":"oma","reqId":"req-g","res":{"statusCode":304},"responseTime":0.9157620072364807,"msg":"request completed"}
+{"level":30,"time":1795631128056,"pid":995943,"hostname":"oma","reqId":"req-h","req":{"method":"GET","url":"/public/fonts/ibm-plex-sans-latin-600-normal.woff2","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631128057,"pid":995943,"hostname":"oma","reqId":"req-i","req":{"method":"GET","url":"/public/fonts/ibm-plex-sans-latin-400-normal.woff2","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631128057,"pid":995943,"hostname":"oma","reqId":"req-j","req":{"method":"GET","url":"/public/fonts/ibm-plex-sans-latin-500-normal.woff2","hostname":"localhost","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1795631128058,"pid":995943,"hostname":"oma","reqId":"req-h","res":{"statusCode":304},"responseTime":1.627483993768692,"msg":"request completed"}
+{"level":30,"time":1795631128058,"pid":995943,"hostname":"oma","reqId":"req-i","res":{"statusCode":304},"responseTime":1.241349995136261,"msg":"request completed"}
+{"level":30,"time":1795631128059,"pid":995943,"hostname":"oma","reqId":"req-j","res":{"statusCode":304},"responseTime":1.2780539989471436,"msg":"request completed"}

@@ -1,7 +1,7 @@
 <% const content = `
   <main>
     <h1>${t('files.new.title')}</h1>
-    <p class="hint">${t('files.new.hint')}</p>
+    <p class="hint">${t('files.new.hint')} ${t('files.new.limit', { mb: limitMb })}</p>
     
     <form id="file-form" enctype="multipart/form-data">
       <label for="file-input">${t('files.new.selectLabel')}</label>
@@ -27,9 +27,19 @@
     const fileInput = document.getElementById('file-input');
     const fileList = document.getElementById('file-list');
     
+    const LIMIT = ${limitMb} * 1024 * 1024;
+    const totalSize = (files) => Array.from(files).reduce((sum, f) => sum + f.size, 0);
+    const tooLargeMessage = (files) => tf('uploadTooLarge', { mb: ${limitMb}, size: formatSize(totalSize(files)) });
+
     fileInput.addEventListener('change', () => {
       fileList.innerHTML = '';
       const files = fileInput.files;
+      if (totalSize(files) > LIMIT) {
+        const p = document.createElement('p');
+        p.className = 'error';
+        p.textContent = tooLargeMessage(files);
+        fileList.appendChild(p);
+      }
       if (files.length > 0) {
         const ul = document.createElement('ul');
         for (const file of files) {
@@ -42,9 +52,11 @@
     });
     
     function formatSize(bytes) {
+      // 1.5 MB in English, 1,5 MB in German
+      const n = (v) => v.toLocaleString(document.documentElement.lang, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
       if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      if (bytes < 1024 * 1024) return n(bytes / 1024) + ' KB';
+      return n(bytes / (1024 * 1024)) + ' MB';
     }
 
     document.getElementById('file-form').addEventListener('submit', async (e) => {
@@ -54,6 +66,12 @@
       
       if (files.length === 0) {
         resultDiv.innerHTML = '<p class="error"></p>'; resultDiv.firstChild.textContent = T.selectOneFile;
+        return;
+      }
+
+      // Checked here so nobody waits for an upload that is bound to be refused
+      if (totalSize(files) > LIMIT) {
+        resultDiv.innerHTML = '<p class="error"></p>'; resultDiv.firstChild.textContent = tooLargeMessage(files);
         return;
       }
 
@@ -69,6 +87,11 @@
           method: 'POST',
           body: formData
         });
+        // nginx answers an oversized request with its own bare 413 page; show ours instead
+        if (response.status === 413) {
+          resultDiv.innerHTML = '<p class="error"></p>'; resultDiv.firstChild.textContent = tooLargeMessage(files);
+          return;
+        }
         resultDiv.innerHTML = await response.text();
         renderQRCodes(resultDiv);
         rememberLinks(resultDiv);

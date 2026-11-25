@@ -10,6 +10,7 @@ import { VIEWS_DIR, PUBLIC_DIR } from './paths';
 import * as objectStore from './objectStore';
 import { TOOLS, toolGroups } from './tools';
 import { expiresIn } from './tools/shared';
+import { UPLOAD_LIMIT_BYTES } from './tools/files';
 
 declare module 'fastify' {
   interface FastifyRequest { i18n: I18n }
@@ -62,7 +63,7 @@ export async function buildApp(options: { logger?: boolean; rateLimit?: boolean 
   await fastify.register(fastifyFormbody);
   await fastify.register(fastifyMultipart, {
     limits: {
-      fileSize: 50 * 1024 * 1024, // 50MB max per file
+      fileSize: UPLOAD_LIMIT_BYTES, // no single file can exceed the whole upload's limit
       files: 20 // max 20 files
     }
   });

@@ -7,7 +7,8 @@ import path from 'path';
 
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'microtools-smoke-'));
 process.env.DATA_DIR = dataDir;
-process.env.FILES_QUOTA_MB = '1'; // small, so the quota check can be reached
+process.env.FILES_QUOTA_MB = '4'; // small, so the quota check can be reached
+process.env.UPLOAD_LIMIT_MB = '2'; // small, so the per-upload limit can be reached
 
 // Imported after DATA_DIR is set: the database opens on import
 const { buildApp, purgeExpired } = await import('../server/app');
@@ -333,15 +334,34 @@ for (const lang of LANGS) {
   await limited.close();
 }
 
-// --- Disk quota for uploads (FILES_QUOTA_MB=1 above) --------------------------------------
+// --- Disk quota for uploads (FILES_QUOTA_MB=4 above) --------------------------------------
 {
   const c = client('en');
-  const big = 'x'.repeat(1024 * 1024 + 1);
-  const res = await c.multipart('/files', [['expiry', '1']], [['big.txt', big]]);
-  check('quota: upload over the quota is refused', res.statusCode === 507 && res.body.includes('no room'), `${res.statusCode} ${res.body}`);
-  const dirs = fs.readdirSync(path.join(dataDir, 'files'));
-  check('quota: refused upload leaves nothing on disk', dirs.length === 0, dirs.join(' '));
-  check('quota: small uploads still work', find((await c.multipart('/files', [], [['s.txt', 'small']])).body, /\/files\/[\w-]+/));
+  const filesDir = path.join(dataDir, 'files');
+  for (const dir of fs.readdirSync(filesDir)) fs.rmSync(path.join(filesDir, dir), { recursive: true });
+  // Fill the disk to just under the quota with an existing share
+  fs.mkdirSync(path.join(filesDir, 'filler'));
+  fs.writeFileSync(path.join(filesDir, 'filler', 'f'), Buffer.alloc(4 * 1024 * 1024 - 1024));
+  const res = await c.multipart('/files', [['expiry', '1']], [['big.txt', 'x'.repeat(2048)]]);
+  check('quota: upload that would pass the quota is refused', res.statusCode === 507 && res.body.includes('no room'), `${res.statusCode} ${res.body}`);
+  check('quota: refused upload leaves nothing on disk', fs.readdirSync(filesDir).join() === 'filler', fs.readdirSync(filesDir).join(' '));
+  fs.writeFileSync(path.join(filesDir, 'filler', 'f'), Buffer.alloc(4 * 1024 * 1024));
+  check('quota: a full disk refuses even a tiny upload', (await c.multipart('/files', [], [['s.txt', 'x']])).statusCode === 507);
+  fs.rmSync(path.join(filesDir, 'filler'), { recursive: true });
+  check('quota: with room again, uploads work', find((await c.multipart('/files', [], [['s.txt', 'small']])).body, /\/files\/[\w-]+/));
+  for (const dir of fs.readdirSync(filesDir)) fs.rmSync(path.join(filesDir, dir), { recursive: true });
+}
+
+// --- Per-upload size limit (UPLOAD_LIMIT_MB=2 above) ------------------------------------------
+{
+  const c = client('de');
+  check('upload limit: form states it', (await c.get('/files/new')).body.includes('bis zu 2 MB'));
+  const half = 'x'.repeat(1024 * 1024 + 512 * 1024);
+  const together = await c.multipart('/files', [], [['a.txt', half], ['b.txt', half]]);
+  check('upload limit: files that add up to too much are refused', together.statusCode === 413 && together.body.includes('Zu groß'), `${together.statusCode} ${together.body}`);
+  const single = await c.multipart('/files', [], [['big.txt', 'x'.repeat(2 * 1024 * 1024 + 1)]]);
+  check('upload limit: one file over the limit is refused, not truncated', single.statusCode === 413, `${single.statusCode} ${single.body}`);
+  check('upload limit: refused uploads leave nothing on disk', fs.readdirSync(path.join(dataDir, 'files')).length === 0);
 }
 
 // --- Cleanup removes expired objects and their files ---------------------------------

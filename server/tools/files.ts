@@ -29,6 +29,14 @@ function usedBytes(): number {
 
 class QuotaExceeded extends Error {}
 
+// File Share is for small files. One upload, all files together, may be this
+// large. It matches nginx's client_max_body_size (50m) in production, so the
+// app refuses with a proper message before nginx would with a bare 413.
+export const UPLOAD_LIMIT_MB = parseInt(process.env.UPLOAD_LIMIT_MB || '', 10) || 50;
+export const UPLOAD_LIMIT_BYTES = UPLOAD_LIMIT_MB * 1024 * 1024;
+
+class TooLarge extends Error {}
+
 /** Remove a share's directory, e.g. after lazy expiration deleted its DB row. */
 function removeShareDir(shareId: string): void {
   const shareDir = path.join(FILES_DIR, shareId);
@@ -65,7 +73,7 @@ export const files: Tool = {
   routes(fastify) {
     // Create form page
     fastify.get('/files/new', async (request, reply) => {
-      return reply.view('files/new', { title: request.i18n.t('files.new.title') });
+      return reply.view('files/new', { title: request.i18n.t('files.new.title'), limitMb: UPLOAD_LIMIT_MB });
     });
 
     // Upload files
@@ -80,6 +88,7 @@ export const files: Tool = {
 
       try {
         let used = usedBytes();
+        let uploadTotal = 0;
         if (used >= QUOTA_BYTES) throw new QuotaExceeded();
         fs.mkdirSync(shareDir, { recursive: true });
 
@@ -95,6 +104,9 @@ export const files: Tool = {
             await pipeline(part.file, fs.createWriteStream(filePath));
 
             const stats = fs.statSync(filePath);
+            // A single file over the limit arrives cut off at it (see multipart limits in app.ts)
+            uploadTotal += stats.size;
+            if (part.file.truncated || uploadTotal > UPLOAD_LIMIT_BYTES) throw new TooLarge();
             used += stats.size;
             if (used > QUOTA_BYTES) throw new QuotaExceeded();
             uploadedFiles.push({
@@ -122,6 +134,9 @@ export const files: Tool = {
         });
       } catch (err) {
         removeShareDir(shareId);
+        if (err instanceof TooLarge) {
+          return reply.status(413).type('text/html').send(errorP(request.i18n, 'files.err.tooLarge', { mb: UPLOAD_LIMIT_MB }));
+        }
         if (err instanceof QuotaExceeded) {
           return reply.status(507).type('text/html').send(errorP(request.i18n, 'files.err.quota'));
         }
