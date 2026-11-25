@@ -1,0 +1,8 @@
+<%# The organiser's key travels in the URL fragment, which browsers never send to
+    the server. public/bring.js stores it when this panel is swapped in. %>
+<%- include('../_created', { heading, url, hint, remember }) %>
+<div class="poll-admin" data-bring-admin="<%= listId %>" data-key="<%= adminKey %>">
+  <p class="hint"><%- t('bring.adminHint') %></p>
+  <p><a href="<%= adminUrl %>" rel="nofollow"><%= adminUrl %></a></p>
+  <div class="actions actions-tight"><button class="btn-secondary" data-url="<%= adminUrl %>" onclick="navigator.clipboard.writeText(this.dataset.url);this.textContent=T.copied"><%- t('bring.copyAdminLink') %></button></div>
+</div>

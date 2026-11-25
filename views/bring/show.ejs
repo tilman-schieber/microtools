@@ -10,10 +10,15 @@
     <h1><%= bringlist.data.title %></h1>
     <p class="hint"><%- t('bring.show.hint') %></p>
 
-    <div id="bringlist-content">
+    <%# Filled by public/bring.js: the organiser's controls, and errors from claims %>
+    <div id="bring-admin" class="bring-admin" hidden></div>
+    <div id="bring-error" role="alert"></div>
+
+    <div id="bringlist-content" data-list="<%= bringlist.id %>">
       <%- include('_list', { bringlist }) %>
     </div>
 
   </main>
+  <script src="/public/bring.js"></script>
 </body>
 </html>

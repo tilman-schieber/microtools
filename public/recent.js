@@ -49,6 +49,21 @@
     (root || document).querySelectorAll('[data-remember]').forEach(remember);
   }
 
+  // What you are to a link, read from the keys polls.js and bring.js keep:
+  // 'admin' with the organiser's key, 'joined' with an answer or claim of your
+  // own (or your personal expense link), otherwise nothing.
+  var KEY_STORES = { polls: 'poll:', potluck: 'bring:' };
+  function roleOf(e) {
+    if (e.tool === 'expenses') return e.personal ? 'joined' : null;
+    if (!KEY_STORES[e.tool]) return null;
+    try {
+      var keys = JSON.parse(localStorage.getItem(KEY_STORES[e.tool] + e.key) || '{}');
+      if (keys.admin) return 'admin';
+      if (keys.mine && Object.keys(keys.mine).length) return 'joined';
+    } catch (err) { /* storage unavailable or unreadable */ }
+    return null;
+  }
+
   function forget(key) {
     save(load().filter(function (e) { return e.key !== key; }));
   }
@@ -116,7 +131,17 @@
       text.className = 'tool-text';
       var name = document.createElement('span');
       name.className = 'tool-name';
-      name.textContent = e.title || tool.name;
+      var title = document.createElement('span');
+      title.className = 'recent-title';
+      title.textContent = e.title || tool.name;
+      name.appendChild(title);
+      var role = roleOf(e);
+      if (role) {
+        var badge = document.createElement('span');
+        badge.className = 'role-badge role-' + role;
+        badge.textContent = role === 'admin' ? T.roleAdmin : T.roleJoined;
+        name.appendChild(badge);
+      }
       var desc = document.createElement('span');
       desc.className = 'tool-desc';
       desc.textContent = tool.name + ' · ' + tf('recentOpened', { when: ago(e.seen) });

@@ -37,9 +37,9 @@ function client(lang: string) {
   };
   return {
     get: (url: string) => send('GET', url),
-    del: (url: string) => send('DELETE', url),
-    form: (url: string, fields: Array<[string, string]>) =>
-      send('POST', url, new URLSearchParams(fields).toString(), { 'content-type': 'application/x-www-form-urlencoded' }),
+    del: (url: string, extra: Record<string, string> = {}) => send('DELETE', url, undefined, extra),
+    form: (url: string, fields: Array<[string, string]>, extra: Record<string, string> = {}, method = 'POST') =>
+      send(method, url, new URLSearchParams(fields).toString(), { 'content-type': 'application/x-www-form-urlencoded', ...extra }),
     json: (url: string, body: unknown) => send('POST', url, JSON.stringify(body), { 'content-type': 'application/json' }),
     multipart: (url: string, fields: Array<[string, string]>, files: Array<[string, string]>) => {
       const b = 'smokeboundary';
@@ -138,21 +138,58 @@ for (const lang of LANGS) {
   // --- Potluck -------------------------------------------------------------------
   {
     check(L('potluck: items required'), (await c.form('/bring', [['title', 'B']])).body.includes('class="error"'));
-    const created = await c.form('/bring', [['title', 'Party'], ['items[]', 'Salad'], ['amounts[]', '2']]);
+    const created = await c.form('/bring', [['title', 'Party'], ['items[]', 'Salad'], ['amounts[]', '2'], ['items[]', 'Bread'], ['amounts[]', '1']]);
     const url = find(created.body, /\/b\/[\w-]+/);
-    check(L('potluck: created'), url, created.body);
-    check(L('potluck: view'), (await c.get(url)).body.includes('Salad'));
-    check(L('potluck: cannot over-claim'), (await c.form(`${url}/claim/0`, [['name', 'Ada'], ['amount', '3']])).body.includes('class="error"'));
-    const claimed = await c.form(`${url}/claim/0`, [['name', 'Ada'], ['amount', '1']]);
-    const claimToken = find(claimed.body, /token=[\w-]+/).slice('token='.length);
-    check(L('potluck: claim returns a removal token'), claimToken, claimed.body);
-    check(L('potluck: claim removal needs the token'), (await c.del(`${url}/claim/0/0?token=wrong`)).statusCode === 403);
-    check(L('potluck: claim removed'), (await c.del(`${url}/claim/0/0?token=${claimToken}`)).statusCode === 200);
+    const [, listId, adminKey] = created.body.match(/data-bring-admin="([\w-]+)" data-key="([\w-]+)"/) || [];
+    check(L('potluck: created with an admin key'), url && adminKey && listId === url.split('/')[2], created.body);
+    check(L('potluck: admin link carries the key in the fragment'), created.body.includes(`${url}#admin=${adminKey}`));
+    check(L('potluck: only the hash is stored'), !JSON.stringify(objectStore.get(listId)!.data).includes(adminKey));
+
+    const page = (await c.get(url)).body;
+    check(L('potluck: view'), page.includes('Salad'));
+    const iid = (page.match(/data-iid="([\w-]+)" data-name="Salad"/) || [])[1];
+    const bread = (page.match(/data-iid="([\w-]+)" data-name="Bread"/) || [])[1];
+    check(L('potluck: items have ids'), iid && bread);
+
+    const over = await c.form(`${url}/claim/${iid}`, [['name', 'Ada'], ['amount', '3']]);
+    check(L('potluck: cannot over-claim'), over.statusCode === 400 && over.body.includes('class="error"'));
+    const claimed = await c.form(`${url}/claim/${iid}`, [['name', 'Ada'], ['amount', '1']]);
+    const [cid, claimKey] = String(claimed.headers['x-bring-key'] || '').split('.');
+    check(L('potluck: a claim returns its id and key once'), cid && claimKey && claimed.body.includes(`data-cid="${cid}"`), JSON.stringify(claimed.headers));
+    check(L('potluck: claim keys stored only as hashes'), !JSON.stringify(objectStore.get(listId)!.data).includes(claimKey));
+    check(L('potluck: removing needs the key'), (await c.del(`${url}/claims/${cid}`, { 'x-bring-key': 'wrong' })).statusCode === 403);
+    check(L('potluck: you can remove your own claim'), (await c.del(`${url}/claims/${cid}`, { 'x-bring-key': claimKey })).statusCode === 200);
+
     const custom = await c.form(`${url}/custom`, [['name', 'Bo'], ['item', 'Wine'], ['amount', '1']]);
-    check(L('potluck: custom item added'), custom.body.includes('Wine'));
-    const customToken = find(custom.body, /custom\/0\?token=[\w-]+/).split('token=')[1];
-    check(L('potluck: custom item removed'), (await c.del(`${url}/custom/0?token=${customToken}`)).statusCode === 200);
+    check(L('potluck: extra added'), custom.body.includes('Wine'));
+    const [xid] = String(custom.headers['x-bring-key'] || '').split('.');
+    const other = await c.form(`${url}/claim/${iid}`, [['name', 'Cy'], ['amount', '2']]);
+    const [cyId] = String(other.headers['x-bring-key'] || '').split('.');
+    check(L('potluck: the organiser can remove any claim'), (await c.del(`${url}/claims/${cyId}`, { 'x-bring-key': adminKey })).statusCode === 200);
+    check(L('potluck: ...and any extra'), (await c.del(`${url}/claims/${xid}`, { 'x-bring-key': adminKey })).statusCode === 200);
+
+    // The organiser edits the items
+    const admin = { 'x-bring-key': adminKey };
+    check(L('potluck: only the organiser adds items'), (await c.form(`${url}/items`, [['item', 'Cake'], ['amount', '1']], { 'x-bring-key': claimKey })).statusCode === 403);
+    const added = await c.form(`${url}/items`, [['item', 'Cake'], ['amount', '2']], admin);
+    check(L('potluck: organiser adds an item'), added.statusCode === 200 && added.body.includes('data-name="Cake"'));
+    await c.form(`${url}/claim/${iid}`, [['name', 'Dee'], ['amount', '2']]);
+    check(L('potluck: amount cannot drop below what is claimed'), (await c.form(`${url}/items/${iid}`, [['item', 'Salad'], ['amount', '1']], admin, 'PUT')).statusCode === 400);
+    const renamed = await c.form(`${url}/items/${iid}`, [['item', 'Green salad'], ['amount', '3']], admin, 'PUT');
+    check(L('potluck: organiser renames an item and changes the amount'), renamed.body.includes('data-name="Green salad" data-amount="3"'), renamed.body.slice(0, 400));
+    check(L('potluck: renaming keeps its claims'), renamed.body.includes('Dee: 2'));
+    const removed = await c.del(`${url}/items/${bread}`, admin);
+    check(L('potluck: organiser removes an item'), removed.statusCode === 200 && !removed.body.includes('data-name="Bread"'));
+    check(L('potluck: others cannot remove items'), (await c.del(`${url}/items/${iid}`)).statusCode === 403);
+
+    // Lists from before ids and keys: ids appear on view, old tokens still remove
+    const legacy = objectStore.create('bringlist', { title: 'Old', needed: [{ item: 'Chips', amount_needed: 2, claims: [{ name: 'Old', amount: 1, token: 'oldtoken' }] }], custom: [] });
+    const legacyPage = (await c.get(`/b/${legacy.id}`)).body;
+    const oldCid = (legacyPage.match(/data-cid="([\w-]+)"/) || [])[1];
+    check(L('potluck: old claims get ids'), oldCid);
+    check(L('potluck: an old claim token still removes it'), (await c.del(`/b/${legacy.id}/claims/${oldCid}`, { 'x-bring-key': 'oldtoken' })).statusCode === 200);
   }
+
 
   // --- File share ----------------------------------------------------------------
   {

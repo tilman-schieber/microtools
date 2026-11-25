@@ -3,7 +3,6 @@ const data = bringlist.data;
 const needed = data.needed || [];
 const custom = data.custom || [];
 const id = bringlist.id;
-const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : null;
 %>
 
 <div class="bring-items">
@@ -13,7 +12,8 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
     const pct = Math.round((totalClaimed / item.amount_needed) * 100);
     const isComplete = remaining <= 0;
   %>
-    <div class="bring-card <%= isComplete ? 'bring-card--complete' : '' %>">
+    <%# data-* feed the organiser's edit mode in public/bring.js %>
+    <div class="bring-card <%= isComplete ? 'bring-card--complete' : '' %>" data-iid="<%= item.id %>" data-name="<%= item.item %>" data-amount="<%= item.amount_needed %>" data-claimed="<%= totalClaimed %>">
       <div class="bring-card-header">
         <span class="bring-card-name"><%= item.item %></span>
         <% if (isComplete) { %>
@@ -30,12 +30,7 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
       <% if (item.claims && item.claims.length > 0) { %>
         <div class="bring-claims">
           <% item.claims.forEach((c, cIdx) => { %>
-            <span class="bring-claim-chip">
-              <%= c.name %>: <%= c.amount %>
-              <% if (_lastToken && c.token === _lastToken) { %>
-                <button class="claim-delete-btn" hx-delete="/b/<%= id %>/claim/<%= idx %>/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="<%- t('bring.removeClaimConfirm') %>" aria-label="<%- t('common.remove') %>"><%- icon('x') %></button>
-              <% } %>
-            </span>
+            <span class="bring-claim-chip" data-cid="<%= c.id %>"><%= c.name %>: <%= c.amount %></span>
           <% }); %>
         </div>
       <% } else { %>
@@ -43,7 +38,7 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
       <% } %>
 
       <% if (!isComplete) { %>
-        <form hx-post="/b/<%= id %>/claim/<%= idx %>" hx-target="#bringlist-content" hx-swap="innerHTML" class="bring-claim-form">
+        <form hx-post="/b/<%= id %>/claim/<%= item.id %>" hx-target="#bringlist-content" hx-swap="innerHTML" class="bring-claim-form">
           <input type="text" name="name" placeholder="<%- t('bring.yourName') %>" required>
           <input type="number" name="amount" min="1" max="<%= remaining %>" value="1" required>
           <button type="submit"><%- t('bring.claim') %></button>
@@ -64,12 +59,7 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
       </div>
 
       <div class="bring-claims">
-        <span class="bring-claim-chip">
-          <%= c.name %><% if (c.amount > 1) { %>: <%= c.amount %><% } %>
-          <% if (_lastToken && c.token === _lastToken) { %>
-            <button class="claim-delete-btn" hx-delete="/b/<%= id %>/custom/<%= cIdx %>?token=<%= c.token %>" hx-target="#bringlist-content" hx-swap="innerHTML" hx-confirm="<%- t('bring.removeItemConfirm') %>" aria-label="<%- t('common.remove') %>"><%- icon('x') %></button>
-          <% } %>
-        </span>
+        <span class="bring-claim-chip" data-cid="<%= c.id %>"><%= c.name %><% if (c.amount > 1) { %>: <%= c.amount %><% } %></span>
       </div>
     </div>
   <% }); %>
@@ -86,20 +76,3 @@ const _lastToken = (typeof lastClaimToken !== 'undefined') ? lastClaimToken : nu
   <input type="number" name="amount" min="1" value="1" required>
   <button type="submit"><%- t('bring.add') %></button>
 </form>
-
-<script>
-(function() {
-  var saved = localStorage.getItem('bringlist-name') || '';
-  document.querySelectorAll('#bringlist-content input[name="name"]').forEach(function(el) {
-    if (!el.value) el.value = saved;
-  });
-  document.querySelectorAll('#bringlist-content form').forEach(function(form) {
-    form.addEventListener('submit', function() {
-      var nameInput = form.querySelector('input[name="name"]');
-      if (nameInput && nameInput.value.trim()) {
-        localStorage.setItem('bringlist-name', nameInput.value.trim());
-      }
-    });
-  });
-})();
-</script>

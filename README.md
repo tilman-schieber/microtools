@@ -9,7 +9,7 @@ The landing page groups the tools by what you want to do, which also says what h
 **Plan together** (others open the link and add to it)
 
 - **Date Poll** — Doodle-style scheduling with a time grid picker; people can edit or delete their own answers, and the creator can remove any
-- **Potluck Planner** — Coordinate who brings what, with real-time claim tracking
+- **Potluck Planner** — Coordinate who brings what; people can remove their own claims later, and the organiser's admin link can edit the items and remove any claim
 - **Expense Share** — Split costs in a group with per-participant links and settlement calculation
 
 **Share something** (you write it, they read it)

@@ -1,8 +1,9 @@
 import crypto from 'crypto';
+import { newKey, hashKey, keyMatches } from './keys';
 
 // Answers carry no accounts. Whoever submits an answer gets a random key for it,
-// and the poll's creator gets one for the whole poll. Only hashes are stored, so
-// the keys never appear in the database or in a page someone else loads.
+// and the poll's creator gets one for the whole poll (see server/keys.ts).
+export { newKey, hashKey, keyMatches };
 
 export type Vote = 'yes' | 'tentative' | 'no';
 
@@ -22,21 +23,6 @@ export interface PollData {
 
 const VOTES: Vote[] = ['yes', 'tentative', 'no'];
 export const MAX_NAME = 100;
-
-export function newKey(): string {
-  return crypto.randomBytes(18).toString('base64url');
-}
-
-export function hashKey(key: string): string {
-  return crypto.createHash('sha256').update(key).digest('hex');
-}
-
-export function keyMatches(key: unknown, hash: string | undefined): boolean {
-  if (typeof key !== 'string' || !key || !hash) return false;
-  const a = Buffer.from(hashKey(key), 'hex');
-  const b = Buffer.from(hash, 'hex');
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
-}
 
 /** Answers from before ids existed get one, so the creator can delete them. Returns true if any changed. */
 export function ensureIds(data: PollData): boolean {

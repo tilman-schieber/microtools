@@ -671,13 +671,45 @@ td .btn-sm {
 }
 
 .recent-item .tool-name {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.recent-title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.recent-item .role-badge {
+  flex: none;
+}
+
 .recent-item .btn-icon {
   margin-left: 0.5rem;
+}
+
+/* What you are to a link: organiser (accent) or taking part (green) */
+.role-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+}
+
+.role-admin {
+  background: rgba(45, 95, 115, 0.1);
+  color: var(--accent);
+}
+
+.role-joined {
+  background: var(--ok-bg);
+  color: var(--ok-fg);
 }
 
 /* The one part of the landing page that is about you: a card, so it stands
@@ -1503,6 +1535,58 @@ body.note-md-page {
 .bring-card--complete .bring-claim-chip {
   background: var(--ok-bg);
   color: var(--ok-fg);
+}
+
+/* The organiser's bar above the list, and errors from claiming */
+.bring-admin {
+  margin: 0 0 1rem;
+  padding: 0.8rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
+}
+
+.bring-admin p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+#bring-error:not(:empty) {
+  margin-bottom: 0.75rem;
+}
+
+/* Your own claims are outlined, so you can find them in a full list */
+.bring-claim-chip.is-mine {
+  box-shadow: inset 0 0 0 1px var(--ok-bar);
+}
+
+/* Edit mode: an item's name and amount become fields */
+.bring-edit-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.bring-edit-row input[type="text"] {
+  flex: 1 1 12rem;
+  min-width: 0;
+  height: 2.25rem;
+}
+
+.bring-edit-row input[type="number"] {
+  width: 4.5rem;
+  height: 2.25rem;
+}
+
+.bring-card.bring-add-item {
+  border-style: dashed;
+  background: transparent;
+}
+
+.is-editing .bring-card[data-iid] .bring-edit-row {
+  padding-bottom: 0.6rem;
 }
 
 .bring-claim-form {
